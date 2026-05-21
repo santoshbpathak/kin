@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* KIN brand defaults — overridden at runtime by BrandProvider */
+    --color-primary: #1B4332;
+    --color-accent: #52B788;
+    --color-surface: #F8F9FA;
+    --font-family: 'Inter', system-ui, sans-serif;
+    --logo-url: '';
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-surface text-gray-900 font-sans antialiased;
+    min-width: 360px;
+  }
+
+  /* Safe area insets for notched phones */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@layer utilities {
+  /* Minimum touch target size (WCAG 2.5.5) */
+  .touch-target {
+    @apply min-w-[44px] min-h-[44px] flex items-center justify-center;
+  }
+}

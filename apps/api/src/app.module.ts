@@ -1,0 +1,118 @@
+/**
+ * app.module.ts — KIN API Root Module
+ *
+ * Imports:
+ *   - ConfigModule    — typed env config, validated at startup
+ *   - TypeOrmModule   — PostgreSQL via TypeORM
+ *   - ThrottlerModule — rate limiting (100 req/min standard, 10/min vault)
+ *   - All feature modules (one per architectural layer)
+ */
+
+import { Module } from '@nestjs/common'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { ThrottlerModule } from '@nestjs/throttler'
+import { APP_GUARD } from '@nestjs/core'
+import { ThrottlerGuard } from '@nestjs/throttler'
+
+import configuration from './config/configuration'
+
+// Entities
+import { UserProfile } from './database/entities/user-profile.entity'
+import { ProtectionScore } from './database/entities/protection-score.entity'
+import { RecommendationAudit } from './database/entities/recommendation-audit.entity'
+import { VaultDocument } from './database/entities/vault-document.entity'
+import { Nominee } from './database/entities/nominee.entity'
+import { StreakRecord } from './database/entities/streak-record.entity'
+import { PartnerConfig } from './database/entities/partner-config.entity'
+import { UnlockTrigger } from './database/entities/unlock-trigger.entity'
+
+// Feature modules
+import { PartnerModule } from './modules/partner/partner.module'
+import { AuthModule } from './modules/auth/auth.module'
+import { DiagnosticModule } from './modules/diagnostic/diagnostic.module'
+import { ScoreModule } from './modules/score/score.module'
+import { TrustModule } from './modules/trust/trust.module'
+import { DiscoveryModule } from './modules/discovery/discovery.module'
+import { VaultModule } from './modules/vault/vault.module'
+import { EngagementModule } from './modules/engagement/engagement.module'
+import { ContentModule } from './modules/content/content.module'
+import { ConnectModule } from './modules/connect/connect.module'
+import { LifecycleModule } from './modules/lifecycle/lifecycle.module'
+
+const ALL_ENTITIES = [
+  UserProfile,
+  ProtectionScore,
+  RecommendationAudit,
+  VaultDocument,
+  Nominee,
+  StreakRecord,
+  PartnerConfig,
+  UnlockTrigger,
+]
+
+@Module({
+  imports: [
+    // ── Config ──────────────────────────────────────────────────
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+      envFilePath: ['.env.local', '.env'],
+    }),
+
+    // ── Database ─────────────────────────────────────────────────
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        url: config.get<string>('database.url'),
+        host: config.get<string>('database.host'),
+        port: config.get<number>('database.port'),
+        database: config.get<string>('database.name'),
+        username: config.get<string>('database.user'),
+        password: config.get<string>('database.pass'),
+        ssl: config.get<boolean>('database.ssl')
+          ? { rejectUnauthorized: false }
+          : false,
+        entities: ALL_ENTITIES,
+        migrations: ['dist/database/migrations/*.js'],
+        migrationsRun: false,
+        synchronize: config.get<string>('nodeEnv') === 'development',  // NEVER true in prod
+        logging: config.get<string>('nodeEnv') === 'development',
+      }),
+    }),
+
+    // ── Rate limiting ─────────────────────────────────────────────
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        throttlers: [
+          {
+            ttl: config.get<number>('rateLimit.ttl') ?? 60,
+            limit: config.get<number>('rateLimit.max') ?? 100,
+          },
+        ],
+      }),
+    }),
+
+    // ── Feature modules ───────────────────────────────────────────
+    PartnerModule,
+    AuthModule,
+    DiagnosticModule,
+    ScoreModule,
+    TrustModule,
+    DiscoveryModule,
+    VaultModule,
+    EngagementModule,
+    ContentModule,
+    ConnectModule,
+    LifecycleModule,
+  ],
+  providers: [
+    // Global rate limit guard
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
+})
+export class AppModule {}

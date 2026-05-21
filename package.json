@@ -1,0 +1,17 @@
+{
+  "name": "kin",
+  "private": true,
+  "version": "0.1.0",
+  "description": "KIN — Knowledge Intelligence Network. Embedded financial wellness PWA for India.",
+  "scripts": {
+    "dev": "pnpm --parallel --filter web --filter api dev",
+    "build": "pnpm --filter shared-types build && pnpm --filter web build && pnpm --filter api build",
+    "test": "pnpm --recursive test",
+    "lint": "pnpm --recursive lint",
+    "typecheck": "pnpm --recursive typecheck"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}
