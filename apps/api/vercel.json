@@ -1,18 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "buildCommand": "pnpm --filter @kin/api build",
-  "outputDirectory": "dist",
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": null,
-  "functions": {
-    "dist/serverless.js": {
-      "memory": 1024,
-      "maxDuration": 30
-    }
-  },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/dist/serverless.js" }
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/api" }
   ],
   "env": {
     "NODE_ENV": "production"
