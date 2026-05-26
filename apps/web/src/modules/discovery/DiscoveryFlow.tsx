@@ -127,6 +127,7 @@ function buildQuestionSequence(profile: UserProfile | null): string[] {
   const all = DISCOVERY_QUESTIONS.map(q => q.id)
   // ESI question only meaningful for salaried employees
   // Keep all for now — we'll skip adaptively in the step logic
+  void profile
   return all
 }
 

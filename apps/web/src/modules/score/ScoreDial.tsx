@@ -27,15 +27,6 @@ function describeArc(cx: number, cy: number, r: number, startDeg: number, endDeg
   return `M ${s.x} ${s.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y}`
 }
 
-// Band colour stops at positions along the arc
-const BAND_STOPS = [
-  { at: 0,   colour: '#EF4444' },  // Critical
-  { at: 30,  colour: '#F97316' },  // Significant
-  { at: 55,  colour: '#EAB308' },  // Moderate
-  { at: 75,  colour: '#22C55E' },  // Well
-  { at: 90,  colour: '#14B8A6' },  // Full
-]
-
 export function ScoreDial({ score, colour, bandLabel, size = 220 }: ScoreDialProps) {
   const [displayed, setDisplayed] = useState(0)
   const rafRef = useRef<number>(0)

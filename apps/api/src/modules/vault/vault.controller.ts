@@ -2,6 +2,7 @@ import { Controller, Post, Get, Patch, Delete, Body, Param, UseGuards } from '@n
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { IsString, IsNumber, IsOptional, IsEnum, IsDateString } from 'class-validator'
 import { VaultGuard } from '../../common/guards/vault.guard'
+import { Public } from '../../common/decorators/public.decorator'
 import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator'
 import { VaultService } from './vault.service'
 import { NomineeService } from './nominee.service'
@@ -45,6 +46,7 @@ class ConfirmUploadDto {
 
 @ApiTags('vault')
 @ApiBearerAuth()
+@Public()
 @UseGuards(VaultGuard)
 @Controller({ path: 'vault', version: '1' })
 export class VaultController {
@@ -91,15 +93,21 @@ export class VaultController {
   }
 
   @Post('document/upload-url')
-  @ApiOperation({ summary: 'Get S3 presigned upload URL (15-min expiry)' })
-  getUploadUrl(@CurrentUser() user: JwtPayload) {
-    return this.vaultService.getUploadUrl(user.sub)
+  @ApiOperation({ summary: 'Get Supabase Storage signed upload URL (15-min expiry)' })
+  getUploadUrl(@CurrentUser() user: JwtPayload, @Body() dto?: { docId?: string }) {
+    return this.vaultService.getUploadUrl(user.sub, dto?.docId)
   }
 
   @Post('document/confirm-upload')
-  @ApiOperation({ summary: 'Confirm document uploaded to S3' })
+  @ApiOperation({ summary: 'Confirm document uploaded to Supabase Storage' })
   confirmUpload(@CurrentUser() user: JwtPayload, @Body() dto: ConfirmUploadDto) {
     return this.vaultService.confirmUpload(user.sub, dto.docId, dto.s3Key)
+  }
+
+  @Get('document/:docId/download-url')
+  @ApiOperation({ summary: 'Get a short-lived signed download URL for the uploaded vault document' })
+  getDownloadUrl(@CurrentUser() user: JwtPayload, @Param('docId') docId: string) {
+    return this.vaultService.getDownloadUrl(user.sub, docId)
   }
 
   // ── Nominees ─────────────────────────────────────────────────

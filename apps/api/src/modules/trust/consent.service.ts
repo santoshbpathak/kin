@@ -1,70 +1,72 @@
 /**
  * ConsentService — Module 5 (DPDP Act 2023)
  *
- * Granular consent lifecycle:
- *   - One toggle per data type (not blanket accept)
- *   - Revocation API
- *   - Immutable consent log (append-only)
- *
- * Phase 2: stored in DB with full audit trail.
- * MVP1: in-memory map, persisted to UserProfile.consentedPii.
+ * Granular consent lifecycle, append-only.
+ * Each grant or revoke per data type is persisted as a new consent_records row.
  */
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { UserProfile } from '../../database/entities/user-profile.entity'
+import { ConsentRecord } from '../../database/entities/consent-record.entity'
 
 export type ConsentDataType = 'diagnostic_data' | 'location' | 'contact' | 'vault_documents'
 
-export interface ConsentRecord {
+export interface ConsentRecordView {
+  consentId: string
   userId: string
   dataType: ConsentDataType
   granted: boolean
   timestamp: string
-  ipHash?: string   // hashed, not stored raw — DPDP Art. 9
 }
 
 @Injectable()
 export class ConsentService {
-  private readonly consentLog: ConsentRecord[] = []  // Phase 2: replace with DB table
-
   constructor(
     @InjectRepository(UserProfile)
     private readonly userRepo: Repository<UserProfile>,
+    @InjectRepository(ConsentRecord)
+    private readonly consentRepo: Repository<ConsentRecord>,
   ) {}
 
-  async grantConsent(userId: string, dataTypes: ConsentDataType[]): Promise<ConsentRecord[]> {
-    const records: ConsentRecord[] = dataTypes.map(dt => ({
-      userId,
-      dataType: dt,
-      granted: true,
-      timestamp: new Date().toISOString(),
-    }))
-    this.consentLog.push(...records)
-
-    // Update consentedPii flag if contact is consented
+  async grantConsent(userId: string, dataTypes: ConsentDataType[]): Promise<ConsentRecordView[]> {
+    const rows = dataTypes.map(dt =>
+      this.consentRepo.create({ userId, dataType: dt, granted: true }),
+    )
+    const saved = await this.consentRepo.save(rows)
     if (dataTypes.includes('contact')) {
       await this.userRepo.update(userId, { consentedPii: true })
     }
-    return records
+    return saved.map(toView)
   }
 
-  async revokeConsent(userId: string, dataTypes: ConsentDataType[]): Promise<ConsentRecord[]> {
-    const records: ConsentRecord[] = dataTypes.map(dt => ({
-      userId,
-      dataType: dt,
-      granted: false,
-      timestamp: new Date().toISOString(),
-    }))
-    this.consentLog.push(...records)
-
+  async revokeConsent(userId: string, dataTypes: ConsentDataType[]): Promise<ConsentRecordView[]> {
+    const rows = dataTypes.map(dt =>
+      this.consentRepo.create({ userId, dataType: dt, granted: false }),
+    )
+    const saved = await this.consentRepo.save(rows)
     if (dataTypes.includes('contact')) {
       await this.userRepo.update(userId, { consentedPii: false })
     }
-    return records
+    return saved.map(toView)
   }
 
-  getConsentHistory(userId: string): ConsentRecord[] {
-    return this.consentLog.filter(r => r.userId === userId)
+  async getConsentHistory(userId: string): Promise<ConsentRecordView[]> {
+    const rows = await this.consentRepo.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      take: 100,
+    })
+    return rows.map(toView)
+  }
+}
+
+function toView(r: ConsentRecord): ConsentRecordView {
+  return {
+    consentId: r.consentId,
+    userId: r.userId,
+    dataType: r.dataType as ConsentDataType,
+    granted: r.granted,
+    timestamp: r.createdAt.toISOString(),
   }
 }

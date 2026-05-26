@@ -14,7 +14,7 @@
  *   - ULIP recommendations gated OFF (isUlip: false, feature flag)
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { generateRecommendations, type Recommendation } from './recommendationEngine'
 import { RecommendationCard } from './RecommendationCard'
@@ -23,6 +23,7 @@ import { ComplianceSummary } from './ComplianceSummary'
 import { DisclaimerBanner } from './DisclaimerBanner'
 import { calculateScore } from '../score/scoreEngine'
 import type { UserProfile } from '../diagnostic/parser'
+import { apiRequest, ApiError } from '../../lib/apiClient'
 
 function useDiagnosticProfile(): UserProfile | null {
   return useMemo(() => {
@@ -76,6 +77,91 @@ export function RecommendationsPage() {
     } catch {
       return 'session-unknown'
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ── Audit-trail upload (IRDAI CG-8) ────────────────────────────────────
+  // Persist the score + each recommendation the user just saw to the immutable
+  // recommendation_audits table. We do this once per session+rec set. Failure
+  // is logged but does not block the UI - the local UX still works for the user
+  // and we retry on next page mount.
+  const [, setRecIdToAuditId] = useState<Record<string, string>>({})
+  const auditedRef = useRef(false)
+  useEffect(() => {
+    if (auditedRef.current) return
+    if (!profile) return // narrowing for closure (the early return above means this is a no-op at runtime)
+    auditedRef.current = true
+    const p = profile
+
+    async function logAudit() {
+      try {
+        const saved = await apiRequest<{ scoreId: string }>('/score/save', {
+          method: 'POST',
+          body: {
+            compositeScore: score.compositeScore,
+            lifeSubScore: score.lifeScore.score,
+            healthSubScore: score.healthScore.score,
+            incomeSubScore: score.incomeScore.score,
+            hiddenCoverageTotal: 0,
+            ruleVersion: score.ruleVersion,
+            inputsSnapshot: {
+              // Profile snapshot for audit (PII scrubbed server-side)
+              incomeBand: p.incomeBand,
+              lifeStage: p.lifeStage,
+              dependantsCount: p.dependantsCount,
+              monthlyObligationsBand: p.monthlyObligationsBand,
+              cityTier: p.cityTier,
+              occupation: p.occupation,
+              hasTermLife: p.hasTermLife,
+              hasEmployerMediclaim: p.hasEmployerMediclaim,
+              hasPersonalHealth: p.hasPersonalHealth,
+              hasEndowment: p.hasEndowment,
+              edliEligible: p.edliEligible,
+            },
+          },
+        })
+
+        const logged = await apiRequest<{
+          logged: number
+          audits: Array<{ recommendationId: string; auditId: string }>
+        }>('/trust/recommendations', {
+          method: 'POST',
+          body: {
+            scoreId: saved.scoreId,
+            recommendations: recommendations.map(r => ({
+              id: r.id,
+              recommendationType: r.productCategory,
+              basisText: `${r.basisText}\n\nFormula:\n${r.formula}`,
+              irdaiRuleReference: r.irdaiRuleReference,
+            })),
+            profileSnapshot: {
+              incomeBand: p.incomeBand,
+              lifeStage: p.lifeStage,
+              dependantsCount: p.dependantsCount,
+              monthlyObligationsBand: p.monthlyObligationsBand,
+              cityTier: p.cityTier,
+              occupation: p.occupation,
+            },
+          },
+        })
+
+        const map: Record<string, string> = {}
+        for (const a of logged.audits) map[a.recommendationId] = a.auditId
+        setRecIdToAuditId(map)
+        sessionStorage.setItem('kin_audit_ids', JSON.stringify(map))
+      } catch (err) {
+        // Audit logging failure should not break the UX, but it MUST be visible.
+        // In production this is reported by Sentry via the apiClient.
+        if (err instanceof ApiError) {
+          // eslint-disable-next-line no-console
+          console.warn('[audit] failed to log recommendations to backend:', err.status, err.message)
+        } else {
+          // eslint-disable-next-line no-console
+          console.warn('[audit] failed to log recommendations:', err)
+        }
+      }
+    }
+    void logAudit()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

@@ -12,7 +12,7 @@
  *   gold   → rich amber/gold gradient
  */
 
-import type { Milestone, MilestoneId } from './streakStore'
+import type { Milestone } from './streakStore'
 
 const TIER_CONFIG = {
   bronze: { bg: '#FEF3C7', border: '#FCD34D', colour: '#92400E', badge: '#D97706' },

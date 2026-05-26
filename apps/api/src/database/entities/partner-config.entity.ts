@@ -1,6 +1,7 @@
 import {
   Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn,
 } from 'typeorm'
+import { jsonColumnType } from './column-types'
 
 @Entity('partner_configs')
 export class PartnerConfig {
@@ -13,7 +14,7 @@ export class PartnerConfig {
   @Column()
   name: string
 
-  @Column('jsonb', { nullable: true })
+  @Column({ type: jsonColumnType, nullable: true })
   brandTokens: {
     primaryColor: string
     accentColor: string
@@ -25,7 +26,7 @@ export class PartnerConfig {
   @Column('simple-array', { nullable: true })
   embedOrigins: string[]
 
-  @Column('jsonb', { nullable: true })
+  @Column({ type: jsonColumnType, nullable: true })
   ssoConfig: Record<string, unknown>
 
   @Column({ nullable: true })

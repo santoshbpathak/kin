@@ -1,11 +1,14 @@
 /**
  * NotificationPrefsService — Module 11: Lifecycle Layer
  *
- * Manages per-user notification preferences.
- * IRDAI/CG-9: STOP must immediately halt all communications.
- * DPDP Act 2023: user can update or revoke notification consent at any time.
+ * Per-user notification preferences, persisted to notification_prefs table.
+ * IRDAI CG-9: STOP must immediately halt all communications. STOP has no
+ * confirmation step; re-activation requires explicit user action.
  */
 import { Injectable } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
+import { NotificationPrefsEntity } from '../../database/entities/notification-prefs.entity'
 
 export interface NotificationPrefs {
   userId: string
@@ -16,49 +19,48 @@ export interface NotificationPrefs {
   weeklyBrief: boolean
   streakReminders: boolean
   rescoreReminders: boolean
-  stopped: boolean      // STOP command received — all comms halted
+  stopped: boolean
   updatedAt: string
 }
 
-// Phase 2: NotificationPrefsEntity in DB
-const prefsStore = new Map<string, NotificationPrefs>()
-
-const DEFAULT_PREFS = (userId: string): NotificationPrefs => ({
+const DEFAULTS = (userId: string): Partial<NotificationPrefsEntity> => ({
   userId,
   primaryChannel: 'whatsapp',
   smsEnabled: false,
-  whatsappNumber: undefined,
   checkInFrequency: 'weekly',
   weeklyBrief: true,
   streakReminders: true,
   rescoreReminders: true,
   stopped: false,
-  updatedAt: new Date().toISOString(),
 })
 
 @Injectable()
 export class NotificationPrefsService {
-  getPrefs(userId: string): NotificationPrefs {
-    return prefsStore.get(userId) ?? DEFAULT_PREFS(userId)
+  constructor(
+    @InjectRepository(NotificationPrefsEntity)
+    private readonly repo: Repository<NotificationPrefsEntity>,
+  ) {}
+
+  async getPrefs(userId: string): Promise<NotificationPrefs> {
+    const existing = await this.repo.findOne({ where: { userId } })
+    if (existing) return toView(existing)
+    const created = await this.repo.save(this.repo.create(DEFAULTS(userId)))
+    return toView(created)
   }
 
-  updatePrefs(userId: string, updates: Partial<Omit<NotificationPrefs, 'userId' | 'updatedAt'>>): NotificationPrefs {
-    const current = this.getPrefs(userId)
-    const updated: NotificationPrefs = {
-      ...current,
-      ...updates,
-      userId,
-      updatedAt: new Date().toISOString(),
-    }
-    prefsStore.set(userId, updated)
-    return updated
+  async updatePrefs(
+    userId: string,
+    updates: Partial<Omit<NotificationPrefs, 'userId' | 'updatedAt'>>,
+  ): Promise<NotificationPrefs> {
+    const existing = (await this.repo.findOne({ where: { userId } }))
+      ?? this.repo.create(DEFAULTS(userId))
+    Object.assign(existing, updates)
+    const saved = await this.repo.save(existing)
+    return toView(saved)
   }
 
-  /**
-   * IRDAI/CG-9: STOP — immediately halts ALL outbound communications.
-   * One-tap. No confirmation required for STOP (only for re-activation).
-   */
-  stopAllNotifications(userId: string): NotificationPrefs {
+  /** IRDAI/CG-9 STOP — immediate halt of all outbound communications. */
+  async stopAllNotifications(userId: string): Promise<NotificationPrefs> {
     return this.updatePrefs(userId, {
       stopped: true,
       primaryChannel: 'none',
@@ -69,10 +71,7 @@ export class NotificationPrefsService {
     })
   }
 
-  /**
-   * Re-activate notifications (requires explicit user action — START command or UI toggle).
-   */
-  reactivateNotifications(userId: string): NotificationPrefs {
+  async reactivateNotifications(userId: string): Promise<NotificationPrefs> {
     return this.updatePrefs(userId, {
       stopped: false,
       primaryChannel: 'whatsapp',
@@ -82,16 +81,31 @@ export class NotificationPrefsService {
     })
   }
 
-  isUserStopped(userId: string): boolean {
-    return this.getPrefs(userId).stopped
+  async isUserStopped(userId: string): Promise<boolean> {
+    return (await this.getPrefs(userId)).stopped
   }
 
-  shouldSendToUser(userId: string, channel: 'whatsapp' | 'sms'): boolean {
-    const prefs = this.getPrefs(userId)
+  async shouldSendToUser(userId: string, channel: 'whatsapp' | 'sms'): Promise<boolean> {
+    const prefs = await this.getPrefs(userId)
     if (prefs.stopped) return false
     if (prefs.primaryChannel === 'none') return false
     if (channel === 'whatsapp' && prefs.primaryChannel !== 'whatsapp') return false
     if (channel === 'sms' && !prefs.smsEnabled) return false
     return true
+  }
+}
+
+function toView(e: NotificationPrefsEntity): NotificationPrefs {
+  return {
+    userId: e.userId,
+    primaryChannel: e.primaryChannel,
+    smsEnabled: e.smsEnabled,
+    whatsappNumber: e.whatsappNumber ?? undefined,
+    checkInFrequency: e.checkInFrequency,
+    weeklyBrief: e.weeklyBrief,
+    streakReminders: e.streakReminders,
+    rescoreReminders: e.rescoreReminders,
+    stopped: e.stopped,
+    updatedAt: e.updatedAt?.toISOString() ?? new Date().toISOString(),
   }
 }

@@ -123,6 +123,37 @@ export class ProtectionScoreService {
     })
   }
 
+  /**
+   * Persist a score computed client-side (frontend deterministic engine).
+   * Used by /v1/score/save - returns the scoreId for the recommendation
+   * audit FK. Inputs snapshot is stored verbatim; PII scrubbing happens
+   * on the trust side.
+   */
+  async saveFromClient(
+    userId: string,
+    score: {
+      compositeScore: number
+      lifeSubScore: number
+      healthSubScore: number
+      incomeSubScore: number
+      hiddenCoverageTotal: number
+      ruleVersion: string
+      inputsSnapshot: Record<string, unknown>
+    },
+  ): Promise<ProtectionScore> {
+    const row = this.scoreRepo.create({
+      userId,
+      compositeScore: score.compositeScore,
+      lifeSubScore: score.lifeSubScore,
+      healthSubScore: score.healthSubScore,
+      incomeSubScore: score.incomeSubScore,
+      hiddenCoverageTotal: score.hiddenCoverageTotal,
+      ruleVersion: score.ruleVersion,
+      inputsSnapshot: score.inputsSnapshot,
+    })
+    return this.scoreRepo.save(row)
+  }
+
   private parseObligationBand(band: string): number {
     const match = band?.match(/(\d+)/)?.[1]
     if (!match) return 0

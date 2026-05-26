@@ -29,7 +29,6 @@ import {
   getDocuments,
   getNominees,
   getVaultSummary,
-  clearVault,
   type VaultDocument,
   type VaultNominee,
 } from './vaultStore'

@@ -6,6 +6,7 @@
 import {
   Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, BeforeUpdate, BeforeRemove,
 } from 'typeorm'
+import { jsonColumnType } from './column-types'
 
 export type RecommendationType =
   | 'term_life'
@@ -37,7 +38,7 @@ export class RecommendationAudit {
   @Column('text')
   basisText: string
 
-  @Column('jsonb')
+  @Column({ type: jsonColumnType })
   inputsSnapshot: Record<string, unknown>   // PII hashed
 
   @Column({ nullable: true })

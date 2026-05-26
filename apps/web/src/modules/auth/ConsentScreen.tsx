@@ -124,7 +124,7 @@ export function ConsentScreen({ onConsented }: ConsentScreenProps) {
         {/* DPDP Act reference */}
         <p className="text-[10px] text-gray-400 mt-3 leading-relaxed">
           Your rights under the Digital Personal Data Protection Act 2023: access, correct, or
-          delete your data at any time from Settings. KIN stores all data in India (AWS ap-south-1).
+          delete your data at any time from Settings. KIN stores all data in India.
         </p>
       </div>
 

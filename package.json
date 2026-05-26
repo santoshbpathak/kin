@@ -5,6 +5,7 @@
   "description": "KIN — Knowledge Intelligence Network. Embedded financial wellness PWA for India.",
   "scripts": {
     "dev": "pnpm --parallel --filter web --filter api dev",
+    "dev:local": "DATABASE_DRIVER=sqljs pnpm --parallel --filter web --filter api dev",
     "build": "pnpm --filter shared-types build && pnpm --filter web build && pnpm --filter api build",
     "test": "pnpm --recursive test",
     "lint": "pnpm --recursive lint",

@@ -18,8 +18,10 @@ export function ConsentToggle({
   return (
     <div className="flex items-start gap-3 py-3">
       <button
+        id={id}
         role="switch"
         aria-checked={checked}
+        aria-describedby={`${id}-description`}
         aria-label={label}
         disabled={required}
         onClick={() => !required && onChange(!checked)}
@@ -46,7 +48,7 @@ export function ConsentToggle({
             </span>
           )}
         </div>
-        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{description}</p>
+        <p id={`${id}-description`} className="text-xs text-gray-500 mt-0.5 leading-relaxed">{description}</p>
       </div>
     </div>
   )

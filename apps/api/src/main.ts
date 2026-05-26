@@ -2,12 +2,13 @@
  * main.ts — KIN API Bootstrap
  *
  * Features:
+ *   - Sentry init (before NestJS bootstrap so init errors are captured)
  *   - Global validation pipe (class-validator)
- *   - Swagger UI at /api/docs
- *   - API versioning (URI: /api/v1/...)
- *   - CORS — only registered partner origins
- *   - Request ID injected on every response
  *   - Helmet security headers
+ *   - Swagger UI at /api/docs (non-prod only)
+ *   - API versioning (URI: /api/v1/...)
+ *   - CORS — only registered partner origins in prod
+ *   - Request ID injected on every response
  *   - Graceful shutdown
  */
 
@@ -15,11 +16,16 @@ import { NestFactory } from '@nestjs/core'
 import { ValidationPipe, VersioningType } from '@nestjs/common'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { ConfigService } from '@nestjs/config'
+import helmet from 'helmet'
+import { initSentry } from './common/sentry'
 import { AppModule } from './app.module'
 import { RequestIdInterceptor } from './common/interceptors/request-id.interceptor'
 import { HttpExceptionFilter } from './common/filters/http-exception.filter'
 
 async function bootstrap() {
+  // Initialise Sentry first so anything thrown during NestFactory.create is captured.
+  initSentry()
+
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log'],
   })
@@ -28,6 +34,14 @@ async function bootstrap() {
   const port = config.get<number>('port') ?? 3001
   const allowedOrigins = config.get<string[]>('partner.allowedOrigins') ?? []
   const nodeEnv = config.get<string>('nodeEnv')
+
+  // ── Security headers (Helmet) ─────────────────────────────────
+  app.use(
+    helmet({
+      contentSecurityPolicy: nodeEnv === 'production' ? undefined : false,
+      crossOriginEmbedderPolicy: false, // partner iframes need this off
+    }),
+  )
 
   // ── API versioning ────────────────────────────────────────────
   app.setGlobalPrefix('api')
@@ -53,7 +67,7 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter())
   app.useGlobalInterceptors(new RequestIdInterceptor())
 
-  // ── Swagger ───────────────────────────────────────────────────
+  // ── Swagger (non-prod only) ───────────────────────────────────
   if (nodeEnv !== 'production') {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('KIN API')
@@ -82,12 +96,19 @@ async function bootstrap() {
     })
   }
 
-  // ── Start ─────────────────────────────────────────────────────
+  app.enableShutdownHooks()
+
   await app.listen(port)
-  console.log(`\n🚀 KIN API running on http://localhost:${port}/api/v1`)
+  // eslint-disable-next-line no-console
+  console.log(`KIN API running on http://localhost:${port}/api/v1`)
   if (nodeEnv !== 'production') {
-    console.log(`📖 Swagger docs at http://localhost:${port}/api/docs\n`)
+    // eslint-disable-next-line no-console
+    console.log(`Swagger docs at http://localhost:${port}/api/docs`)
   }
 }
 
-bootstrap()
+bootstrap().catch(err => {
+  // eslint-disable-next-line no-console
+  console.error('[bootstrap] fatal:', err)
+  process.exit(1)
+})

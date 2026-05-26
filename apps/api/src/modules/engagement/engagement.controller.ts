@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
-import { IsString, IsNumber, IsOptional } from 'class-validator'
+import { IsString, IsNumber, IsOptional, IsObject } from 'class-validator'
 import { AuthGuard } from '@nestjs/passport'
 import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator'
 import { StreakService } from './streak.service'
@@ -12,11 +12,7 @@ class RecordActionDto {
 
 class SubmitQuizDto {
   @IsNumber() weekNumber: number
-  answers: Record<string, string>
-}
-
-class GetQuizDto {
-  @IsOptional() @IsNumber() weekNumber?: number
+  @IsObject() answers: Record<string, string>
 }
 
 @ApiTags('engagement')
@@ -56,7 +52,7 @@ export class EngagementController {
   @Post('quiz/submit')
   @ApiOperation({ summary: 'Submit quiz answers — returns results with explanations and KIN IQ delta' })
   async submitQuiz(@CurrentUser() user: JwtPayload, @Body() dto: SubmitQuizDto) {
-    const result = this.quizService.submitAttempt(user.sub, dto.weekNumber, dto.answers)
+    const result = await this.quizService.submitAttempt(user.sub, dto.weekNumber, dto.answers)
     // Record streak action for quiz completion
     await this.streakService.recordAction(user.sub, 'quiz_complete')
     return result
@@ -64,7 +60,7 @@ export class EngagementController {
 
   @Get('quiz/iq-score')
   @ApiOperation({ summary: 'Get cumulative KIN IQ score and history for the authenticated user' })
-  getIqScore(@CurrentUser() user: JwtPayload) {
+  async getIqScore(@CurrentUser() user: JwtPayload) {
     return this.quizService.getKinIqScore(user.sub)
   }
 }

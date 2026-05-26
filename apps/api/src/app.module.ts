@@ -11,11 +11,13 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import type { TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { APP_GUARD } from '@nestjs/core'
 import { ThrottlerGuard } from '@nestjs/throttler'
 
 import configuration from './config/configuration'
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard'
 
 // Entities
 import { UserProfile } from './database/entities/user-profile.entity'
@@ -26,6 +28,11 @@ import { Nominee } from './database/entities/nominee.entity'
 import { StreakRecord } from './database/entities/streak-record.entity'
 import { PartnerConfig } from './database/entities/partner-config.entity'
 import { UnlockTrigger } from './database/entities/unlock-trigger.entity'
+import { OtpRequest } from './database/entities/otp-request.entity'
+import { ConsentRecord } from './database/entities/consent-record.entity'
+import { NotificationPrefsEntity } from './database/entities/notification-prefs.entity'
+import { AdvisorBooking } from './database/entities/advisor-booking.entity'
+import { QuizAttempt } from './database/entities/quiz-attempt.entity'
 
 // Feature modules
 import { PartnerModule } from './modules/partner/partner.module'
@@ -49,7 +56,52 @@ const ALL_ENTITIES = [
   StreakRecord,
   PartnerConfig,
   UnlockTrigger,
+  OtpRequest,
+  ConsentRecord,
+  NotificationPrefsEntity,
+  AdvisorBooking,
+  QuizAttempt,
 ]
+
+function createTypeOrmOptions(config: ConfigService): TypeOrmModuleOptions {
+  const nodeEnv = config.get<string>('nodeEnv')
+  const driver = config.get<string>('database.driver')
+  const common = {
+    entities: ALL_ENTITIES,
+    logging: nodeEnv === 'development',
+  }
+
+  if (driver === 'sqljs') {
+    return {
+      ...common,
+      type: 'sqljs',
+      location: config.get<string>('database.sqljsLocation') ?? 'kin-local.sqlite',
+      autoSave: true,
+      synchronize: true,
+    }
+  }
+
+  return {
+    ...common,
+    type: 'postgres',
+    url: config.get<string>('database.url'),
+    host: config.get<string>('database.host'),
+    port: config.get<number>('database.port'),
+    database: config.get<string>('database.name'),
+    username: config.get<string>('database.user'),
+    password: config.get<string>('database.pass'),
+    ssl: config.get<boolean>('database.ssl')
+      ? { rejectUnauthorized: false }
+      : false,
+    migrations: ['dist/database/migrations/*.js'],
+    migrationsRun: false,
+    // NEVER synchronize against Postgres. Migrations are the source of truth.
+    // Synchronize-on against a migrated schema runs destructive ALTER TABLEs to
+    // align column types with entity metadata; that wiped column defaults and
+    // length constraints during the first Supabase boot until we caught it.
+    synchronize: false,
+  }
+}
 
 @Module({
   imports: [
@@ -64,23 +116,7 @@ const ALL_ENTITIES = [
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        url: config.get<string>('database.url'),
-        host: config.get<string>('database.host'),
-        port: config.get<number>('database.port'),
-        database: config.get<string>('database.name'),
-        username: config.get<string>('database.user'),
-        password: config.get<string>('database.pass'),
-        ssl: config.get<boolean>('database.ssl')
-          ? { rejectUnauthorized: false }
-          : false,
-        entities: ALL_ENTITIES,
-        migrations: ['dist/database/migrations/*.js'],
-        migrationsRun: false,
-        synchronize: config.get<string>('nodeEnv') === 'development',  // NEVER true in prod
-        logging: config.get<string>('nodeEnv') === 'development',
-      }),
+      useFactory: createTypeOrmOptions,
     }),
 
     // ── Rate limiting ─────────────────────────────────────────────
@@ -111,6 +147,8 @@ const ALL_ENTITIES = [
     LifecycleModule,
   ],
   providers: [
+    // Global JWT auth guard - all routes require JWT unless @Public() decorator is present
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
     // Global rate limit guard
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],

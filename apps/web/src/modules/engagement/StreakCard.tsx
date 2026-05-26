@@ -61,7 +61,6 @@ export function StreakCard({ streak }: Props) {
   // Count-up animation
   useEffect(() => {
     if (streak.currentStreak === 0) return
-    let frame = 0
     const total = streak.currentStreak
     const duration = Math.min(total * 60, 800) // max 800ms
     const startTime = performance.now()

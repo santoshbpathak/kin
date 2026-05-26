@@ -27,25 +27,25 @@ export class ConnectController {
 
   @Get('advisor/slots')
   @ApiOperation({ summary: 'Get available advisor time slots' })
-  getSlots() {
+  async getSlots() {
     return this.connectService.getAvailableSlots()
   }
 
   @Post('advisor/book')
   @ApiOperation({ summary: 'Book an advisor slot (15-min call)' })
-  bookSlot(@CurrentUser() user: JwtPayload, @Body() dto: BookSlotDto) {
+  async bookSlot(@CurrentUser() user: JwtPayload, @Body() dto: BookSlotDto) {
     return this.connectService.bookSlot(user.sub, dto.slotId, dto.queryType, dto.notes)
   }
 
   @Get('advisor/bookings')
-  @ApiOperation({ summary: 'Get current user\'s advisor bookings' })
-  getUserBookings(@CurrentUser() user: JwtPayload) {
+  @ApiOperation({ summary: "Get current user's advisor bookings" })
+  async getUserBookings(@CurrentUser() user: JwtPayload) {
     return this.connectService.getUserBookings(user.sub)
   }
 
   @Delete('advisor/bookings/:bookingId')
   @ApiOperation({ summary: 'Cancel an advisor booking' })
-  cancelBooking(@CurrentUser() user: JwtPayload, @Param('bookingId') bookingId: string) {
+  async cancelBooking(@CurrentUser() user: JwtPayload, @Param('bookingId') bookingId: string) {
     return this.connectService.cancelBooking(user.sub, bookingId)
   }
 

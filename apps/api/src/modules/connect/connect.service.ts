@@ -2,21 +2,28 @@
  * ConnectService — Module 10: Connect Layer
  *
  * Advisor slot booking + purchase bridge to insurer partners.
- * CG-2: Spurious calls warning in all advisor-facing content.
- * CG-5: KIN is NOT the insurer — routes to insurer's own purchase flow.
- * ULIP_RECOMMENDATIONS = false — ULIP cards never rendered (ProductCategoryGuard).
+ *   CG-2: Spurious calls warning in all advisor-facing content.
+ *   CG-5: KIN is NOT the insurer. Purchase routes to the insurer's own flow.
+ *   CG-3: ULIPs are gated off (isUlip: false on every partner).
+ *
+ * Advisor slots are derived from a deterministic rolling 5-day window so they
+ * survive serverless cold starts. Bookings are persisted to advisor_bookings
+ * which provides the per-slot uniqueness constraint at the DB level.
  */
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
+import { AdvisorBooking } from '../../database/entities/advisor-booking.entity'
 
-interface AdvisorSlot {
+export interface AdvisorSlot {
   slotId: string
-  datetime: string    // ISO string
+  datetime: string
   available: boolean
   advisorName: string
 }
 
-interface Booking {
+export interface Booking {
   bookingId: string
   userId: string
   slotId: string
@@ -27,80 +34,83 @@ interface Booking {
   bookedAt: string
 }
 
-interface ProductPartner {
+export interface ProductPartner {
   partnerId: string
   name: string
   irdaiRegNo: string
   category: 'term_life' | 'health' | 'personal_accident' | 'critical_illness'
-  isUlip: false     // ULIP_RECOMMENDATIONS = false — never 'true' in MVP1
+  isUlip: false
   purchaseUrlBase: string
 }
 
-// In-memory stores (Phase 2: DB with AdvisorSlotEntity, BookingEntity)
-const ADVISOR_SLOTS: AdvisorSlot[] = Array.from({ length: 10 }, (_, i) => {
-  const date = new Date()
-  date.setDate(date.getDate() + Math.floor(i / 2) + 1)
-  date.setHours(10 + (i % 2) * 3, 0, 0, 0)
-  return {
-    slotId: `slot-${i + 1}`,
-    datetime: date.toISOString(),
-    available: true,
-    advisorName: i % 3 === 0 ? 'Priya Sharma' : i % 3 === 1 ? 'Rahul Gupta' : 'Anjali Mehta',
-  }
-})
-
-const bookingStore = new Map<string, Booking>()
+const ADVISORS = ['Priya Sharma', 'Rahul Gupta', 'Anjali Mehta']
+const SLOTS_PER_DAY = 2 // 10:00 and 13:00 IST
+const ROLLING_DAYS = 5
 
 const PRODUCT_PARTNERS: ProductPartner[] = [
-  { partnerId: 'pp-hdfc-term', name: 'HDFC Life', irdaiRegNo: '101', category: 'term_life', isUlip: false, purchaseUrlBase: 'https://www.hdfclife.com/term-insurance' },
-  { partnerId: 'pp-star-health', name: 'Star Health Insurance', irdaiRegNo: '129', category: 'health', isUlip: false, purchaseUrlBase: 'https://www.starhealth.in/health-insurance' },
-  { partnerId: 'pp-bajaj-pa', name: 'Bajaj Allianz General', irdaiRegNo: '113', category: 'personal_accident', isUlip: false, purchaseUrlBase: 'https://www.bajajallianz.com/personal-accident-insurance' },
+  { partnerId: 'pp-hdfc-term',   name: 'HDFC Life',                irdaiRegNo: '101', category: 'term_life',          isUlip: false, purchaseUrlBase: 'https://www.hdfclife.com/term-insurance' },
+  { partnerId: 'pp-star-health', name: 'Star Health Insurance',     irdaiRegNo: '129', category: 'health',             isUlip: false, purchaseUrlBase: 'https://www.starhealth.in/health-insurance' },
+  { partnerId: 'pp-bajaj-pa',    name: 'Bajaj Allianz General',     irdaiRegNo: '113', category: 'personal_accident',  isUlip: false, purchaseUrlBase: 'https://www.bajajallianz.com/personal-accident-insurance' },
 ]
 
 @Injectable()
 export class ConnectService {
-  getAvailableSlots(): AdvisorSlot[] {
-    return ADVISOR_SLOTS.filter(s => s.available)
+  constructor(
+    @InjectRepository(AdvisorBooking)
+    private readonly bookingRepo: Repository<AdvisorBooking>,
+  ) {}
+
+  /**
+   * Slots are computed deterministically from today's date so they are
+   * consistent across function invocations. Returns the rolling 5-day window
+   * minus already-booked slots.
+   */
+  async getAvailableSlots(): Promise<AdvisorSlot[]> {
+    const allSlots = generateSlots()
+    const slotIds = allSlots.map(s => s.slotId)
+    const booked = await this.bookingRepo.find({
+      where: slotIds.map(slotId => ({ slotId, status: 'confirmed' as const })),
+      select: ['slotId'],
+    })
+    const bookedSet = new Set(booked.map(b => b.slotId))
+    return allSlots.filter(s => !bookedSet.has(s.slotId))
   }
 
-  bookSlot(userId: string, slotId: string, queryType: string, notes?: string): Booking {
-    const slot = ADVISOR_SLOTS.find(s => s.slotId === slotId)
+  async bookSlot(userId: string, slotId: string, queryType: string, notes?: string): Promise<Booking> {
+    const allSlots = generateSlots()
+    const slot = allSlots.find(s => s.slotId === slotId)
     if (!slot) throw new NotFoundException('Slot not found')
-    if (!slot.available) throw new BadRequestException('Slot is no longer available')
 
-    slot.available = false
+    const existing = await this.bookingRepo.findOne({ where: { slotId, status: 'confirmed' } })
+    if (existing) throw new ConflictException('Slot is no longer available')
 
-    const booking: Booking = {
-      bookingId: uuidv4(),
-      userId,
-      slotId,
-      datetime: slot.datetime,
-      status: 'confirmed',
-      queryType,
-      notes,
-      bookedAt: new Date().toISOString(),
-    }
-    bookingStore.set(booking.bookingId, booking)
-    return booking
+    const booking = await this.bookingRepo.save(
+      this.bookingRepo.create({
+        userId,
+        slotId,
+        datetime: new Date(slot.datetime),
+        status: 'confirmed',
+        queryType,
+        notes,
+      }),
+    )
+    return toBookingView(booking)
   }
 
-  getUserBookings(userId: string): Booking[] {
-    return Array.from(bookingStore.values()).filter(b => b.userId === userId)
+  async getUserBookings(userId: string): Promise<Booking[]> {
+    const rows = await this.bookingRepo.find({ where: { userId }, order: { bookedAt: 'DESC' } })
+    return rows.map(toBookingView)
   }
 
-  cancelBooking(userId: string, bookingId: string): Booking {
-    const booking = bookingStore.get(bookingId)
+  async cancelBooking(userId: string, bookingId: string): Promise<Booking> {
+    const booking = await this.bookingRepo.findOne({ where: { bookingId } })
     if (!booking) throw new NotFoundException('Booking not found')
     if (booking.userId !== userId) throw new BadRequestException('Booking does not belong to this user')
     if (booking.status === 'cancelled') throw new BadRequestException('Booking already cancelled')
 
     booking.status = 'cancelled'
-    // Return slot to pool
-    const slot = ADVISOR_SLOTS.find(s => s.slotId === booking.slotId)
-    if (slot) slot.available = true
-
-    bookingStore.set(bookingId, booking)
-    return booking
+    const saved = await this.bookingRepo.save(booking)
+    return toBookingView(saved)
   }
 
   getProductPartners(category?: string): ProductPartner[] {
@@ -109,21 +119,20 @@ export class ConnectService {
   }
 
   /**
-   * CG-5: KIN is NOT the insurer.
-   * Generates a one-time secure token for the purchase redirect.
-   * The actual purchase happens on the insurer's own platform.
+   * CG-5: KIN is not the insurer. This produces a one-time secure redirect
+   * to the insurer's own purchase flow.
    */
-  initiatePurchase(userId: string, partnerId: string, recommendationId?: string): {
+  initiatePurchase(userId: string, partnerId: string, _recommendationId?: string): {
     purchaseToken: string
     redirectUrl: string
     disclaimer: string
     partnerName: string
     irdaiRegNo: string
   } {
+    void userId // reserved for audit logging in Phase 2
     const partner = PRODUCT_PARTNERS.find(p => p.partnerId === partnerId)
     if (!partner) throw new NotFoundException('Partner not found')
 
-    // Phase 2: sign a one-time token with userId + partnerId + timestamp
     const purchaseToken = uuidv4()
     const redirectUrl = `${partner.purchaseUrlBase}?ref=kin&token=${purchaseToken}`
 
@@ -132,7 +141,45 @@ export class ConnectService {
       redirectUrl,
       partnerName: partner.name,
       irdaiRegNo: partner.irdaiRegNo,
-      disclaimer: `KIN is not the insurer. ${partner.name} (IRDAI Reg. No. ${partner.irdaiRegNo}) underwrites this policy. You are leaving KIN and entering ${partner.name}'s purchase flow. KIN does not receive any commission. Participation is purely on a voluntary basis.`,
+      disclaimer:
+        `KIN is not the insurer. ${partner.name} (IRDAI Reg. No. ${partner.irdaiRegNo}) ` +
+        `underwrites this policy. You are leaving KIN and entering ${partner.name}'s ` +
+        `purchase flow. KIN does not receive any commission. Participation is purely on a voluntary basis.`,
     }
+  }
+}
+
+function generateSlots(): AdvisorSlot[] {
+  const slots: AdvisorSlot[] = []
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  for (let d = 1; d <= ROLLING_DAYS; d++) {
+    const day = new Date(today)
+    day.setDate(today.getDate() + d)
+    for (let h = 0; h < SLOTS_PER_DAY; h++) {
+      const slot = new Date(day)
+      slot.setHours(10 + h * 3, 0, 0, 0)
+      const id = `slot-${day.toISOString().slice(0, 10)}-${h}`
+      slots.push({
+        slotId: id,
+        datetime: slot.toISOString(),
+        available: true,
+        advisorName: ADVISORS[(d + h) % ADVISORS.length],
+      })
+    }
+  }
+  return slots
+}
+
+function toBookingView(b: AdvisorBooking): Booking {
+  return {
+    bookingId: b.bookingId,
+    userId: b.userId,
+    slotId: b.slotId,
+    datetime: b.datetime.toISOString(),
+    status: b.status,
+    queryType: b.queryType,
+    notes: b.notes ?? undefined,
+    bookedAt: b.bookedAt.toISOString(),
   }
 }

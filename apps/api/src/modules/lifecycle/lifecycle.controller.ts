@@ -2,6 +2,7 @@ import { Controller, Get, Post, Patch, Body, Headers, UseGuards, Logger } from '
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { IsString, IsOptional, IsEnum, IsBoolean } from 'class-validator'
 import { AuthGuard } from '@nestjs/passport'
+import { Public } from '../../common/decorators/public.decorator'
 import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator'
 import { NotificationPrefsService } from './notification-prefs.service'
 import { WhatsAppService } from './whatsapp.service'
@@ -67,6 +68,7 @@ export class LifecycleController {
 
   // ── WhatsApp Webhook (no auth — verified by Meta challenge) ───
 
+  @Public()
   @Get('whatsapp/webhook')
   @ApiOperation({ summary: 'WhatsApp Business API webhook verification (GET — Meta hub.challenge)' })
   verifyWebhook(
@@ -82,6 +84,7 @@ export class LifecycleController {
     return { status: 'forbidden' }
   }
 
+  @Public()
   @Post('whatsapp/webhook')
   @ApiOperation({ summary: 'WhatsApp Business API inbound message webhook (POST)' })
   handleInbound(@Body() body: WhatsAppWebhookDto) {
@@ -96,7 +99,9 @@ export class LifecycleController {
             if (msg.type === 'text') {
               const { command } = this.whatsappService.parseInboundMessage(msg.text?.body ?? '')
               const phone = msg.from as string
-              this.logger.log(`[WhatsApp inbound] From: ${phone}, Command: ${command}`)
+              // Log only the last 4 digits of the phone — DPDP boundary
+              const masked = typeof phone === 'string' ? `******${phone.slice(-4)}` : 'unknown'
+              this.logger.log(`[WhatsApp inbound] From: ${masked}, Command: ${command}`)
               // Phase 2: look up userId by phone, call notifPrefsService.stopAllNotifications(userId)
               // For STOP; for SCORE: fetch and send latest score via sendTemplate
             }

@@ -1,16 +1,36 @@
 import { Controller, Post, Get, Body, Param } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
-import { IsArray, IsString } from 'class-validator'
+import {
+  IsArray,
+  IsString,
+  IsOptional,
+  IsObject,
+  ValidateNested,
+  ArrayMaxSize,
+} from 'class-validator'
+import { Type } from 'class-transformer'
 import { RecommendationService } from './recommendation.service'
 import { ConsentService, ConsentDataType } from './consent.service'
 import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator'
-import type { ScoreResult } from '../score/protection-score.service'
-import type { ParsedProfile } from '../diagnostic/nlp-parser.service'
 
-class GenerateRecommendationsDto {
-  score: ScoreResult
-  profile: ParsedProfile
-  scoreId: string
+/**
+ * Each recommendation that the user actually saw, sent to the backend so we
+ * can write the immutable audit row (IRDAI CG-8). The basisText/formula/
+ * irdaiRuleReference are stored verbatim - what was logged is what was shown.
+ */
+class RecommendationAuditEntryDto {
+  @IsString() id: string
+  @IsString() recommendationType: string
+  @IsString() basisText: string
+  @IsOptional() @IsString() irdaiRuleReference?: string
+}
+
+class LogRecommendationsDto {
+  @IsString() scoreId: string
+  @IsArray() @ValidateNested({ each: true }) @ArrayMaxSize(10)
+  @Type(() => RecommendationAuditEntryDto)
+  recommendations: RecommendationAuditEntryDto[]
+  @IsOptional() @IsObject() profileSnapshot?: Record<string, unknown>
 }
 
 class ConsentDto {
@@ -27,18 +47,46 @@ export class TrustController {
   ) {}
 
   @Post('recommendations')
-  @ApiOperation({ summary: 'Generate ranked recommendations — IRDAI compliant, rule-based' })
-  async generate(@CurrentUser() user: JwtPayload, @Body() dto: GenerateRecommendationsDto) {
-    const recs = this.recService.generate(dto.score, dto.profile)
-    await this.recService.logAudit(user.sub, dto.scoreId, recs, dto.profile)
-    return { recommendations: recs, count: recs.length }
+  @ApiOperation({
+    summary:
+      'Log the recommendations the user just saw to the IRDAI suitability audit ' +
+      'trail (recommendation_audits, immutable, 5-year retention). Returns the ' +
+      'audit IDs so the frontend can wire each "See the Math" button to its row.',
+  })
+  async logRecommendations(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: LogRecommendationsDto,
+  ) {
+    const audits = await this.recService.logRecommendationBatch(
+      user.sub,
+      dto.scoreId,
+      dto.recommendations,
+      dto.profileSnapshot ?? {},
+    )
+    return {
+      logged: audits.length,
+      audits: audits.map(a => ({
+        recommendationId: a.recommendationType, // we stored the frontend rec.id here
+        auditId: a.auditId,
+      })),
+    }
   }
 
-  @Get('see-the-math/:recId')
+  @Get('see-the-math/:auditId')
   @ApiOperation({ summary: 'Get full basis text for a recommendation — mandatory per CG-8' })
-  async seeTheMath(@Param('recId') recId: string) {
-    // Phase 2: fetch from DB by recId
-    return { recId, message: 'Recommendation audit records available via database query in Phase 2' }
+  async seeTheMath(
+    @CurrentUser() user: JwtPayload,
+    @Param('auditId') auditId: string,
+  ) {
+    const audit = await this.recService.getAudit(user.sub, auditId)
+    return {
+      auditId: audit.auditId,
+      recommendationType: audit.recommendationType,
+      basisText: audit.basisText,
+      irdaiRuleReference: audit.irdaiRuleReference,
+      ruleVersion: audit.ruleVersion,
+      createdAt: audit.createdAt,
+    }
   }
 
   @Post('consent/grant')

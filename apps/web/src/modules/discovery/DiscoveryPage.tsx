@@ -176,16 +176,16 @@ export function DiscoveryPage() {
   function handleFlowComplete(answers: DiscoveryAnswers) {
     const results = discoverCoverages(answers, profile ?? {
       lifeStage: 'single',
-      incomeBand: '6_10l',
+      incomeBand: '5_10l',
       dependantsCount: 0,
-      monthlyObligationsBand: 'under_15k',
+      monthlyObligationsBand: 'lt_15k',
       hasTermLife: false,
       hasEmployerMediclaim: false,
       hasPersonalHealth: false,
-      hasLifeInsurance: false,
+      hasEndowment: false,
       cityTier: 'T2',
-      occupation: 'salaried_pf',
-      edliEligible: false,
+	      occupation: 'salaried_pf',
+	      edliEligible: false,
     })
 
     // Persist for Vault / Connect cross-module

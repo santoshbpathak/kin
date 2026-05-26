@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { UserProfile } from '../../database/entities/user-profile.entity'
+import { OtpRequest } from '../../database/entities/otp-request.entity'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { JwtStrategy } from './strategies/jwt.strategy'
@@ -11,7 +12,7 @@ import { VaultJwtStrategy } from './strategies/vault-jwt.strategy'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserProfile]),
+    TypeOrmModule.forFeature([UserProfile, OtpRequest]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

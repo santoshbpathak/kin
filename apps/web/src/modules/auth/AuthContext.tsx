@@ -5,6 +5,7 @@ import {
   useCallback,
   type ReactNode,
 } from 'react'
+import { setJwt } from '../../lib/apiClient'
 
 export type AuthMethod = 'anonymous' | 'whatsapp' | 'google' | 'employer_sso'
 
@@ -16,6 +17,7 @@ export interface ConsentState {
 
 export interface Session {
   sessionToken: string      // UUID — no PII until consented
+  token?: string            // JWT for Authorization: Bearer when calling backend
   authMethod: AuthMethod
   consentedPii: boolean     // false until Step 9 purchase
   consent: ConsentState
@@ -56,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Call backend to register an anonymous session
       // Falls back to local UUID if API not yet live (MVP dev mode)
       let sessionToken: string
+      let jwt: string | undefined
       try {
         const res = await fetch('/api/v1/auth/session', {
           method: 'POST',
@@ -65,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
           const data = await res.json()
           sessionToken = data.sessionToken
+          jwt = data.token
         } else {
           sessionToken = generateSessionToken()
         }
@@ -75,10 +79,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setSession({
         sessionToken,
+        token: jwt,
         authMethod: 'anonymous',
         consentedPii: false,
         consent,
       })
+      setJwt(jwt ?? null)
     } catch (err) {
       setError('Failed to start session. Please try again.')
     } finally {
@@ -113,15 +119,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null)
     try {
       let sessionToken: string
+      let jwt: string | undefined
       try {
+        // Pass the anonymous session token (if any) so the backend upgrades it
+        // in place rather than creating a duplicate user row.
+        const existingSession = session?.sessionToken
         const res = await fetch('/api/v1/auth/whatsapp/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: pendingPhone, otp }),
+          body: JSON.stringify({ phone: pendingPhone, otp, sessionToken: existingSession }),
         })
         if (res.ok) {
           const data = await res.json()
           sessionToken = data.sessionToken
+          jwt = data.token
         } else if (res.status === 401) {
           setError('Incorrect OTP. Please try again.')
           setIsLoading(false)
@@ -143,18 +154,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setSession({
         sessionToken,
+        token: jwt,
         authMethod: 'whatsapp',
         consentedPii: false,
         consent: { diagnosticData: true, locationData: true, contactData: true },
         phoneNumber: pendingPhone,
       })
+      setJwt(jwt ?? null)
       setPendingPhone(null)
     } catch {
       setError('Verification failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
-  }, [pendingPhone])
+  }, [pendingPhone, session])
 
   const startGoogleAuth = useCallback(async () => {
     // Redirect to Google OAuth — backend handles callback

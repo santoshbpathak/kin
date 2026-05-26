@@ -12,7 +12,7 @@
  *   CG-5: No co-branded insurer recommendation without proper disclosure
  *   CG-8: "See the Math" mandatory on every recommendation
  */
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { RecommendationAudit, RecommendationType } from '../../database/entities/recommendation-audit.entity'
@@ -171,4 +171,77 @@ export class RecommendationService {
     )
     return this.auditRepo.save(audits)
   }
+
+  /**
+   * CG-8: "See the Math" - returns the immutable basis text for a given audit row.
+   * Throws NotFoundException if the audit row does not exist or does not belong
+   * to the calling user.
+   */
+  async getAudit(userId: string, auditId: string): Promise<RecommendationAudit> {
+    const audit = await this.auditRepo.findOne({ where: { auditId } })
+    if (!audit) {
+      throw new NotFoundException('Recommendation audit not found')
+    }
+    if (audit.userId !== userId) {
+      throw new NotFoundException('Recommendation audit not found')
+    }
+    return audit
+  }
+
+  /**
+   * Log a batch of recommendations exactly as the user saw them. Each
+   * recommendation becomes an immutable audit row. The frontend rec.id is
+   * stored in `recommendationType` so the response can map auditIds back
+   * to the frontend ids.
+   *
+   * Inputs are scrubbed of obvious PII before storage.
+   */
+  async logRecommendationBatch(
+    userId: string,
+    scoreId: string,
+    recommendations: Array<{
+      id: string
+      recommendationType: string
+      basisText: string
+      irdaiRuleReference?: string
+    }>,
+    profileSnapshot: Record<string, unknown>,
+  ): Promise<RecommendationAudit[]> {
+    const scrubbed = scrubPii(profileSnapshot)
+    const audits = recommendations.map(rec => {
+      const audit = new RecommendationAudit()
+      audit.userId = userId
+      audit.scoreId = scoreId
+      // We persist the frontend recommendation id in this column so the
+      // response can return a recId -> auditId mapping. recommendationType
+      // is varchar(100) which is plenty.
+      audit.recommendationType = (rec.id || rec.recommendationType) as RecommendationType
+      audit.basisText = rec.basisText
+      audit.irdaiRuleReference = rec.irdaiRuleReference ?? ''
+      audit.inputsSnapshot = scrubbed
+      return audit
+    })
+    return this.auditRepo.save(audits)
+  }
+}
+
+function scrubPii(obj: Record<string, unknown>): Record<string, unknown> {
+  const PII_FIELDS = new Set([
+    'phone',
+    'mobile',
+    'whatsappNumber',
+    'email',
+    'aadhaar',
+    'aadhaarLast4',
+    'name',
+    'fullName',
+    'address',
+    'pan',
+  ])
+  const out: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(obj)) {
+    if (PII_FIELDS.has(k)) continue
+    out[k] = v
+  }
+  return out
 }

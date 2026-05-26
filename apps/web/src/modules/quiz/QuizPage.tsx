@@ -385,10 +385,9 @@ export function QuizPage() {
               <p className="text-xs font-bold text-gray-600 mb-3">Question Review</p>
               <div className="space-y-2.5">
                 {questions.map((q, i) => {
-                  const chosen = answers[q.id]
-                  const correct = chosen === q.correctOptionId
-                  const chosenOption = q.options.find(o => o.id === chosen)
-                  const correctOption = q.options.find(o => o.id === q.correctOptionId)
+	                  const chosen = answers[q.id]
+	                  const correct = chosen === q.correctOptionId
+	                  const correctOption = q.options.find(o => o.id === q.correctOptionId)
                   return (
                     <div
                       key={q.id}

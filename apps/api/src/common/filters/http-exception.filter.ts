@@ -4,12 +4,16 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common'
 import { Request, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
+import { captureException } from '../sentry'
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(HttpExceptionFilter.name)
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp()
     const res = ctx.getResponse<Response>()
@@ -24,6 +28,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
       exception instanceof HttpException
         ? exception.getResponse()
         : 'Internal server error'
+
+    // Capture any 5xx in Sentry and log server-side so production failures
+    // are not silently returned as JSON to the client. 4xx are validation
+    // and auth concerns — not error-worthy.
+    if (status >= 500) {
+      this.logger.error(
+        `${req.method} ${req.url} -> ${status}`,
+        exception instanceof Error ? exception.stack : String(exception),
+      )
+      captureException(exception)
+    }
 
     res.status(status).json({
       status,

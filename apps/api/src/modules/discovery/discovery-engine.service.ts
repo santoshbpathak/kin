@@ -57,6 +57,8 @@ export interface DiscoveryAnswers {
   ownsVehicle: boolean           // Q7: Do you own a registered motor vehicle (car/bike)?
   travelsByRail: boolean         // Q8: Do you book IRCTC rail tickets online?
   hasHomeLoan: boolean           // Q9 (bonus): Do you have an active home loan?
+  hasLpgConnection?: boolean     // Q10: Do you have a domestic LPG connection?
+  hasJanDhanAccount?: boolean    // Q11: Do you (or anyone in family) hold a PMJDY account?
 }
 
 export interface DiscoveryResult {
@@ -83,6 +85,8 @@ export class DiscoveryEngineService {
       this.evaluateMotorPa(answers),
       this.evaluateIrctcTravelPa(answers),
       this.evaluateMrta(answers),
+      this.evaluateLpg(answers),
+      this.evaluatePmjdy(answers),
     ]
 
     const totalBonusCoverAmount = this.totalBonusCover(coverages)
@@ -340,6 +344,52 @@ export class DiscoveryEngineService {
       howToActivate: 'Check your home loan sanction letter for loan insurance details. If not covered, ask your bank or an insurance advisor about standalone MRTA plans. Protects nominee from inheriting loan liability.',
       source: 'IRDAI Life Insurance Regulations — Loan Protection Plans',
       isActivatedByDefault: false,
+    }
+  }
+
+  private evaluateLpg(a: DiscoveryAnswers): DiscoveredCoverage {
+    const has = a.hasLpgConnection === true
+    return {
+      id: 'lpg_pa',
+      schemeName: 'LPG Personal Accident Cover (Oil Marketing Companies)',
+      schemeType: 'bundled',
+      coverAmount: 600000,
+      coverAmountLabel: '₹6 Lakh per person; ₹30 Lakh per incident',
+      premiumPerYear: 0,
+      premiumLabel: 'Free (bundled with LPG connection)',
+      status: has ? 'likely_active' : 'not_applicable',
+      statusLabel: this.statusLabel(has ? 'likely_active' : 'not_applicable'),
+      actionRequired: has
+        ? 'Keep your LPG connection paperwork and a recent refill receipt safe — both are needed to file a claim with the OMC after any LPG-related accident at home.'
+        : 'This benefit applies only to registered domestic LPG (Indane / HP / Bharat Gas) consumers.',
+      howToActivate: has
+        ? 'No activation needed - cover is automatic for all registered domestic LPG consumers. Claim within 60 days of incident through the LPG distributor and the OMC area office.'
+        : 'Get an LPG connection in your name with one of the OMCs to be eligible.',
+      source: 'Public Liability Insurance Policy issued by IOCL/HPCL/BPCL under MoPNG mandate',
+      isActivatedByDefault: true,
+    }
+  }
+
+  private evaluatePmjdy(a: DiscoveryAnswers): DiscoveredCoverage {
+    const has = a.hasJanDhanAccount === true
+    return {
+      id: 'pmjdy_rupay',
+      schemeName: 'PMJDY RuPay Debit Card Accident Cover',
+      schemeType: 'government',
+      coverAmount: 200000,
+      coverAmountLabel: '₹2 Lakh (₹1L for accounts opened pre-28 Aug 2018)',
+      premiumPerYear: 0,
+      premiumLabel: 'Free (bundled with RuPay debit card)',
+      status: has ? 'check_required' : 'not_applicable',
+      statusLabel: this.statusLabel(has ? 'check_required' : 'not_applicable'),
+      actionRequired: has
+        ? 'Use your RuPay debit card at least once every 90 days to keep the accidental cover active. Verify with your bank that your card is the eligible RuPay variant.'
+        : 'PMJDY accident cover applies to RuPay debit cards issued under the Pradhan Mantri Jan Dhan Yojana programme.',
+      howToActivate: has
+        ? 'No activation needed. Keep the RuPay card active by transacting at least once every 90 days. Claim filed by nominee at the issuing bank branch.'
+        : 'Open a PMJDY account at any bank; a RuPay debit card with embedded cover is issued automatically.',
+      source: 'PMJDY Mission Document & NPCI RuPay Insurance Programme (revised August 2018)',
+      isActivatedByDefault: true,
     }
   }
 

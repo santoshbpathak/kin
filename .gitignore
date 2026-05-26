@@ -4,6 +4,8 @@ dist/
 .env.local
 .env.*.local
 *.log
+*.sqlite
+*.sqlite-journal
 .DS_Store
 .turbo/
 coverage/

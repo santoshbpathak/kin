@@ -1,14 +1,55 @@
 /**
  * configuration.ts — Typed environment configuration
  * Loaded via @nestjs/config's ConfigModule.
- * All values validated at startup via Joi schema (see app.module.ts).
+ *
+ * In production, every secret below MUST be set explicitly via the environment
+ * (Vercel project env vars). Fallback dev values are intentionally weak; the
+ * startup assertion at the bottom of this file throws if any required
+ * production secret is missing.
  */
 
-export default () => ({
+const REQUIRED_IN_PRODUCTION = [
+  'JWT_SECRET',
+  'VAULT_JWT_SECRET',
+  'DATABASE_URL',
+  'SUPABASE_URL',
+  'SUPABASE_SERVICE_ROLE_KEY',
+] as const
+
+const RECOMMENDED_IN_PRODUCTION = [
+  'SENTRY_DSN',
+  'WHATSAPP_ACCESS_TOKEN',
+  'WHATSAPP_PHONE_NUMBER_ID',
+  'WHATSAPP_WEBHOOK_VERIFY_TOKEN',
+] as const
+
+function assertProductionEnv(): void {
+  if ((process.env.NODE_ENV ?? 'development') !== 'production') return
+  const missing = REQUIRED_IN_PRODUCTION.filter(k => !process.env[k] || process.env[k]?.startsWith('change-me'))
+  if (missing.length) {
+    throw new Error(
+      `Refusing to start: required production env vars missing or using dev defaults: ${missing.join(', ')}. ` +
+      `Set these in your Vercel project settings.`,
+    )
+  }
+  const missingRecommended = RECOMMENDED_IN_PRODUCTION.filter(k => !process.env[k])
+  if (missingRecommended.length) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[startup] Production missing recommended env vars: ${missingRecommended.join(', ')}. ` +
+      `Some features (Sentry, WhatsApp) will be disabled.`,
+    )
+  }
+}
+
+export default () => {
+  assertProductionEnv()
+  return ({
   port: parseInt(process.env.PORT ?? '3001', 10),
   nodeEnv: process.env.NODE_ENV ?? 'development',
 
   database: {
+    driver: process.env.DATABASE_DRIVER ?? 'postgres',
     url: process.env.DATABASE_URL,
     host: process.env.DATABASE_HOST ?? 'localhost',
     port: parseInt(process.env.DATABASE_PORT ?? '5432', 10),
@@ -16,6 +57,7 @@ export default () => ({
     user: process.env.DATABASE_USER ?? 'kin_user',
     pass: process.env.DATABASE_PASS ?? 'kin_pass',
     ssl: process.env.DATABASE_SSL === 'true',
+    sqljsLocation: process.env.DATABASE_SQLJS_LOCATION ?? 'kin-local.sqlite',
   },
 
   auth: {
@@ -48,4 +90,18 @@ export default () => ({
     max: parseInt(process.env.RATE_LIMIT_MAX ?? '100', 10),
     vaultMax: parseInt(process.env.VAULT_RATE_LIMIT_MAX ?? '10', 10),
   },
+
+  sentry: {
+    dsn: process.env.SENTRY_DSN ?? '',
+    tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE ?? '0.1'),
+    environment: process.env.NODE_ENV ?? 'development',
+  },
+
+  supabase: {
+    url: process.env.SUPABASE_URL ?? '',
+    anonKey: process.env.SUPABASE_ANON_KEY ?? '',
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+    vaultBucket: process.env.SUPABASE_VAULT_BUCKET ?? 'kin-vault-documents',
+  },
 })
+}

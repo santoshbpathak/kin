@@ -2,6 +2,7 @@ import {
   Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn,
 } from 'typeorm'
 import { UserProfile } from './user-profile.entity'
+import { jsonColumnType } from './column-types'
 
 @Entity('protection_scores')
 export class ProtectionScore {
@@ -33,7 +34,7 @@ export class ProtectionScore {
   @Column({ default: 'v1.0.0' })
   ruleVersion: string
 
-  @Column('jsonb', { nullable: true })
+  @Column({ type: jsonColumnType, nullable: true })
   inputsSnapshot: Record<string, unknown>
 
   @CreateDateColumn()

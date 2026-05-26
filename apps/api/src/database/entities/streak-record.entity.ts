@@ -1,6 +1,7 @@
 import {
   Entity, PrimaryGeneratedColumn, Column, UpdateDateColumn,
 } from 'typeorm'
+import { jsonColumnType } from './column-types'
 
 @Entity('streak_records')
 export class StreakRecord {
@@ -22,10 +23,10 @@ export class StreakRecord {
   @Column({ nullable: true })
   lastActionAt: Date
 
-  @Column('jsonb', { default: [] })
+  @Column({ type: jsonColumnType, nullable: true })
   badgesEarned: string[]
 
-  @Column('jsonb', { default: [] })
+  @Column({ type: jsonColumnType, nullable: true })
   visitDates: string[]   // ISO date strings for last 30 days
 
   @UpdateDateColumn()

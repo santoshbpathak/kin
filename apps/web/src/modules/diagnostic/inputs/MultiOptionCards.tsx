@@ -11,8 +11,6 @@ export function MultiOptionCards({ options, selected, onToggle }: MultiOptionCar
     <div className="grid grid-cols-1 gap-3">
       {options.map((opt) => {
         const isSelected = selected.includes(opt.id)
-        // "None of the above" logic — mutually exclusive with others
-        const isMutuallyExclusive = opt.id === 'none_cover'
         return (
           <button
             key={opt.id}
