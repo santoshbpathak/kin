@@ -33,6 +33,8 @@ import { ConsentRecord } from './database/entities/consent-record.entity'
 import { NotificationPrefsEntity } from './database/entities/notification-prefs.entity'
 import { AdvisorBooking } from './database/entities/advisor-booking.entity'
 import { QuizAttempt } from './database/entities/quiz-attempt.entity'
+import { IntakeConversationSession } from './database/entities/intake-conversation-session.entity'
+import { AdvisorSession } from './database/entities/advisor-session.entity'
 
 // Feature modules
 import { PartnerModule } from './modules/partner/partner.module'
@@ -61,6 +63,8 @@ const ALL_ENTITIES = [
   NotificationPrefsEntity,
   AdvisorBooking,
   QuizAttempt,
+  IntakeConversationSession,
+  AdvisorSession,
 ]
 
 function createTypeOrmOptions(config: ConfigService): TypeOrmModuleOptions {

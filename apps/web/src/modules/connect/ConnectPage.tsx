@@ -17,16 +17,16 @@
  * M5 milestone signal: sets kin_rec_action_taken in localStorage on mount.
  */
 
-import { useEffect, useState } from 'react'
-import { AdvisorBookingFlow } from './AdvisorBookingFlow'
+import { useEffect, useMemo, useState } from 'react'
 import { ProductBridgeCard } from './ProductBridgeCard'
 import { PRODUCT_BRIDGES, getBookings } from './connectStore'
+import { AdvisoryConnect } from './AdvisoryConnect'
+import { assembleKinReport } from './kinReport'
 
 type Tab = 'advisor' | 'products'
 
 export function ConnectPage() {
   const [activeTab, setActiveTab] = useState<Tab>('advisor')
-  const [showBookingFlow, setShowBookingFlow] = useState(false)
 
   // M5 milestone: user has visited Connect page = took a recommended action
   useEffect(() => {
@@ -35,6 +35,10 @@ export function ConnectPage() {
 
   const bookings = getBookings()
   const pendingBookings = bookings.filter(b => b.status === 'pending')
+
+  // Assemble the KIN report once per page mount so the chat session boots
+  // with a stable snapshot.
+  const kinReport = useMemo(() => assembleKinReport(), [])
 
   return (
     <>
@@ -113,60 +117,14 @@ export function ConnectPage() {
           </div>
         </div>
 
-        {/* ── Tab: Advisor ── */}
+        {/* ── Tab: Advisor — three-tier advisory connect (Module B v1.4) ── */}
         {activeTab === 'advisor' && (
-          <div className="px-5 pt-5 space-y-4">
-            {/* Hero card */}
-            <div
-              className="rounded-3xl p-5 text-white"
-              style={{ background: 'linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 70%, #1e1b4b) 100%)' }}
-            >
-              <div className="text-4xl mb-3">🧑‍💼</div>
-              <h2 className="text-lg font-extrabold mb-1">Free 15-min Advisor Call</h2>
-              <p className="text-sm opacity-90 leading-relaxed mb-4">
-                Speak with a licensed insurance advisor. They receive your KIN protection summary
-                so you skip the basics and get straight to answers.
-              </p>
-              <div className="flex flex-wrap gap-2 mb-5">
-                {['No spam', 'No commissions', 'IRDAI-licensed advisors'].map(badge => (
-                  <span
-                    key={badge}
-                    className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/20"
-                  >
-                    ✓ {badge}
-                  </span>
-                ))}
-              </div>
-              <button
-                onClick={() => setShowBookingFlow(true)}
-                className="w-full py-3.5 rounded-2xl text-sm font-bold bg-white transition-opacity active:opacity-80"
-                style={{ color: 'var(--color-primary)' }}
-              >
-                Book a Call →
-              </button>
-            </div>
+          <div className="pt-2 pb-4">
+            <AdvisoryConnect kinReport={kinReport} />
 
-            {/* What to expect */}
-            <div className="rounded-2xl bg-gray-50 border border-gray-100 p-4">
-              <p className="text-xs font-bold text-gray-600 mb-3">What to expect:</p>
-              <div className="space-y-2.5">
-                {[
-                  { emoji: '📊', text: 'Advisor reviews your KIN gap map before the call' },
-                  { emoji: '🗣️', text: '15-minute focused discussion — no sales pressure' },
-                  { emoji: '📋', text: 'Written summary of recommendations sent post-call' },
-                  { emoji: '🔒', text: 'Your data shared only with your consent' },
-                ].map(item => (
-                  <div key={item.emoji} className="flex items-start gap-2.5">
-                    <span className="text-base shrink-0">{item.emoji}</span>
-                    <p className="text-xs text-gray-600 leading-relaxed">{item.text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Past bookings */}
+            {/* Past bookings — retained from MVP1 */}
             {bookings.length > 0 && (
-              <div>
+              <div className="px-5 pt-4">
                 <p className="text-xs font-bold text-gray-500 mb-2">Your Bookings</p>
                 <div className="space-y-2">
                   {bookings.slice(-3).reverse().map(b => (
@@ -195,12 +153,14 @@ export function ConnectPage() {
             )}
 
             {/* CG-2 footer */}
-            <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
-              <p className="text-[10px] text-gray-400 leading-relaxed">
-                Advisor calls are for guidance only and do not constitute a formal financial advice
-                report. Insurance products mentioned are underwritten by licensed insurers. Please
-                read policy documents carefully before purchase. Conditions apply.
-              </p>
+            <div className="px-5 pt-3">
+              <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
+                <p className="text-[10px] text-gray-400 leading-relaxed">
+                  Advisor calls are for guidance only and do not constitute a formal financial advice
+                  report. Insurance products mentioned are underwritten by licensed insurers. Please
+                  read policy documents carefully before purchase. Conditions apply.
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -248,39 +208,6 @@ export function ConnectPage() {
         )}
 
       </div>
-
-      {/* ── Advisor booking bottom sheet ── */}
-      {showBookingFlow && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            style={{ animation: 'fadeIn 0.2s ease-out' }}
-            onClick={() => setShowBookingFlow(false)}
-          />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl max-h-[92vh] overflow-y-auto"
-            style={{ animation: 'slideUp 0.28s cubic-bezier(0.32,0.72,0,1)' }}
-          >
-            {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-gray-200" />
-            </div>
-
-            <AdvisorBookingFlow onClose={() => setShowBookingFlow(false)} />
-          </div>
-        </>
-      )}
-
-      <style>{`
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to   { transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-      `}</style>
     </>
   )
 }

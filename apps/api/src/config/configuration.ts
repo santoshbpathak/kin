@@ -103,5 +103,15 @@ export default () => {
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
     vaultBucket: process.env.SUPABASE_VAULT_BUCKET ?? 'kin-vault-documents',
   },
+
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY ?? '',
+    modelPrimary: process.env.OPENAI_MODEL_PRIMARY ?? 'gpt-4o',
+    modelEscalation: process.env.OPENAI_MODEL_ESCALATION ?? 'gpt-4o-mini',
+    maxTokensDiagnostic: parseInt(process.env.OPENAI_MAX_TOKENS_DIAGNOSTIC ?? '2000', 10),
+    maxTokensAdvisor: parseInt(process.env.OPENAI_MAX_TOKENS_ADVISOR ?? '1500', 10),
+    maxTokensExtraction: parseInt(process.env.OPENAI_MAX_TOKENS_EXTRACTION ?? '3000', 10),
+    conversationTtlSeconds: parseInt(process.env.CONVERSATION_TTL_SECONDS ?? '1800', 10),
+  },
 })
 }

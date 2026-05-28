@@ -1,6 +1,6 @@
 import { useAuth } from '@/modules/auth/AuthContext'
 import { ConsentScreen } from '@/modules/auth/ConsentScreen'
-import { DiagnosticFlow } from './DiagnosticFlow'
+import { DiagnosticChat } from './DiagnosticChat'
 
 export function DiagnosticPage() {
   const { session } = useAuth()
@@ -9,5 +9,5 @@ export function DiagnosticPage() {
     return <ConsentScreen onConsented={() => {}} />
   }
 
-  return <DiagnosticFlow />
+  return <DiagnosticChat />
 }

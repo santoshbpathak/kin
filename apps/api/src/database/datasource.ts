@@ -30,6 +30,8 @@ import { ConsentRecord } from './entities/consent-record.entity'
 import { NotificationPrefsEntity } from './entities/notification-prefs.entity'
 import { AdvisorBooking } from './entities/advisor-booking.entity'
 import { QuizAttempt } from './entities/quiz-attempt.entity'
+import { IntakeConversationSession } from './entities/intake-conversation-session.entity'
+import { AdvisorSession } from './entities/advisor-session.entity'
 
 loadEnv()
 
@@ -51,6 +53,8 @@ export default new DataSource({
     NotificationPrefsEntity,
     AdvisorBooking,
     QuizAttempt,
+    IntakeConversationSession,
+    AdvisorSession,
   ],
   migrations: ['src/database/migrations/*.ts'],
   migrationsTableName: 'typeorm_migrations',
