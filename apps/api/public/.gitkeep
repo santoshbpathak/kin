@@ -1,0 +1,7 @@
+# This file exists so the empty public/ directory is committed to git.
+# Vercel requires an outputDirectory after the build step. The API project
+# has no static frontend - it is serverless functions only - but Vercel
+# still validates that the configured output directory exists. Pointing
+# outputDirectory at this empty folder satisfies the check without
+# masking the api/index.ts serverless function (which is what happened
+# when we previously set outputDirectory to "dist").
