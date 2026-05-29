@@ -18,7 +18,7 @@
  *   - Show "New!" badge on just-unlocked milestones
  */
 
-import { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { StreakCard } from './StreakCard'
 import { MilestoneCard, MilestoneLockPlaceholder } from './MilestoneCard'
@@ -31,25 +31,31 @@ import {
   type MilestoneId,
   type StreakRecord,
 } from './streakStore'
+import { Button, Card, NavHeader } from '@/components/ui'
+import {
+  IconScore, IconDoc, IconUser, IconSearch, IconSparkle,
+  IconShield, IconChart, IconBuilding, IconStar, IconTrophy,
+  IconStreak, IconBulb,
+} from '@/components/ui/icons'
 
 // ── Next action suggestions (keyed to locked milestones) ─────────
-const NEXT_ACTION_MAP: Partial<Record<MilestoneId, { label: string; route: string; emoji: string }>> = {
-  m1_first_score:           { label: 'Calculate my score',          route: '/diagnose',  emoji: '🎯' },
-  m2_vault_policy:          { label: 'Add a policy to vault',        route: '/vault',     emoji: '📄' },
-  m3_vault_nominee:         { label: 'Add a nominee',                route: '/vault',     emoji: '👤' },
-  m4_discovery:             { label: 'Discover hidden coverage',     route: '/discover',  emoji: '🔍' },
-  m5_recommendation_action: { label: 'Act on a recommendation',      route: '/recommend', emoji: '⚡' },
-  m6_pmsby_active:          { label: 'Check PMSBY status',           route: '/discover',  emoji: '🦺' },
-  m9_score_improver:        { label: 'Improve my protection score',  route: '/recommend', emoji: '📈' },
-  m10_vault_complete:       { label: 'Complete the Protection Vault', route: '/vault',    emoji: '🏰' },
+const NEXT_ACTION_MAP: Partial<Record<MilestoneId, { label: string; route: string; icon: React.ReactElement }>> = {
+  m1_first_score:           { label: 'Calculate my score',          route: '/diagnose',  icon: <IconScore size={20} className="text-navy shrink-0" /> },
+  m2_vault_policy:          { label: 'Add a policy to vault',        route: '/vault',     icon: <IconDoc size={20} className="text-navy shrink-0" /> },
+  m3_vault_nominee:         { label: 'Add a nominee',                route: '/vault',     icon: <IconUser size={20} className="text-navy shrink-0" /> },
+  m4_discovery:             { label: 'Discover hidden coverage',     route: '/discover',  icon: <IconSearch size={20} className="text-navy shrink-0" /> },
+  m5_recommendation_action: { label: 'Act on a recommendation',      route: '/recommend', icon: <IconSparkle size={20} className="text-navy shrink-0" /> },
+  m6_pmsby_active:          { label: 'Check PMSBY status',           route: '/discover',  icon: <IconShield size={20} className="text-navy shrink-0" /> },
+  m9_score_improver:        { label: 'Improve my protection score',  route: '/recommend', icon: <IconChart size={20} className="text-navy shrink-0" /> },
+  m10_vault_complete:       { label: 'Complete the Protection Vault', route: '/vault',    icon: <IconBuilding size={20} className="text-navy shrink-0" /> },
 }
 
 // ── Tier breakdown strip ─────────────────────────────────────────
 function TierBreakdown({ unlocked }: { unlocked: Set<MilestoneId> }) {
   const tiers = [
-    { label: 'Bronze', colour: '#D97706', bg: '#FEF3C7', ids: MILESTONES.filter(m => m.tier === 'bronze').map(m => m.id) },
-    { label: 'Silver', colour: '#475569', bg: '#F1F5F9', ids: MILESTONES.filter(m => m.tier === 'silver').map(m => m.id) },
-    { label: 'Gold',   colour: '#B45309', bg: '#FFFBEB', ids: MILESTONES.filter(m => m.tier === 'gold').map(m => m.id) },
+    { label: 'Bronze', countClass: 'text-amber',      bgClass: 'bg-sand-deep',          ids: MILESTONES.filter(m => m.tier === 'bronze').map(m => m.id) },
+    { label: 'Silver', countClass: 'text-slate',      bgClass: 'bg-sand-deep',          ids: MILESTONES.filter(m => m.tier === 'silver').map(m => m.id) },
+    { label: 'Gold',   countClass: 'text-amber',      bgClass: 'bg-sand-deep',          ids: MILESTONES.filter(m => m.tier === 'gold').map(m => m.id) },
   ]
 
   return (
@@ -57,11 +63,11 @@ function TierBreakdown({ unlocked }: { unlocked: Set<MilestoneId> }) {
       {tiers.map(t => {
         const earned = t.ids.filter(id => unlocked.has(id)).length
         return (
-          <div key={t.label} className="rounded-xl p-3 text-center" style={{ backgroundColor: t.bg }}>
-            <p className="text-lg font-extrabold" style={{ color: t.colour }}>
+          <div key={t.label} className={`rounded-md p-3 text-center ${t.bgClass} border border-hairline`}>
+            <p className={`t-numeric-inline font-extrabold nums ${t.countClass}`}>
               {earned}/{t.ids.length}
             </p>
-            <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: t.colour }}>
+            <p className={`t-micro mt-0.5 ${t.countClass}`}>
               {t.label}
             </p>
           </div>
@@ -103,7 +109,7 @@ export function EngagementPage() {
   if (!streak) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
-        <div className="text-3xl animate-pulse">🔥</div>
+        <IconStreak size={32} className="text-amber animate-pulse" />
       </div>
     )
   }
@@ -111,55 +117,39 @@ export function EngagementPage() {
   return (
     <div className="flex flex-col pb-10">
       {/* ── Header ── */}
-      <div
-        className="px-5 pt-6 pb-5"
-        style={{
-          background: 'linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 6%, white) 0%, white 100%)',
-        }}
-      >
-        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
-          Engagement
-        </p>
-        <h1 className="text-xl font-extrabold text-gray-900">Your Progress</h1>
-        <p className="text-xs text-gray-500 mt-1">Streaks · Milestones · Points</p>
-      </div>
+      <NavHeader title="Your Progress" />
 
-      <div className="px-5 space-y-5">
+      <div className="px-5 pt-5 space-y-5">
 
         {/* ── Streak card ── */}
         <StreakCard streak={streak} />
 
         {/* ── Points summary ── */}
-        <div
-          className="rounded-2xl px-5 py-4 flex items-center gap-4"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--color-primary) 8%, white)',
-            border: '1.5px solid color-mix(in srgb, var(--color-primary) 20%, white)',
-          }}
-        >
-          <div className="text-3xl">⭐</div>
+        <Card className="flex items-center gap-4 py-4">
+          <IconStar size={28} className="text-amber shrink-0" />
           <div className="flex-1">
-            <p className="text-2xl font-extrabold text-gray-900">{totalPoints}</p>
-            <p className="text-xs text-gray-500">KIN protection points earned</p>
+            <p className="t-numeric-inline font-extrabold text-navy nums">{totalPoints}</p>
+            <p className="t-body-sm text-muted">KIN protection points earned</p>
           </div>
           <div className="text-right">
-            <p className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
+            <p className="t-body-sm font-bold text-teal-deep nums">
               {unlockedMilestones.length}/{MILESTONES.length}
             </p>
-            <p className="text-[10px] text-gray-400">milestones</p>
+            <p className="t-micro text-muted">milestones</p>
           </div>
-        </div>
+        </Card>
 
         {/* ── Tier breakdown ── */}
         <TierBreakdown unlocked={unlocked} />
 
         {/* ── Newly unlocked banner ── */}
         {newlyUnlocked.length > 0 && (
-          <div className="rounded-2xl bg-green-50 border-2 border-green-200 p-4 animate-fade-in">
-            <p className="text-sm font-bold text-green-800 mb-1">
-              🎉 {newlyUnlocked.length} new milestone{newlyUnlocked.length > 1 ? 's' : ''} unlocked!
+          <div className="rounded-md border border-teal/30 bg-mint p-4 animate-fade-in">
+            <p className="t-body-sm font-bold text-teal-deep mb-1 flex items-center gap-1.5">
+              <IconSparkle size={16} className="text-teal-deep shrink-0" />
+              {newlyUnlocked.length} new milestone{newlyUnlocked.length > 1 ? 's' : ''} unlocked!
             </p>
-            <p className="text-xs text-green-600">
+            <p className="t-body-sm text-slate">
               {newlyUnlocked.map(id => MILESTONES.find(m => m.id === id)?.title).filter(Boolean).join(' · ')}
             </p>
           </div>
@@ -168,8 +158,8 @@ export function EngagementPage() {
         {/* ── Unlocked milestones ── */}
         {unlockedMilestones.length > 0 && (
           <div className="space-y-3">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">
-              ✅ Earned ({unlockedMilestones.length})
+            <p className="t-micro text-muted">
+              Earned ({unlockedMilestones.length})
             </p>
             {unlockedMilestones.map(m => (
               <MilestoneCard
@@ -185,8 +175,8 @@ export function EngagementPage() {
         {/* ── Locked milestones ── */}
         {lockedMilestones.length > 0 && (
           <div className="space-y-3">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">
-              🔒 Locked ({lockedMilestones.length})
+            <p className="t-micro text-muted">
+              Locked ({lockedMilestones.length})
             </p>
             {visibleLocked.map(m => (
               <MilestoneCard key={m.id} milestone={m} unlocked={false} />
@@ -195,50 +185,50 @@ export function EngagementPage() {
               <MilestoneLockPlaceholder count={hiddenCount} />
             )}
             {!showAllLocked && hiddenCount > 0 && (
-              <button
+              <Button
+                variant="ghost"
+                size="md"
+                fullWidth
                 onClick={() => setShowAllLocked(true)}
-                className="w-full py-2.5 text-xs font-semibold text-gray-400 border border-gray-100 rounded-xl"
+                className="border border-hairline"
               >
-                Show all locked milestones ↓
-              </button>
+                Show all locked milestones
+              </Button>
             )}
           </div>
         )}
 
         {/* ── All done ── */}
         {lockedMilestones.length === 0 && (
-          <div className="rounded-2xl bg-yellow-50 border-2 border-yellow-200 p-5 text-center">
-            <p className="text-4xl mb-3">🏆</p>
-            <p className="text-base font-extrabold text-yellow-800">All milestones complete!</p>
-            <p className="text-xs text-yellow-600 mt-1 leading-relaxed">
+          <Card className="bg-mint border-teal/30 p-5 text-center">
+            <IconTrophy size={40} className="text-amber mx-auto mb-3" />
+            <p className="t-body font-extrabold text-teal-deep">All milestones complete!</p>
+            <p className="t-body-sm text-slate mt-1 leading-relaxed">
               You have achieved full financial wellness awareness. Share KIN with a friend.
             </p>
-          </div>
+          </Card>
         )}
 
         {/* ── Next actions ── */}
         {nextActions.length > 0 && (
           <div className="space-y-2.5">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">
-              💡 Actions to unlock milestones
+            <p className="t-micro text-muted">
+              Actions to unlock milestones
             </p>
             {nextActions.map(action => (
               <Link
                 key={action.milestoneId}
                 to={action.route}
-                className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 px-4 py-3.5 shadow-sm"
+                className="flex items-center gap-3 bg-surface rounded-md border border-hairline px-4 py-3.5 shadow-card active:opacity-80 transition-opacity"
               >
-                <span className="text-xl">{action.emoji}</span>
+                {action.icon}
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-800">{action.label}</p>
+                  <p className="t-body-sm font-semibold text-navy">{action.label}</p>
                 </div>
-                <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white shrink-0"
-                  style={{ backgroundColor: 'var(--color-primary)' }}
-                >
+                <span className="t-micro font-bold px-2 py-0.5 rounded-pill bg-teal text-navy shrink-0 nums">
                   +{action.points} pts
                 </span>
-                <span className="text-gray-300 text-sm">›</span>
+                <span className="text-muted t-body-sm">›</span>
               </Link>
             ))}
           </div>
@@ -246,21 +236,21 @@ export function EngagementPage() {
 
         {/* ── Module 8B: KIN IQ Weekly Quiz ── */}
         <Link to="/quiz" className="block">
-          <div className="rounded-2xl border-2 border-purple-200 bg-purple-50 p-5 flex items-center gap-4 active:opacity-80 transition-opacity">
-            <span className="text-3xl shrink-0">🧠</span>
+          <Card className="flex items-center gap-4 active:opacity-80 transition-opacity">
+            <IconBulb size={28} className="text-navy shrink-0" />
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <p className="text-sm font-extrabold text-purple-800">KIN IQ Weekly Quiz</p>
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-600 text-white">
+                <p className="t-body-sm font-extrabold text-navy">KIN IQ Weekly Quiz</p>
+                <span className="t-micro px-2 py-0.5 rounded-pill bg-teal text-navy">
                   NEW
                 </span>
               </div>
-              <p className="text-xs text-purple-600 leading-relaxed">
+              <p className="t-body-sm text-slate leading-relaxed">
                 3 insurance literacy questions — earn up to +8 KIN IQ points this week.
               </p>
             </div>
-            <span className="text-purple-400 text-lg shrink-0">→</span>
-          </div>
+            <span className="text-muted t-body shrink-0">→</span>
+          </Card>
         </Link>
 
       </div>

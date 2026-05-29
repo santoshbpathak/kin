@@ -12,6 +12,8 @@
 import { useState } from 'react'
 import type { Relationship } from './vaultStore'
 import { RELATIONSHIP_LABELS, addNominee } from './vaultStore'
+import { Button, Card, Input, ChoiceChip, NavHeader, PrivacyLine } from '@/components/ui'
+import { IconLock, IconCheck } from '@/components/ui/icons'
 
 const RELATIONSHIPS: Relationship[] = ['spouse', 'child', 'parent', 'sibling', 'other']
 
@@ -42,130 +44,116 @@ export function AddNomineeFlow({ onComplete, onCancel }: Props) {
   }
 
   return (
-    <div className="flex flex-col px-5 pt-5 pb-10 space-y-5">
+    <div className="flex flex-col pb-10">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-extrabold text-gray-900">Add Nominee</h2>
-        <button onClick={onCancel} className="text-xs text-gray-400">Cancel</button>
-      </div>
+      <NavHeader
+        title="Add Nominee"
+        showBack={false}
+        action={
+          <button
+            type="button"
+            onClick={onCancel}
+            className="t-body-sm text-teal-deep"
+          >
+            Cancel
+          </button>
+        }
+      />
 
-      <p className="text-xs text-gray-500 leading-relaxed -mt-2">
-        Your nominee is the person who should be contacted first in case of a claim.
-        Store minimum details — no sensitive documents needed here.
-      </p>
-
-      {/* Name */}
-      <div>
-        <label className="text-xs font-semibold text-gray-500 block mb-1.5">
-          Full name *
-        </label>
-        <input
-          type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder="e.g. Priya Sharma"
-          className="w-full px-4 py-3 rounded-xl border-2 text-sm outline-none"
-          style={{ borderColor: name.trim().length >= 2 ? 'var(--color-primary)' : '#E5E7EB' }}
-          autoCapitalize="words"
-        />
-      </div>
-
-      {/* Relationship */}
-      <div>
-        <label className="text-xs font-semibold text-gray-500 block mb-1.5">
-          Relationship *
-        </label>
-        <div className="grid grid-cols-3 gap-2">
-          {RELATIONSHIPS.map(r => (
-            <button
-              key={r}
-              onClick={() => setRelationship(r)}
-              className="py-2.5 px-2 rounded-xl border-2 text-xs font-semibold text-center transition-all"
-              style={{
-                borderColor: relationship === r ? 'var(--color-primary)' : '#E5E7EB',
-                backgroundColor: relationship === r
-                  ? 'color-mix(in srgb, var(--color-primary) 10%, white)'
-                  : '#FAFAFA',
-                color: relationship === r ? 'var(--color-primary)' : '#6B7280',
-              }}
-            >
-              {RELATIONSHIP_LABELS[r]}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Phone */}
-      <div>
-        <label className="text-xs font-semibold text-gray-500 block mb-1.5">
-          Mobile number
-        </label>
-        <div className="flex items-center border-2 rounded-xl overflow-hidden"
-          style={{ borderColor: phone ? 'var(--color-primary)' : '#E5E7EB' }}
-        >
-          <span className="px-3 py-3 text-sm text-gray-400 bg-gray-50 border-r border-gray-100">+91</span>
-          <input
-            type="tel"
-            inputMode="numeric"
-            maxLength={10}
-            value={phone}
-            onChange={e => setPhone(e.target.value.replace(/\D/g, '').substring(0, 10))}
-            placeholder="10-digit number"
-            className="flex-1 px-3 py-3 text-sm outline-none"
-          />
-        </div>
-      </div>
-
-      {/* Email */}
-      <div>
-        <label className="text-xs font-semibold text-gray-500 block mb-1.5">
-          Email address
-        </label>
-        <input
-          type="email"
-          inputMode="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          placeholder="e.g. priya@email.com"
-          className="w-full px-4 py-3 rounded-xl border-2 text-sm outline-none"
-          style={{ borderColor: email ? 'var(--color-primary)' : '#E5E7EB' }}
-        />
-      </div>
-
-      {/* Aadhaar last 4 */}
-      <div>
-        <label className="text-xs font-semibold text-gray-500 block mb-1.5">
-          Aadhaar — last 4 digits only
-        </label>
-        <input
-          type="text"
-          inputMode="numeric"
-          maxLength={4}
-          value={aadhaarLast4}
-          onChange={e => setAadhaarLast4(e.target.value.replace(/\D/g, '').substring(0, 4))}
-          placeholder="e.g. 4523"
-          className="w-full px-4 py-3 rounded-xl border-2 text-sm font-mono outline-none"
-          style={{ borderColor: aadhaarLast4.length === 4 ? 'var(--color-primary)' : '#E5E7EB' }}
-        />
-        <p className="text-[10px] text-gray-400 mt-1">
-          🔒 DPDP Act 2023 — KIN stores only the last 4 digits. Never enter your full Aadhaar here.
+      <div className="flex flex-col px-5 pt-4 space-y-5">
+        <p className="t-body-sm text-slate leading-relaxed">
+          Your nominee is the person who should be contacted first in case of a claim.
+          Store minimum details — no sensitive documents needed here.
         </p>
+
+        <Card className="space-y-5">
+          {/* Name */}
+          <Input
+            label="Full name *"
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="e.g. Priya Sharma"
+            autoCapitalize="words"
+          />
+
+          {/* Relationship */}
+          <div className="flex flex-col gap-1.5">
+            <span className="t-micro text-muted">
+              Relationship *
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {RELATIONSHIPS.map(r => (
+                <ChoiceChip
+                  key={r}
+                  selected={relationship === r}
+                  onClick={() => setRelationship(r)}
+                >
+                  {RELATIONSHIP_LABELS[r]}
+                </ChoiceChip>
+              ))}
+            </div>
+          </div>
+
+          {/* Phone */}
+          <div className="flex flex-col gap-1.5">
+            <span className="t-micro text-muted">
+              Mobile number
+            </span>
+            <div className="flex items-center rounded-md border-[1.5px] border-hairline-strong bg-surface focus-within:border-teal overflow-hidden">
+              <span className="px-3 h-[56px] flex items-center t-body-sm text-muted bg-sand-deep border-r border-hairline">
+                +91
+              </span>
+              <input
+                type="tel"
+                inputMode="numeric"
+                maxLength={10}
+                value={phone}
+                onChange={e => setPhone(e.target.value.replace(/\D/g, '').substring(0, 10))}
+                placeholder="10-digit number"
+                className="flex-1 px-3 h-[56px] text-[15px] text-slate bg-surface outline-none placeholder:text-muted"
+              />
+            </div>
+          </div>
+
+          {/* Email */}
+          <Input
+            label="Email address"
+            type="email"
+            inputMode="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="e.g. priya@email.com"
+          />
+
+          {/* Aadhaar last 4 */}
+          <Input
+            label="Aadhaar — last 4 digits only"
+            type="text"
+            inputMode="numeric"
+            maxLength={4}
+            value={aadhaarLast4}
+            onChange={e => setAadhaarLast4(e.target.value.replace(/\D/g, '').substring(0, 4))}
+            placeholder="e.g. 4523"
+            className="font-mono"
+            helper={<span className="flex items-center gap-1"><IconLock size={14} className="text-muted shrink-0" /> DPDP Act 2023 — KIN stores only the last 4 digits. Never enter your full Aadhaar here.</span>}
+          />
+        </Card>
+
+        {/* Save */}
+        <Button
+          onClick={handleSave}
+          disabled={!canSave}
+          fullWidth
+        >
+          Save Nominee <IconCheck size={16} className="text-current" />
+        </Button>
+
+        <PrivacyLine>
+          Nominee data is stored locally on your device only. KIN does not share
+          this information with insurers or third parties. You can delete at any time.
+        </PrivacyLine>
       </div>
-
-      {/* Save */}
-      <button
-        onClick={handleSave}
-        disabled={!canSave}
-        className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity"
-        style={{ backgroundColor: 'var(--color-primary)', opacity: canSave ? 1 : 0.4 }}
-      >
-        Save Nominee ✓
-      </button>
-
-      <p className="text-[10px] text-gray-400 text-center leading-relaxed">
-        Nominee data is stored locally on your device only. KIN does not share
-        this information with insurers or third parties. You can delete at any time.
-      </p>
     </div>
   )
 }

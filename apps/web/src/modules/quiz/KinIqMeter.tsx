@@ -5,11 +5,13 @@
  * Separate from the Protection Score — measures financial literacy.
  *
  * Bands:
- *   0–25:   Beginner (grey)
+ *   0–25:   Beginner (muted)
  *   26–50:  Learning (amber)
- *   51–75:  Informed (blue)
- *   76–100: KIN Expert (green/teal)
+ *   51–75:  Informed (teal-deep)
+ *   76–100: KIN Expert (teal)
  */
+
+import { StateChip } from '@/components/ui'
 
 type Props = {
   score: number
@@ -20,16 +22,18 @@ type Props = {
 
 type Band = {
   label: string
-  colour: string
-  bg: string
+  /** CSS token value used for SVG stroke */
+  strokeColour: string
+  /** StateChip tone or null for neutral */
+  tone: 'positive' | 'moderate' | null
   min: number
 }
 
 const BANDS: Band[] = [
-  { label: 'Beginner',   colour: '#9CA3AF', bg: '#F3F4F6', min: 0  },
-  { label: 'Learning',   colour: '#D97706', bg: '#FEF3C7', min: 26 },
-  { label: 'Informed',   colour: '#2563EB', bg: '#DBEAFE', min: 51 },
-  { label: 'KIN Expert', colour: '#059669', bg: '#D1FAE5', min: 76 },
+  { label: 'Beginner',   strokeColour: 'var(--kin-muted)',      tone: null,       min: 0  },
+  { label: 'Learning',   strokeColour: 'var(--kin-amber)',      tone: 'moderate', min: 26 },
+  { label: 'Informed',   strokeColour: 'var(--kin-teal-deep)',  tone: 'positive', min: 51 },
+  { label: 'KIN Expert', strokeColour: 'var(--kin-teal)',       tone: 'positive', min: 76 },
 ]
 
 function getBand(score: number): Band {
@@ -54,7 +58,7 @@ export function KinIqMeter({ score, size = 'lg', showLabel = true, animated = tr
 
   return (
     <div className="flex flex-col items-center">
-      <div style={{ position: 'relative', width: dim, height: dim }}>
+      <div className="relative" style={{ width: dim, height: dim }}>
         <svg width={dim} height={dim} viewBox={`0 0 ${dim} ${dim}`}>
           {/* Background track */}
           <circle
@@ -62,7 +66,7 @@ export function KinIqMeter({ score, size = 'lg', showLabel = true, animated = tr
             cy={dim / 2}
             r={r}
             fill="none"
-            stroke="#E5E7EB"
+            stroke="var(--kin-hairline-strong)"
             strokeWidth={stroke}
             strokeDasharray={`${dashArray} ${circ - dashArray}`}
             strokeDashoffset={0}
@@ -75,7 +79,7 @@ export function KinIqMeter({ score, size = 'lg', showLabel = true, animated = tr
             cy={dim / 2}
             r={r}
             fill="none"
-            stroke={band.colour}
+            stroke={band.strokeColour}
             strokeWidth={stroke}
             strokeDasharray={`${dashArray} ${circ - dashArray}`}
             strokeDashoffset={dashOffset}
@@ -86,28 +90,15 @@ export function KinIqMeter({ score, size = 'lg', showLabel = true, animated = tr
         </svg>
 
         {/* Centre text */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span
-            style={{
-              fontSize: size === 'lg' ? 26 : 15,
-              fontWeight: 900,
-              color: band.colour,
-              lineHeight: 1,
-            }}
+            className={size === 'lg' ? 't-numeric-hero' : 't-numeric-inline nums'}
+            style={{ color: band.strokeColour, lineHeight: 1 }}
           >
             {score}
           </span>
           {size === 'lg' && (
-            <span style={{ fontSize: 9, color: '#9CA3AF', fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', marginTop: 2 }}>
+            <span className="t-micro text-muted" style={{ marginTop: 2 }}>
               KIN IQ
             </span>
           )}
@@ -115,12 +106,13 @@ export function KinIqMeter({ score, size = 'lg', showLabel = true, animated = tr
       </div>
 
       {showLabel && (
-        <span
-          className="text-xs font-bold px-3 py-1 rounded-full mt-1"
-          style={{ backgroundColor: band.bg, color: band.colour }}
-        >
-          {band.label}
-        </span>
+        band.tone ? (
+          <StateChip tone={band.tone}>{band.label}</StateChip>
+        ) : (
+          <span className="inline-flex h-8 items-center rounded-pill border border-hairline px-3 t-caption text-muted font-semibold mt-1">
+            {band.label}
+          </span>
+        )
       )}
     </div>
   )

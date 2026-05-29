@@ -26,11 +26,10 @@ export function ConsentToggle({
         disabled={required}
         onClick={() => !required && onChange(!checked)}
         className={[
-          'relative flex-shrink-0 w-11 h-6 rounded-full transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
-          checked ? 'bg-primary' : 'bg-gray-200',
+          'relative flex-shrink-0 w-11 h-6 rounded-pill transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+          checked ? 'bg-teal' : 'bg-sand-deep border border-hairline',
           required ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
         ].join(' ')}
-        style={{ backgroundColor: checked ? 'var(--color-primary)' : undefined }}
       >
         <span
           className={[
@@ -41,14 +40,14 @@ export function ConsentToggle({
       </button>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="text-sm font-medium text-gray-900">{label}</span>
+          <span className="t-body font-medium text-navy">{label}</span>
           {required && (
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+            <span className="t-micro text-muted bg-sand-deep px-1.5 py-0.5 rounded-sm">
               Required
             </span>
           )}
         </div>
-        <p id={`${id}-description`} className="text-xs text-gray-500 mt-0.5 leading-relaxed">{description}</p>
+        <p id={`${id}-description`} className="t-body-sm text-muted mt-0.5 leading-relaxed">{description}</p>
       </div>
     </div>
   )

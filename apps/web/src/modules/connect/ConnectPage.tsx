@@ -22,6 +22,8 @@ import { ProductBridgeCard } from './ProductBridgeCard'
 import { PRODUCT_BRIDGES, getBookings } from './connectStore'
 import { AdvisoryConnect } from './AdvisoryConnect'
 import { assembleKinReport } from './kinReport'
+import { Card, StateChip, NavHeader, PrivacyLine, ChoiceChip } from '@/components/ui'
+import { IconCalendar, IconPhone, IconSearch, IconLink } from '@/components/ui/icons'
 
 type Tab = 'advisor' | 'products'
 
@@ -42,28 +44,22 @@ export function ConnectPage() {
 
   return (
     <>
+      {/* ── Sticky nav header ── */}
+      <NavHeader title="Connect" showBack={false} />
+
       <div className="flex flex-col pb-10">
 
-        {/* ── Header ── */}
-        <div
-          className="px-5 pt-6 pb-4 sticky top-0 z-10 bg-white border-b border-gray-50"
-          style={{
-            background: 'linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 5%, white) 0%, white 100%)',
-          }}
-        >
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-            Module 10
-          </p>
-          <h1 className="text-xl font-extrabold text-gray-900">Connect</h1>
-          <p className="text-xs text-gray-500 mt-0.5">
+        {/* ── Page eyebrow + subtitle ── */}
+        <div className="px-5 pt-5 pb-2">
+          <p className="t-body-sm text-slate">
             Get expert guidance or explore protection products.
           </p>
         </div>
 
         {/* ── CG-2: Spurious calls warning — always visible ── */}
-        <div className="px-5 pt-4">
-          <div className="rounded-xl bg-amber-50 border border-amber-200 p-3">
-            <p className="text-[10px] text-amber-800 leading-relaxed">
+        <div className="px-5 pt-2">
+          <div className="rounded-md border border-hairline bg-[rgba(245,166,35,0.10)] p-3">
+            <p className="t-caption text-[#7A4F00] leading-relaxed">
               <span className="font-bold">Important Notice:</span> IRDAI or its officials do
               not involve themselves in activities like selling insurance policies, announcing
               bonuses or investment of premiums. Public receiving such calls are requested to
@@ -77,42 +73,33 @@ export function ConnectPage() {
         {/* ── Pending bookings strip ── */}
         {pendingBookings.length > 0 && (
           <div className="px-5 pt-3">
-            <div
-              className="rounded-xl border p-3 flex items-center gap-3"
-              style={{
-                borderColor: 'color-mix(in srgb, var(--color-primary) 30%, white)',
-                backgroundColor: 'color-mix(in srgb, var(--color-primary) 6%, white)',
-              }}
-            >
-              <span className="text-xl">📅</span>
+            <Card className="flex items-center gap-3 p-3">
+              <IconCalendar size={22} className="shrink-0 text-teal-deep" />
               <div>
-                <p className="text-xs font-bold text-gray-700">
+                <p className="t-body-sm font-bold text-navy">
                   {pendingBookings.length} Booking{pendingBookings.length > 1 ? 's' : ''} Pending
                 </p>
-                <p className="text-[11px] text-gray-500 mt-0.5">
+                <p className="t-caption text-muted mt-0.5">
                   {pendingBookings[0].preferredSlot} — {pendingBookings[0].name}
                 </p>
               </div>
-            </div>
+            </Card>
           </div>
         )}
 
         {/* ── Tab switcher ── */}
         <div className="px-5 pt-4">
-          <div className="flex rounded-2xl bg-gray-100 p-1 gap-1">
+          <div className="flex rounded-md bg-sand-deep p-1 gap-1">
             {(['advisor', 'products'] as Tab[]).map(tab => (
-              <button
+              <ChoiceChip
                 key={tab}
+                selected={activeTab === tab}
                 onClick={() => setActiveTab(tab)}
-                className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all"
-                style={{
-                  backgroundColor: activeTab === tab ? 'white' : 'transparent',
-                  color: activeTab === tab ? 'var(--color-primary)' : '#9CA3AF',
-                  boxShadow: activeTab === tab ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-                }}
+                className="flex-1 justify-center gap-1.5 rounded-sm py-2.5"
               >
-                {tab === 'advisor' ? '📞 Talk to Advisor' : '🛒 Explore Products'}
-              </button>
+                {tab === 'advisor' ? <IconPhone size={16} /> : <IconSearch size={16} />}
+                {tab === 'advisor' ? 'Talk to Advisor' : 'Explore Products'}
+              </ChoiceChip>
             ))}
           </div>
         </div>
@@ -125,28 +112,30 @@ export function ConnectPage() {
             {/* Past bookings — retained from MVP1 */}
             {bookings.length > 0 && (
               <div className="px-5 pt-4">
-                <p className="text-xs font-bold text-gray-500 mb-2">Your Bookings</p>
+                <p className="t-micro text-muted mb-2">Your Bookings</p>
                 <div className="space-y-2">
                   {bookings.slice(-3).reverse().map(b => (
-                    <div
+                    <Card
                       key={b.id}
-                      className="rounded-xl border border-gray-100 bg-gray-50 p-3 flex items-center gap-3"
+                      className="flex items-center gap-3 p-3"
                     >
-                      <span className="text-lg">📅</span>
+                      <IconCalendar size={20} className="shrink-0 text-muted" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-gray-700 truncate">{b.preferredSlot}</p>
-                        <p className="text-[10px] text-gray-400 truncate">{b.queryType.replace('_', ' ')}</p>
+                        <p className="t-body-sm font-semibold text-slate truncate">{b.preferredSlot}</p>
+                        <p className="t-caption text-muted truncate">{b.queryType.replace('_', ' ')}</p>
                       </div>
-                      <span
-                        className="text-[9px] font-bold px-2 py-1 rounded-full"
-                        style={{
-                          backgroundColor: b.status === 'done' ? '#D1FAE5' : b.status === 'confirmed' ? '#DBEAFE' : '#FEF3C7',
-                          color: b.status === 'done' ? '#065F46' : b.status === 'confirmed' ? '#1E40AF' : '#92400E',
-                        }}
+                      <StateChip
+                        tone={
+                          b.status === 'done'
+                            ? 'positive'
+                            : b.status === 'confirmed'
+                              ? 'moderate'
+                              : 'moderate'
+                        }
                       >
                         {b.status.toUpperCase()}
-                      </span>
-                    </div>
+                      </StateChip>
+                    </Card>
                   ))}
                 </div>
               </div>
@@ -154,13 +143,11 @@ export function ConnectPage() {
 
             {/* CG-2 footer */}
             <div className="px-5 pt-3">
-              <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
-                <p className="text-[10px] text-gray-400 leading-relaxed">
-                  Advisor calls are for guidance only and do not constitute a formal financial advice
-                  report. Insurance products mentioned are underwritten by licensed insurers. Please
-                  read policy documents carefully before purchase. Conditions apply.
-                </p>
-              </div>
+              <p className="rounded-sm border border-hairline bg-sand-deep/50 p-3 t-caption leading-relaxed text-muted">
+                Advisor calls are for guidance only and do not constitute a formal financial advice
+                report. Insurance products mentioned are underwritten by licensed insurers. Please
+                read policy documents carefully before purchase. Conditions apply.
+              </p>
             </div>
           </div>
         )}
@@ -169,13 +156,13 @@ export function ConnectPage() {
         {activeTab === 'products' && (
           <div className="px-5 pt-5 space-y-4">
             {/* Context note */}
-            <div className="rounded-xl bg-blue-50 border border-blue-100 p-3">
-              <p className="text-[11px] text-blue-700 leading-relaxed">
-                <span className="font-bold">Advisory only:</span> KIN links you to licensed insurers
+            <Card className="p-3">
+              <p className="t-caption text-slate leading-relaxed">
+                <span className="font-bold text-navy">Advisory only:</span> KIN links you to licensed insurers
                 and government portals. We are not an insurer or web aggregator. ULIP products are
                 not offered here. Compare plans directly on insurer websites.
               </p>
-            </div>
+            </Card>
 
             {/* Product cards — ULIP always excluded (CG-3) */}
             {PRODUCT_BRIDGES.filter(p => !p.isUlip).map((product, i) => (
@@ -183,27 +170,27 @@ export function ConnectPage() {
             ))}
 
             {/* CG-2 + CG-9 compliance footer */}
-            <div className="rounded-xl bg-gray-50 border border-gray-100 p-3 mt-2">
-              <p className="text-[10px] text-gray-400 leading-relaxed">
-                All insurance products displayed are offered by licensed insurers regulated by IRDAI.
-                KIN does not sell insurance, receive commissions, or compare premiums. Estimated
-                costs are indicative only. For more details on risk factors, terms and conditions,
-                please read the sales brochure carefully before concluding a sale. Conditions apply.
-                IRDAI does not endorse any specific insurer or product.
-              </p>
-            </div>
+            <p className="rounded-sm border border-hairline bg-sand-deep/50 p-3 t-caption leading-relaxed text-muted mt-2">
+              All insurance products displayed are offered by licensed insurers regulated by IRDAI.
+              KIN does not sell insurance, receive commissions, or compare premiums. Estimated
+              costs are indicative only. For more details on risk factors, terms and conditions,
+              please read the sales brochure carefully before concluding a sale. Conditions apply.
+              IRDAI does not endorse any specific insurer or product.
+            </p>
 
             {/* Phase 2 teaser */}
-            <div className="rounded-2xl border border-dashed border-gray-200 p-4 flex items-center gap-3">
-              <span className="text-2xl">🤝</span>
+            <Card className="flex items-center gap-3 border-dashed">
+              <IconLink size={24} className="shrink-0 text-teal-deep" />
               <div>
-                <p className="text-xs font-bold text-gray-600">Partner insurer integration — coming soon</p>
-                <p className="text-[11px] text-gray-400 leading-snug mt-0.5">
-                  Direct eKYC pre-fill with consented KIN profile data. One-step purchase for
+                <p className="t-body-sm font-bold text-navy">Partner insurer integration — coming soon</p>
+                <p className="t-caption text-muted leading-snug mt-0.5">
+                  Direct eKYC pre-fill with consented KIN profile data. One-step activation for
                   PMSBY, PMJJBY, and term plans.
                 </p>
               </div>
-            </div>
+            </Card>
+
+            <PrivacyLine className="pt-1">Your information is used only to guide your choices</PrivacyLine>
           </div>
         )}
 

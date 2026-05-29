@@ -3,7 +3,7 @@
  *
  * Displays a stored VaultDocument with:
  *   - Type icon + insurer name
- *   - Sum assured + renewal date
+ *   - Cover amount + renewal date
  *   - Linked nominee badge
  *   - Expiry warning if renewing within 60 days
  *   - Delete action (with confirmation)
@@ -16,6 +16,8 @@ import {
   DOCUMENT_TYPE_EMOJI,
   deleteDocument,
 } from './vaultStore'
+import { Button, Card, StateChip } from '@/components/ui'
+import { IconAlert, IconClock, IconUser } from '@/components/ui/icons'
 
 function formatAmount(n: number): string {
   if (n <= 0) return '—'
@@ -55,35 +57,31 @@ export function DocumentCard({ doc, nominee, onDeleted }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <Card className="overflow-hidden p-0">
       {/* Expiry warning stripe */}
       {(expiringSoon || expired) && (
-        <div
-          className="px-4 py-1.5 text-xs font-semibold"
-          style={{
-            backgroundColor: expired ? '#FEF2F2' : '#FFF7ED',
-            color: expired ? '#DC2626' : '#C2410C',
-          }}
-        >
-          {expired
-            ? '⚠️ Policy may have expired — please verify'
-            : `⏰ Renewal in ${days} day${days === 1 ? '' : 's'} — renew before it lapses`}
+        <div className={`px-4 py-1.5 t-micro ${expired ? 'bg-coral/10 text-coral' : 'bg-amber/10 text-amber'}`}>
+          {expired ? (
+            <><IconAlert size={14} className="inline-block mr-1 shrink-0 text-coral" /> Policy may have expired — please verify</>
+          ) : (
+            <><IconClock size={14} className="inline-block mr-1 shrink-0 text-amber" /> Renewal in {days} day{days === 1 ? '' : 's'} — renew before it lapses</>
+          )}
         </div>
       )}
 
       <div className="px-4 pt-4 pb-3">
         {/* Header */}
         <div className="flex items-start gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-xl shrink-0">
+          <div className="w-10 h-10 rounded-sm bg-sand-deep border border-hairline flex items-center justify-center text-xl shrink-0">
             {DOCUMENT_TYPE_EMOJI[doc.type]}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">
+            <p className="t-micro text-muted">
               {DOCUMENT_TYPE_LABELS[doc.type]}
             </p>
-            <p className="text-sm font-bold text-gray-900 truncate">{doc.insurer || '—'}</p>
+            <p className="t-body font-bold text-navy truncate">{doc.insurer || '—'}</p>
             {doc.policyNumber && (
-              <p className="text-[11px] text-gray-400 font-mono mt-0.5">
+              <p className="t-caption text-muted font-mono mt-0.5">
                 {doc.policyNumber}
               </p>
             )}
@@ -92,16 +90,13 @@ export function DocumentCard({ doc, nominee, onDeleted }: Props) {
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="rounded-xl bg-gray-50 px-3 py-2">
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Sum Assured</p>
-            <p className="text-sm font-extrabold text-gray-800">{formatAmount(doc.sumAssured)}</p>
+          <div className="rounded-sm bg-sand-deep px-3 py-2">
+            <p className="t-micro text-muted">Cover</p>
+            <p className="t-body-sm font-extrabold text-navy nums">{formatAmount(doc.sumAssured)}</p>
           </div>
-          <div className="rounded-xl bg-gray-50 px-3 py-2">
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Renewal</p>
-            <p
-              className="text-sm font-extrabold"
-              style={{ color: expired ? '#DC2626' : expiringSoon ? '#C2410C' : '#1F2937' }}
-            >
+          <div className="rounded-sm bg-sand-deep px-3 py-2">
+            <p className="t-micro text-muted">Renewal</p>
+            <p className={`t-body-sm font-extrabold nums ${expired ? 'text-coral' : expiringSoon ? 'text-amber' : 'text-navy'}`}>
               {formatDate(doc.renewalDate)}
             </p>
           </div>
@@ -109,51 +104,54 @@ export function DocumentCard({ doc, nominee, onDeleted }: Props) {
 
         {/* Nominee badge */}
         {nominee ? (
-          <div className="flex items-center gap-2 rounded-xl bg-green-50 border border-green-100 px-3 py-2 mb-3">
-            <span className="text-sm">👤</span>
+          <div className="flex items-center gap-2 rounded-sm bg-mint border border-hairline px-3 py-2 mb-3">
+            <IconUser size={16} className="text-teal-deep shrink-0" />
             <div className="min-w-0">
-              <p className="text-[10px] text-green-600 font-bold uppercase tracking-wide">Nominee</p>
-              <p className="text-xs font-semibold text-green-800 truncate">{nominee.name}</p>
+              <p className="t-micro text-teal-deep">Nominee</p>
+              <p className="t-caption font-semibold text-navy truncate">{nominee.name}</p>
             </div>
+            <span className="ml-auto shrink-0"><StateChip tone="positive">Linked</StateChip></span>
           </div>
         ) : (
-          <div className="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-100 px-3 py-2 mb-3">
-            <span className="text-sm">⚠️</span>
-            <p className="text-xs text-amber-700">No nominee linked — add one in Nominees</p>
+          <div className="flex items-center gap-2 rounded-sm bg-amber/10 border border-hairline px-3 py-2 mb-3">
+            <IconAlert size={16} className="text-amber shrink-0" />
+            <p className="t-caption text-amber">No nominee linked — add one in Nominees</p>
           </div>
         )}
 
         {/* Notes */}
         {doc.notes && (
-          <p className="text-[11px] text-gray-400 mb-3 italic leading-relaxed">{doc.notes}</p>
+          <p className="t-caption text-muted mb-3 italic leading-relaxed">{doc.notes}</p>
         )}
 
         {/* Delete */}
         {!confirming ? (
           <button
             onClick={() => setConfirming(true)}
-            className="text-[11px] text-red-400 hover:text-red-600 transition-colors"
+            className="t-caption text-muted hover:text-coral transition-colors min-h-[44px] flex items-center"
           >
             Remove from vault
           </button>
         ) : (
-          <div className="flex items-center gap-3">
-            <p className="text-xs text-red-600 font-semibold">Remove this document?</p>
-            <button
+          <div className="flex items-center gap-3 flex-wrap">
+            <p className="t-caption text-coral font-semibold">Remove this document?</p>
+            <Button
+              variant="danger"
+              size="md"
               onClick={handleDelete}
-              className="text-xs bg-red-500 text-white px-3 py-1 rounded-lg font-semibold"
             >
               Yes, remove
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="md"
               onClick={() => setConfirming(false)}
-              className="text-xs text-gray-400"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         )}
       </div>
-    </div>
+    </Card>
   )
 }

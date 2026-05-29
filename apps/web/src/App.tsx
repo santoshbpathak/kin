@@ -3,6 +3,7 @@ import { Routes, Route, NavLink, useLocation } from 'react-router-dom'
 import { BrandProvider } from '@/theme/BrandProvider'
 import { AuthProvider } from '@/modules/auth/AuthContext'
 import { AppFooter } from '@/components/AppFooter'
+import { IconScore, IconBrief, IconHome, IconVault, IconStreak } from '@/components/ui/icons'
 import { HomePage } from '@/modules/home/HomePage'
 import { DiagnosticPage } from '@/modules/diagnostic/DiagnosticPage'
 import { ScorePage } from '@/modules/score/ScorePage'
@@ -21,11 +22,11 @@ import { RecommendationsPage } from '@/modules/trust/RecommendationsPage'
 const NO_NAV_ROUTES = ['/diagnose', '/privacy', '/quiz', '/settings']
 
 const NAV_ITEMS = [
-  { to: '/score',  emoji: '🎯', label: 'Score'  },
-  { to: '/brief',  emoji: '📰', label: 'Brief'  },
-  { to: '/',       emoji: '🏠', label: 'Home',  exact: true },
-  { to: '/vault',  emoji: '📁', label: 'Vault'  },
-  { to: '/engage', emoji: '🔥', label: 'Streak' },
+  { to: '/score',  Icon: IconScore,  label: 'Score'  },
+  { to: '/brief',  Icon: IconBrief,  label: 'Brief'  },
+  { to: '/',       Icon: IconHome,   label: 'Home',  exact: true },
+  { to: '/vault',  Icon: IconVault,  label: 'Vault'  },
+  { to: '/engage', Icon: IconStreak, label: 'Streak' },
 ]
 
 function ScrollToTop() {
@@ -42,35 +43,30 @@ function BottomNav() {
   if (hide) return null
 
   return (
-    <nav className="sticky bottom-0 z-50 bg-white border-t border-gray-100 safe-bottom">
+    <nav className="safe-bottom sticky bottom-0 z-50 border-t border-hairline bg-surface">
       <div className="flex">
         {NAV_ITEMS.map(item => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.exact}
-            className={({ isActive }) =>
-              `flex-1 flex flex-col items-center py-2 gap-0.5 transition-colors ${
-                isActive ? '' : 'text-gray-400'
-              }`
-            }
-            style={({ isActive }) => ({ color: isActive ? 'var(--color-primary)' : undefined })}
+            className="flex flex-1 flex-col items-center gap-1 py-2.5"
           >
             {({ isActive }) => (
               <>
-                <span className="text-lg leading-none">{item.emoji}</span>
+                <item.Icon
+                  size={24}
+                  active={isActive}
+                  className={isActive ? 'text-teal' : 'text-muted'}
+                />
                 <span
-                  className="text-[9px] font-bold uppercase tracking-wide"
-                  style={{ color: isActive ? 'var(--color-primary)' : '#9CA3AF' }}
+                  className={`text-[10px] uppercase tracking-[0.08em] ${
+                    isActive ? 'font-bold text-teal' : 'font-semibold text-muted'
+                  }`}
                 >
                   {item.label}
                 </span>
-                {isActive && (
-                  <div
-                    className="h-0.5 w-5 rounded-full"
-                    style={{ backgroundColor: 'var(--color-primary)' }}
-                  />
-                )}
+                {isActive && <div className="h-0.5 w-5 rounded-pill bg-teal" />}
               </>
             )}
           </NavLink>

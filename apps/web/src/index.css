@@ -4,11 +4,35 @@
 
 @layer base {
   :root {
-    /* KIN brand defaults — overridden at runtime by BrandProvider */
-    --color-primary: #1B4332;
-    --color-accent: #52B788;
-    --color-surface: #F8F9FA;
-    --font-family: 'Inter', system-ui, sans-serif;
+    /* ── KIN locked palette (Brand Guidelines v1.0 · §04) ────────────── */
+    --kin-sand: #f7f2ea; /* primary app background — warmth */
+    --kin-sand-deep: #ede5d6; /* subtle surface contrast on sand */
+    --kin-surface: #ffffff; /* raised surface: cards, sheets */
+    --kin-navy: #102a43; /* primary ink: titles, brand body, headers */
+    --kin-slate: #263238; /* body text */
+    --kin-muted: #6b7280; /* helper, captions, eyebrows */
+    --kin-teal: #18a999; /* primary action: CTA, accent, focus */
+    --kin-teal-deep: #0f8676; /* pressed / hover action */
+    --kin-mint: #ddf7ef; /* positive state surface */
+    --kin-amber: #f5a623; /* moderate gap (45–74) */
+    --kin-coral: #e85d5a; /* CRITICAL gap (<45) — serious risk only */
+    --kin-hairline: rgba(38, 50, 56, 0.08);
+    --kin-hairline-strong: rgba(38, 50, 56, 0.16);
+    --kin-scrim: rgba(16, 42, 67, 0.55);
+
+    /* Elevation (Brand Guidelines · Appendix) */
+    --kin-shadow-card: 0 1px 0 rgba(16, 42, 67, 0.04),
+      0 12px 28px -20px rgba(16, 42, 67, 0.22);
+    --kin-shadow-modal: 0 24px 60px -28px rgba(16, 42, 67, 0.45);
+    --kin-shadow-tile: 0 12px 28px -16px rgba(16, 42, 67, 0.35);
+
+    /* ── Legacy alias tokens (kept so older screens stay on-brand until
+       each is fully redesigned). BrandProvider overrides these at runtime
+       for white-label partners. ─────────────────────────────────────── */
+    --color-primary: var(--kin-navy); /* brand ink */
+    --color-accent: var(--kin-teal); /* action */
+    --color-surface: var(--kin-sand); /* app background */
+    --font-family: 'Manrope', system-ui, sans-serif;
     --logo-url: '';
   }
 
@@ -18,8 +42,16 @@
   }
 
   body {
-    @apply bg-surface text-gray-900 font-sans antialiased;
+    @apply bg-sand text-slate font-sans antialiased;
     min-width: 360px;
+  }
+
+  /* Titles take Navy ink + balanced wrapping per §05 */
+  h1,
+  h2,
+  h3 {
+    color: var(--kin-navy);
+    text-wrap: balance;
   }
 
   /* Safe area insets for notched phones */
@@ -28,9 +60,103 @@
   }
 }
 
+@layer components {
+  /* ── Type roles (Brand Guidelines §05). One Manrope family, fixed scale.
+     Use these instead of ad-hoc text sizes. ─────────────────────────── */
+  .t-display {
+    font-size: 40px;
+    line-height: 44px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  .t-h1 {
+    font-size: 32px;
+    line-height: 38px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+  .t-h2 {
+    font-size: 24px;
+    line-height: 30px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .t-h3 {
+    font-size: 20px;
+    line-height: 26px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .t-body-lg {
+    font-size: 17px;
+    line-height: 26px;
+    font-weight: 400;
+  }
+  .t-body {
+    font-size: 15px;
+    line-height: 22px;
+    font-weight: 400;
+  }
+  .t-body-sm {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 400;
+  }
+  .t-caption {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+  }
+  /* Eyebrows / all-caps labels — 0.14em tracking, uppercase baked in */
+  .t-micro {
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .t-numeric-hero {
+    font-size: 64px;
+    line-height: 64px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .t-numeric-inline {
+    font-size: 28px;
+    line-height: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 @layer utilities {
-  /* Minimum touch target size (WCAG 2.5.5) */
+  /* Minimum touch target size (WCAG 2.5.5 / Brand §13) */
   .touch-target {
     @apply min-w-[44px] min-h-[44px] flex items-center justify-center;
+  }
+
+  /* Tabular figures for Score, currency, and math rows (§05) */
+  .nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Visible focus ring everywhere — 2px Teal at 4px offset (§13) */
+*:focus-visible {
+  outline: 2px solid var(--kin-teal);
+  outline-offset: 4px;
+}
+
+/* Honour reduced motion — drop transforms, keep crossfades (§09/§13) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

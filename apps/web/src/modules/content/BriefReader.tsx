@@ -18,6 +18,8 @@
 import { useEffect } from 'react'
 import type { BriefArticle } from './briefData'
 import { markAsRead } from './briefData'
+import { Button, Card } from '@/components/ui'
+import { IconBulb, IconUpload } from '@/components/ui/icons'
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-IN', {
@@ -68,18 +70,18 @@ export function BriefReader({ article, onClose, onRead }: Props) {
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black/50 z-40 animate-fade-in"
+        className="fixed inset-0 bg-black/50 z-[60] animate-fade-in"
         onClick={onClose}
       />
 
       {/* Drawer */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl max-h-[92vh] flex flex-col"
+        className="fixed bottom-0 left-0 right-0 z-[61] bg-surface rounded-t-lg max-h-[92vh] flex flex-col"
         style={{ animation: 'slideUp 0.28s cubic-bezier(0.32,0.72,0,1)' }}
       >
         {/* Drag handle */}
         <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div className="w-10 h-1 rounded-full bg-gray-200" />
+          <div className="w-10 h-1 rounded-full bg-sand-deep" />
         </div>
 
         {/* Category colour strip */}
@@ -98,40 +100,40 @@ export function BriefReader({ article, onClose, onRead }: Props) {
             >
               {article.categoryEmoji} {article.categoryLabel}
             </span>
-            <span className="text-[10px] text-gray-400">{formatDate(article.date)}</span>
-            <span className="text-[10px] text-gray-400">· {article.readTime} min read</span>
+            <span className="t-micro text-muted">{formatDate(article.date)}</span>
+            <span className="t-micro text-muted">· {article.readTime} min read</span>
           </div>
 
           {/* Title */}
-          <h2 className="text-lg font-extrabold text-gray-900 leading-tight mb-4">
+          <h2 className="t-h3 text-navy leading-tight mb-4">
             {article.title}
           </h2>
 
           {/* Full content paragraphs */}
           <div className="space-y-4 mb-5">
             {article.fullContent.map((para, i) => (
-              <p key={i} className="text-sm text-gray-700 leading-relaxed">
+              <p key={i} className="t-body text-slate leading-relaxed">
                 {para}
               </p>
             ))}
           </div>
 
           {/* KIN Impact */}
-          <div className="rounded-2xl bg-amber-50 border-2 border-amber-200 p-4 mb-5">
-            <p className="text-[10px] font-extrabold text-amber-700 uppercase tracking-wide mb-1.5">
-              💡 What this means for you
+          <Card className="mb-5 border-l-4 border-l-amber bg-sand-deep">
+            <p className="t-micro text-amber mb-1.5 flex items-center gap-1.5">
+              <IconBulb size={14} className="text-amber shrink-0" /> What this means for you
             </p>
-            <p className="text-sm font-semibold text-amber-900 leading-relaxed">
+            <p className="t-body-sm font-semibold text-navy leading-relaxed">
               {article.kinImpact}
             </p>
-          </div>
+          </Card>
 
           {/* Tags */}
           <div className="flex flex-wrap gap-1.5 mb-5">
             {article.tags.map(tag => (
               <span
                 key={tag}
-                className="text-[10px] px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 font-medium"
+                className="t-micro px-2.5 py-1 rounded-pill bg-sand-deep text-muted"
               >
                 #{tag}
               </span>
@@ -141,34 +143,30 @@ export function BriefReader({ article, onClose, onRead }: Props) {
           {/* Source + Share row */}
           <div className="flex items-center justify-between mb-5">
             <div>
-              <p className="text-[10px] text-gray-400 font-medium">Source</p>
+              <p className="t-micro text-muted">Source</p>
               {article.sourceUrl ? (
                 <a
                   href={article.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs font-semibold underline"
-                  style={{ color: 'var(--color-primary)' }}
+                  className="t-body-sm font-semibold underline text-teal-deep"
                 >
                   {article.source} ↗
                 </a>
               ) : (
-                <p className="text-xs font-semibold text-gray-600">{article.source}</p>
+                <p className="t-body-sm font-semibold text-slate">{article.source}</p>
               )}
             </div>
             {typeof navigator !== 'undefined' && 'share' in navigator && (
-              <button
-                onClick={handleShare}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-50 border border-gray-100 text-xs font-semibold text-gray-600"
-              >
-                📤 Share
-              </button>
+              <Button variant="ghost" size="md" onClick={handleShare}>
+                <IconUpload size={16} className="text-teal-deep shrink-0" /> Share
+              </Button>
             )}
           </div>
 
           {/* CG-2: Compliance footer */}
-          <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
-            <p className="text-[10px] text-gray-400 leading-relaxed">
+          <div className="rounded-sm bg-sand-deep border border-hairline p-3">
+            <p className="t-micro text-muted leading-relaxed normal-case tracking-normal">
               This article is for educational purposes only and does not constitute financial,
               legal, or investment advice. Insurance products mentioned are underwritten by
               licensed insurers. Please consult a licensed insurance advisor or financial planner
@@ -178,14 +176,10 @@ export function BriefReader({ article, onClose, onRead }: Props) {
         </div>
 
         {/* Close button */}
-        <div className="px-5 py-3 border-t border-gray-100 shrink-0 safe-bottom">
-          <button
-            onClick={onClose}
-            className="w-full py-3 rounded-2xl text-sm font-bold text-white"
-            style={{ backgroundColor: 'var(--color-primary)' }}
-          >
+        <div className="px-5 py-3 border-t border-hairline shrink-0 safe-bottom">
+          <Button fullWidth onClick={onClose}>
             Done
-          </button>
+          </Button>
         </div>
       </div>
 

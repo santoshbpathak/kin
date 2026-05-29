@@ -21,6 +21,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiRequest } from '@/lib/apiClient'
+import { ChatBubble as KinBubble, ChoiceChip, Button } from '@/components/ui'
+import { KinLogo } from '@/components/ui/KinLogo'
+import { IconSparkle } from '@/components/ui/icons'
 
 type Role = 'user' | 'assistant'
 
@@ -225,41 +228,56 @@ export function DiagnosticChat() {
   const progressFraction = useMemo(() => Math.min(100, Math.max(0, progress)) / 100, [progress])
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-60px)]">
-      {/* Top progress bar */}
-      <div className="px-6 pt-4 pb-2 shrink-0">
-        <div className="h-1 w-full rounded-full bg-gray-100 overflow-hidden">
+    <div className="flex min-h-[calc(100vh-60px)] flex-col bg-sand">
+      {/* Top strip: Back · progress · Skip (archetype B) */}
+      <div className="sticky top-0 z-40 shrink-0 bg-sand/85 px-5 pb-2 pt-3 backdrop-blur-md backdrop-saturate-150">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate(-1)}
+            aria-label="Back"
+            className="touch-target -ml-2 rounded-pill text-navy"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <span className="t-micro text-muted">{Math.round(progressFraction * 100)}% complete</span>
+          <button
+            onClick={onSkip}
+            disabled={isAwaitingAgent || isBooting}
+            className="t-micro touch-target -mr-2 rounded-pill text-muted disabled:opacity-40"
+          >
+            Skip
+          </button>
+        </div>
+        <div className="mt-2 h-1 w-full overflow-hidden rounded-pill bg-sand-deep">
           <div
-            className="h-full transition-all duration-500"
-            style={{
-              width: `${progressFraction * 100}%`,
-              backgroundColor: 'var(--color-primary)',
-            }}
+            className="h-full rounded-pill bg-teal transition-all duration-slow ease-out"
+            style={{ width: `${progressFraction * 100}%` }}
             aria-label={`Diagnostic progress ${Math.round(progressFraction * 100)} percent`}
           />
         </div>
       </div>
 
       {/* Chat transcript */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 pb-3 space-y-3">
+      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 pb-3 pt-2">
         {isBooting && <TypingBubble />}
-        {messages.map(msg => (
-          <Bubble key={msg.id} role={msg.role}>{msg.text}</Bubble>
-        ))}
+        {messages.map(msg =>
+          msg.role === 'user' ? (
+            <KinBubble key={msg.id} from="user">{msg.text}</KinBubble>
+          ) : (
+            <AssistantRow key={msg.id}>{msg.text}</AssistantRow>
+          ),
+        )}
         {isAwaitingAgent && <TypingBubble />}
 
-        {/* Quick-select chips */}
+        {/* Quick-select choice chips, docked under the question */}
         {!isAwaitingAgent && chips.length > 0 && !isCompleting && (
-          <div className="flex flex-wrap gap-2 pt-1 pl-9">
+          <div className="flex flex-wrap gap-2 pl-9 pt-1">
             {chips.map(chip => (
-              <button
-                key={chip}
-                onClick={() => onChipTap(chip)}
-                className="text-sm px-3 py-2 rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
-                style={{ color: 'var(--color-primary)' }}
-              >
+              <ChoiceChip key={chip} onClick={() => onChipTap(chip)}>
                 {chip}
-              </button>
+              </ChoiceChip>
             ))}
           </div>
         )}
@@ -269,12 +287,9 @@ export function DiagnosticChat() {
 
         {/* Error state */}
         {errorState && !isCompleting && (
-          <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700 space-y-2">
+          <div className="space-y-2 rounded-md border border-coral/30 bg-[rgba(232,93,90,0.08)] p-4 text-[13px] text-[#9F2D2A]">
             <p>I had trouble processing that. Can you try again?</p>
-            <button
-              onClick={onRetry}
-              className="text-sm font-semibold underline"
-            >
+            <button onClick={onRetry} className="font-semibold underline">
               Retry
             </button>
           </div>
@@ -283,7 +298,7 @@ export function DiagnosticChat() {
 
       {/* Composer */}
       {!isCompleting && (
-        <div className="border-t border-gray-100 bg-white px-4 pt-3 pb-4 shrink-0">
+        <div className="shrink-0 border-t border-hairline bg-surface px-4 pb-4 pt-3 safe-bottom">
           <div className="flex items-end gap-2">
             <textarea
               value={draft}
@@ -294,31 +309,19 @@ export function DiagnosticChat() {
                   onSend()
                 }
               }}
-              placeholder="Type your answer..."
+              placeholder="Type your answer…"
               rows={1}
               disabled={isAwaitingAgent || isBooting}
-              className="flex-1 resize-none rounded-2xl border border-gray-200 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50"
-              style={{
-                // Tailwind ring-color can't be set via style; we accept default
-                // focus ring colour.
-              }}
+              className="flex-1 resize-none rounded-md border-[1.5px] border-hairline-strong bg-surface px-4 py-3.5 text-[15px] text-slate placeholder:text-muted focus:border-teal focus:outline-none disabled:opacity-50"
             />
-            <button
+            <Button
+              size="md"
               onClick={onSend}
               disabled={!draft.trim() || isAwaitingAgent || isBooting}
-              className="rounded-2xl px-4 py-3 text-white text-sm font-semibold disabled:opacity-40"
-              style={{ backgroundColor: 'var(--color-primary)' }}
             >
               Send
-            </button>
+            </Button>
           </div>
-          <button
-            onClick={onSkip}
-            disabled={isAwaitingAgent || isBooting}
-            className="mt-2 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-40"
-          >
-            Skip this question →
-          </button>
         </div>
       )}
     </div>
@@ -329,51 +332,38 @@ export function DiagnosticChat() {
 // Subcomponents
 // ─────────────────────────────────────────────────────────────────────
 
-function Bubble({ role, children }: { role: Role; children: React.ReactNode }) {
-  if (role === 'user') {
-    return (
-      <div className="flex justify-end">
-        <div
-          className="max-w-[85%] rounded-2xl rounded-br-md px-4 py-3 text-sm text-white"
-          style={{ backgroundColor: 'var(--color-primary)' }}
-        >
-          {children}
-        </div>
-      </div>
-    )
-  }
+/** KIN assistant avatar — Locked mark as a quiet watermark on navy (§03). */
+function Avatar() {
   return (
-    <div className="flex items-start gap-2">
-      <Avatar />
-      <div className="max-w-[85%] rounded-2xl rounded-bl-md px-4 py-3 text-sm bg-gray-50 text-gray-800 border border-gray-100">
-        {children}
-      </div>
+    <div
+      className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-pill bg-navy"
+      aria-label="KIN assistant"
+    >
+      <KinLogo wordmark={false} size={16} tone="sand" />
     </div>
   )
 }
 
-function Avatar() {
+/** Assistant row = avatar + system bubble (left). */
+function AssistantRow({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5"
-      style={{ backgroundColor: 'var(--color-primary)' }}
-      aria-label="KIN assistant"
-    >
-      K
+    <div className="flex items-start gap-2">
+      <Avatar />
+      <KinBubble from="system">{children}</KinBubble>
     </div>
   )
 }
 
 function TypingBubble() {
   return (
-    <div className="flex items-start gap-2">
+    <div className="flex animate-fade-in items-start gap-2">
       <Avatar />
-      <div className="rounded-2xl rounded-bl-md px-4 py-3 bg-gray-50 border border-gray-100">
-        <div className="flex gap-1 items-center h-4">
+      <div className="rounded-[18px_18px_18px_4px] border border-hairline bg-surface px-[18px] py-3.5">
+        <div className="flex h-4 items-center gap-1">
           {[0, 1, 2].map(i => (
             <span
               key={i}
-              className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce"
+              className="h-1.5 w-1.5 animate-bounce rounded-pill bg-muted"
               style={{ animationDelay: `${i * 120}ms` }}
             />
           ))}
@@ -385,12 +375,10 @@ function TypingBubble() {
 
 function CompletionPanel() {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 text-center space-y-2">
-      <div className="text-2xl">✨</div>
-      <p className="text-sm font-semibold text-gray-800">
-        Calculating your Protection Score...
-      </p>
-      <p className="text-xs text-gray-500">Hold on — almost there.</p>
+    <div className="space-y-2 rounded-md border border-hairline bg-surface p-5 text-center shadow-card animate-fade-in">
+      <IconSparkle size={32} className="mx-auto text-teal-deep" />
+      <p className="t-h3 text-navy">Calculating your Protection Score…</p>
+      <p className="t-body-sm text-muted">Hold on — almost there.</p>
     </div>
   )
 }

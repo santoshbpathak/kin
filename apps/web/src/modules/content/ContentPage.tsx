@@ -25,6 +25,8 @@ import {
   type BriefArticle,
   type BriefCategory,
 } from './briefData'
+import { Button, Card, ChoiceChip } from '@/components/ui'
+import { IconBookmark, IconBell } from '@/components/ui/icons'
 
 function WeekLabel(): JSX.Element {
   const now = new Date()
@@ -35,7 +37,7 @@ function WeekLabel(): JSX.Element {
 
   const fmt = (d: Date) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
   return (
-    <span className="text-xs text-gray-400">
+    <span className="t-caption text-muted">
       {fmt(weekStart)} – {fmt(weekEnd)}
     </span>
   )
@@ -78,33 +80,23 @@ export function ContentPage() {
     <>
       <div className="flex flex-col pb-10">
         {/* ── Header ── */}
-        <div
-          className="px-5 pt-6 pb-4 sticky top-0 z-10 bg-white border-b border-gray-50"
-          style={{
-            background: 'linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 5%, white) 0%, white 100%)',
-          }}
-        >
+        <div className="px-5 pt-6 pb-4 sticky top-0 z-10 bg-surface border-b border-hairline">
           <div className="flex items-start justify-between mb-1">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                KIN News Brief
-              </p>
-              <h1 className="text-xl font-extrabold text-gray-900">Financial Wellness</h1>
+              <p className="t-micro text-muted">KIN News Brief</p>
+              <h1 className="t-h2 text-navy">Financial Wellness</h1>
             </div>
             {/* Unread badge */}
             {unreadCount > 0 && (
-              <div
-                className="rounded-full px-2.5 py-1 text-xs font-bold text-white mt-1"
-                style={{ backgroundColor: 'var(--color-primary)' }}
-              >
+              <span className="rounded-pill px-3 py-1 t-caption font-bold bg-teal text-navy mt-1">
                 {unreadCount} unread
-              </div>
+              </span>
             )}
           </div>
           <div className="flex items-center gap-2 mt-1">
             <WeekLabel />
             {newCount > 0 && (
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+              <span className="t-micro px-2 py-0.5 rounded-pill bg-mint text-teal-deep">
                 {newCount} new this week
               </span>
             )}
@@ -114,51 +106,46 @@ export function ContentPage() {
         {/* ── Category chips ── */}
         <div className="flex gap-2 px-5 py-3 overflow-x-auto scrollbar-hide">
           {CATEGORIES.map(cat => (
-            <button
+            <ChoiceChip
               key={cat.id}
+              selected={activeCategory === cat.id}
               onClick={() => setActiveCategory(cat.id as BriefCategory | 'all')}
-              className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all"
-              style={{
-                borderColor: activeCategory === cat.id ? 'var(--color-primary)' : '#E5E7EB',
-                backgroundColor: activeCategory === cat.id
-                  ? 'color-mix(in srgb, var(--color-primary) 10%, white)'
-                  : '#F9FAFB',
-                color: activeCategory === cat.id ? 'var(--color-primary)' : '#6B7280',
-              }}
+              className="shrink-0"
             >
               {cat.emoji} {cat.label}
-            </button>
+            </ChoiceChip>
           ))}
         </div>
 
         {/* ── Bookmark toggle ── */}
         <div className="px-5 pb-2 flex items-center justify-between">
-          <p className="text-[11px] text-gray-400">
+          <p className="t-caption text-muted">
             {articles.length} article{articles.length !== 1 ? 's' : ''}
           </p>
-          <button
+          <Button
+            variant="ghost"
+            size="md"
             onClick={() => setShowBookmarksOnly(b => !b)}
-            className="flex items-center gap-1.5 text-xs font-semibold transition-colors"
-            style={{ color: showBookmarksOnly ? 'var(--color-primary)' : '#9CA3AF' }}
+            className={showBookmarksOnly ? 'text-teal-deep' : 'text-muted'}
           >
-            🔖 {showBookmarksOnly ? 'All articles' : `Saved (${bookmarkIds.size})`}
-          </button>
+            <IconBookmark size={16} className="text-current shrink-0" /> {showBookmarksOnly ? 'All articles' : `Saved (${bookmarkIds.size})`}
+          </Button>
         </div>
 
         {/* ── Article feed ── */}
         <div className="px-5 space-y-3">
           {articles.length === 0 ? (
             <div className="text-center py-16 space-y-3">
-              <div className="text-5xl">🔖</div>
-              <p className="text-sm font-semibold text-gray-500">No bookmarked articles yet</p>
-              <p className="text-xs text-gray-400">Tap the 🔲 icon on any article to save it.</p>
-              <button
+              <IconBookmark size={48} className="text-muted mx-auto" />
+              <p className="t-body font-semibold text-slate">No bookmarked articles yet</p>
+              <p className="t-body-sm text-muted">Tap the <span className="inline-block w-3 h-3 rounded-sm bg-muted align-middle" /> icon on any article to save it.</p>
+              <Button
+                variant="ghost"
+                size="md"
                 onClick={() => setShowBookmarksOnly(false)}
-                className="text-sm font-semibold underline"
-                style={{ color: 'var(--color-primary)' }}
               >
                 Show all articles
-              </button>
+              </Button>
             </div>
           ) : (
             articles.map((article, i) => (
@@ -177,22 +164,22 @@ export function ContentPage() {
 
         {/* ── CG-2 footer ── */}
         <div className="px-5 mt-5">
-          <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
-            <p className="text-[10px] text-gray-400 leading-relaxed text-center">
+          <Card className="p-3">
+            <p className="t-caption text-muted leading-relaxed text-center">
               KIN News Brief is for educational purposes only. Articles do not constitute
               financial advice. Insurance products are underwritten by licensed insurers.
               IRDAI does not endorse any specific insurer. Conditions apply.
             </p>
-          </div>
+          </Card>
         </div>
 
         {/* ── Phase 2 teaser ── */}
         <div className="px-5 mt-4">
-          <div className="rounded-2xl border border-dashed border-gray-200 p-4 flex items-center gap-3">
-            <span className="text-2xl">🔔</span>
+          <div className="rounded-md border border-dashed border-hairline-strong p-4 flex items-center gap-3">
+            <IconBell size={24} className="text-navy shrink-0" />
             <div>
-              <p className="text-xs font-bold text-gray-600">WhatsApp briefs — coming soon</p>
-              <p className="text-[11px] text-gray-400 leading-snug mt-0.5">
+              <p className="t-body-sm font-bold text-navy">WhatsApp briefs - coming soon</p>
+              <p className="t-caption text-muted leading-snug mt-0.5">
                 Get the top 3 financial wellness stories delivered to WhatsApp every Monday morning.
               </p>
             </div>

@@ -18,6 +18,8 @@ import {
   LIFE_EVENT_EMOJI,
   type LifeEventType,
 } from './lifecycleStore'
+import { Button, Card } from '@/components/ui'
+import { IconRefresh, IconCheckCircle } from '@/components/ui/icons'
 
 const LIFE_EVENT_TYPES = Object.keys(LIFE_EVENT_LABELS) as LifeEventType[]
 
@@ -42,31 +44,26 @@ export function RescoreBanner() {
   }
 
   return (
-    <div
-      className="mx-5 rounded-2xl p-4 flex items-start gap-3 animate-fade-in"
-      style={{
-        background: 'linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 10%, white) 0%, color-mix(in srgb, var(--color-primary) 4%, white) 100%)',
-        border: '1.5px solid color-mix(in srgb, var(--color-primary) 25%, white)',
-      }}
-    >
-      <span className="text-2xl shrink-0">🔄</span>
+    <div className="mx-5 rounded-md border border-hairline bg-surface shadow-card p-4 flex items-start gap-3 animate-fade-in">
+      <IconRefresh size={24} className="text-teal-deep shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold text-gray-800 mb-0.5">Time to re-check your score</p>
-        <p className="text-[11px] text-gray-600 leading-relaxed">{message}</p>
-        <div className="flex gap-2 mt-2.5">
-          <button
+        <p className="t-body-sm font-bold text-navy mb-0.5">Time to re-check your score</p>
+        <p className="t-caption text-muted leading-relaxed">{message}</p>
+        <div className="flex gap-2 mt-3">
+          <Button
+            size="md"
+            variant="primary"
             onClick={() => navigate('/diagnose')}
-            className="text-xs font-bold py-1.5 px-3 rounded-xl text-white"
-            style={{ backgroundColor: 'var(--color-primary)' }}
           >
-            Re-check now →
-          </button>
-          <button
+            Re-check now
+          </Button>
+          <Button
+            size="md"
+            variant="ghost"
             onClick={handleDismiss}
-            className="text-xs font-semibold py-1.5 px-3 rounded-xl text-gray-500 bg-white border border-gray-200"
           >
             Later
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -93,44 +90,43 @@ export function LifeEventLogger({ onRecorded }: LoggerProps) {
 
   if (done) {
     return (
-      <div className="rounded-2xl bg-green-50 border border-green-200 p-5 text-center">
-        <div className="text-3xl mb-2">✅</div>
-        <p className="text-sm font-extrabold text-green-700 mb-1">Life event recorded!</p>
-        <p className="text-xs text-green-600 leading-relaxed mb-4">
+      <Card className="text-center py-6">
+        <div className="mb-2 flex justify-center"><IconCheckCircle size={32} className="text-teal-deep" /></div>
+        <p className="t-body font-extrabold text-navy mb-1">Life event recorded</p>
+        <p className="t-body-sm text-muted leading-relaxed mb-5">
           Your protection score may have changed. We recommend re-checking your gap map now.
         </p>
-        <button
+        <Button
+          size="lg"
+          fullWidth
           onClick={() => navigate('/diagnose')}
-          className="w-full py-3 rounded-xl text-sm font-bold text-white"
-          style={{ backgroundColor: 'var(--color-primary)' }}
         >
-          Re-check My Score →
-        </button>
-      </div>
+          Re-check my score
+        </Button>
+      </Card>
     )
   }
 
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-bold text-gray-600 mb-3">What changed?</p>
+        <p className="t-micro text-muted mb-3">What changed?</p>
         <div className="grid grid-cols-2 gap-2.5">
           {LIFE_EVENT_TYPES.map(type => (
             <button
               key={type}
               onClick={() => setSelected(type)}
-              className="flex items-start gap-2 p-3 rounded-xl border-2 text-left transition-all"
-              style={{
-                borderColor: selected === type ? 'var(--color-primary)' : '#E5E7EB',
-                backgroundColor: selected === type
-                  ? 'color-mix(in srgb, var(--color-primary) 8%, white)'
-                  : '#FAFAFA',
-              }}
+              className={`flex items-start gap-2 p-3 rounded-md border-[1.5px] text-left transition-colors ${
+                selected === type
+                  ? 'border-teal bg-mint'
+                  : 'border-hairline bg-surface'
+              }`}
             >
               <span className="text-lg shrink-0">{LIFE_EVENT_EMOJI[type]}</span>
               <span
-                className="text-[11px] font-semibold leading-snug"
-                style={{ color: selected === type ? 'var(--color-primary)' : '#4B5563' }}
+                className={`t-body-sm font-semibold leading-snug ${
+                  selected === type ? 'text-teal-deep' : 'text-slate'
+                }`}
               >
                 {LIFE_EVENT_LABELS[type]}
               </span>
@@ -141,33 +137,31 @@ export function LifeEventLogger({ onRecorded }: LoggerProps) {
 
       {selected && (
         <div className="animate-fade-in">
-          <label className="text-xs font-bold text-gray-600 block mb-1.5">
-            Any details? <span className="text-gray-400 font-normal">(optional)</span>
+          <label className="t-caption font-bold text-slate block mb-1.5">
+            Any details? <span className="text-muted font-normal">(optional)</span>
           </label>
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
             rows={2}
             placeholder="e.g. Salary increased by ₹8L, took home loan of ₹60L"
-            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-xs text-gray-700 placeholder-gray-400 outline-none resize-none"
-            style={{ borderColor: notes ? 'var(--color-primary)' : '#E5E7EB' }}
+            className={`w-full px-3 py-2.5 rounded-md border t-body-sm text-slate placeholder:text-muted outline-none resize-none bg-surface ${
+              notes ? 'border-teal' : 'border-hairline'
+            }`}
           />
         </div>
       )}
 
-      <button
+      <Button
+        size="lg"
+        fullWidth
         onClick={handleSubmit}
         disabled={!selected}
-        className="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-opacity"
-        style={{
-          backgroundColor: 'var(--color-primary)',
-          opacity: selected ? 1 : 0.4,
-        }}
       >
-        Record Life Change →
-      </button>
+        Record life change
+      </Button>
 
-      <p className="text-[10px] text-gray-400 text-center leading-relaxed">
+      <p className="t-micro text-muted text-center leading-relaxed">
         Recording a life event triggers a re-score recommendation. Your existing score
         is preserved — the new one replaces it only when you complete the check-in.
       </p>

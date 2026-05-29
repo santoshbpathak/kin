@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { Recommendation } from './recommendationEngine'
+import { Button } from '@/components/ui'
+import { IconSearch, IconDoc, IconClose } from '@/components/ui/icons'
 
 interface SeeTheMathDrawerProps {
   recommendation: Recommendation | null
@@ -36,7 +38,7 @@ export function SeeTheMathDrawer({ recommendation, onClose }: SeeTheMathDrawerPr
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-end justify-center"
+      className="fixed inset-0 z-[60] flex items-end justify-center"
       style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
       onClick={handleOverlayClick}
       role="dialog"
@@ -44,12 +46,12 @@ export function SeeTheMathDrawer({ recommendation, onClose }: SeeTheMathDrawerPr
       aria-label="See the Math"
     >
       <div
-        className="w-full max-w-lg bg-white rounded-t-3xl overflow-hidden animate-fade-in"
+        className="w-full max-w-lg bg-surface rounded-t-lg overflow-hidden"
         style={{ maxHeight: '90vh', overflowY: 'auto' }}
       >
         {/* Drag handle */}
         <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 bg-gray-200 rounded-full" />
+          <div className="w-10 h-1 bg-hairline rounded-pill" />
         </div>
 
         <div className="px-5 pb-8 pt-2">
@@ -57,76 +59,64 @@ export function SeeTheMathDrawer({ recommendation, onClose }: SeeTheMathDrawerPr
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">🔍</span>
-                <h2 className="text-base font-bold text-gray-900">See the Math</h2>
+                <IconSearch size={20} className="text-navy shrink-0" />
+                <h2 className="t-h3 text-navy">See the Math</h2>
               </div>
-              <p className="text-xs text-gray-500">{recommendation.headline}</p>
+              <p className="t-body-sm text-muted">{recommendation.headline}</p>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 text-xl ml-3 touch-target flex items-center justify-center -mr-1"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center text-muted hover:text-slate transition-colors -mr-1 ml-3"
               aria-label="Close"
             >
-              ✕
+              <IconClose size={18} className="text-muted" />
             </button>
           </div>
 
-          {/* Basis text — plain English */}
-          <div className="bg-gray-50 rounded-2xl p-4 mb-4">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              Why this recommendation
-            </p>
-            <p className="text-sm text-gray-700 leading-relaxed">
+          {/* Basis text - plain English */}
+          <div className="rounded-md border border-hairline bg-sand-deep p-4 mb-4">
+            <p className="t-micro text-muted mb-2">Why this recommendation</p>
+            <p className="t-body-sm text-slate leading-relaxed">
               {recommendation.basisText}
             </p>
           </div>
 
-          {/* Formula — monospace, exact numbers */}
-          <div className="bg-gray-900 rounded-2xl p-4 mb-4">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
-              Exact calculation
-            </p>
-            <pre className="text-xs text-green-400 leading-relaxed whitespace-pre-wrap font-mono">
+          {/* Formula - monospace, exact numbers */}
+          <div className="rounded-md bg-navy p-4 mb-4">
+            <p className="t-micro text-muted mb-2">Exact calculation</p>
+            <pre className="text-xs text-teal leading-relaxed whitespace-pre-wrap font-mono">
               {recommendation.formula}
             </pre>
           </div>
 
-          {/* IRDAI reference — CG-2 */}
-          <div className="rounded-2xl border border-blue-100 bg-blue-50 p-3 mb-4">
-            <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide mb-1">
-              📋 IRDAI Guideline Reference
-            </p>
-            <p className="text-xs text-blue-700 leading-relaxed">
+          {/* IRDAI reference - CG-2 */}
+          <div className="rounded-md border border-hairline bg-mint p-3 mb-4">
+            <p className="t-micro text-teal-deep mb-1 flex items-center gap-1"><IconDoc size={14} className="text-teal-deep shrink-0" /> IRDAI Guideline Reference</p>
+            <p className="t-body-sm text-teal-deep leading-relaxed">
               {recommendation.irdaiRuleReference}
             </p>
           </div>
 
-          {/* Product-specific disclaimer — CG-4 */}
-          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-3 mb-4">
-            <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">
-              Important disclaimer
-            </p>
-            <p className="text-[11px] text-gray-500 leading-relaxed">
+          {/* Product-specific disclaimer - CG-4 */}
+          <div className="rounded-md border border-hairline bg-sand-deep p-3 mb-4">
+            <p className="t-micro text-muted mb-1">Important disclaimer</p>
+            <p className="text-[11px] text-muted leading-relaxed">
               {recommendation.productDisclaimer}
             </p>
             {recommendation.conditionsApply && (
-              <p className="text-[11px] text-gray-400 mt-1 font-semibold">Conditions Apply.</p>
+              <p className="text-[11px] text-muted mt-1 font-semibold">Conditions Apply.</p>
             )}
           </div>
 
-          {/* General compliance disclaimer — CG-2 */}
-          <p className="text-[11px] text-gray-400 leading-relaxed">
+          {/* General compliance disclaimer - CG-2 */}
+          <p className="text-[11px] text-muted leading-relaxed">
             For more details on risk factors, terms and conditions, please read the sales brochure
             carefully before concluding a sale. This information is indicative only.
           </p>
 
-          <button
-            onClick={onClose}
-            className="mt-5 w-full py-3.5 rounded-2xl text-white font-semibold text-sm"
-            style={{ backgroundColor: 'var(--color-primary)' }}
-          >
+          <Button fullWidth onClick={onClose} className="mt-5">
             Got it
-          </button>
+          </Button>
         </div>
       </div>
     </div>

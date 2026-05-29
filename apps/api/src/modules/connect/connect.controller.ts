@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import {
-  IsBoolean, IsIn, IsOptional, IsString, IsUUID, Length, ValidateNested,
+  IsArray, IsBoolean, IsIn, IsNumber, IsOptional, IsString, IsUUID, Length, ValidateNested,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 
@@ -46,10 +46,10 @@ class KinReportRecommendationDto {
 }
 
 class KinReportDto implements KinReportSnapshot {
-  compositeScore!: number
-  lifeSubScore!: number
-  healthSubScore!: number
-  incomeSubScore!: number
+  @IsNumber() compositeScore!: number
+  @IsNumber() lifeSubScore!: number
+  @IsNumber() healthSubScore!: number
+  @IsNumber() incomeSubScore!: number
   @IsString() lifeGapSummary!: string
   @IsString() healthGapSummary!: string
   @IsString() incomeGapSummary!: string
@@ -57,9 +57,9 @@ class KinReportDto implements KinReportSnapshot {
   @ValidateNested({ each: true })
   @Type(() => KinReportRecommendationDto)
   recommendations!: KinReportRecommendationDto[]
-  hiddenCoverages!: string[]
-  estimatedFields!: string[]
-  unknownFields!: string[]
+  @IsArray() @IsString({ each: true }) hiddenCoverages!: string[]
+  @IsArray() @IsString({ each: true }) estimatedFields!: string[]
+  @IsArray() @IsString({ each: true }) unknownFields!: string[]
 }
 
 class StartAiSessionDto {

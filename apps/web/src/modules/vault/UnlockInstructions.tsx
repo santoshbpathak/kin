@@ -15,6 +15,8 @@
 import { useState } from 'react'
 import type { VaultDocument, VaultNominee } from './vaultStore'
 import { DOCUMENT_TYPE_LABELS } from './vaultStore'
+import { Button, Card, Input, PrivacyLine } from '@/components/ui'
+import { IconLock, IconAlert, IconCheck, IconCheckCircle, IconChat } from '@/components/ui/icons'
 
 type Props = {
   documents: VaultDocument[]
@@ -134,63 +136,50 @@ export function UnlockInstructions({ documents, nominees, holderName }: Props) {
   return (
     <div className="px-5 pt-5 pb-10 space-y-5">
       {/* Hero */}
-      <div className="rounded-2xl border-2 p-5 text-center"
-        style={{ borderColor: 'var(--color-primary)', backgroundColor: 'color-mix(in srgb, var(--color-primary) 5%, white)' }}
-      >
-        <div className="text-4xl mb-3">🔐</div>
-        <h2 className="text-base font-extrabold text-gray-900 mb-2">
-          Emergency Access Letter
-        </h2>
-        <p className="text-xs text-gray-500 leading-relaxed">
-          A plain-English guide for your family — exactly what to do, who to call,
+      <div>
+        <p className="t-micro text-muted mb-1">Emergency Access</p>
+        <h1 className="t-h2 text-navy leading-tight flex items-center gap-2"><IconLock size={24} className="text-navy shrink-0" /> Emergency Access Letter</h1>
+        <p className="t-body-sm text-muted mt-1">
+          A plain-English guide for your family - exactly what to do, who to call,
           and which policies to claim if something happens to you.
         </p>
       </div>
 
       {/* No data warning */}
       {!hasData && (
-        <div className="rounded-xl bg-amber-50 border border-amber-100 p-4">
-          <p className="text-xs text-amber-700 leading-relaxed">
-            ⚠️ Add at least one policy and one nominee before generating your letter —
+        <Card className="border-amber/40 bg-sand-deep">
+          <p className="t-body-sm text-amber leading-relaxed flex items-start gap-2">
+            <IconAlert size={16} className="text-amber shrink-0 mt-0.5" />
+            Add at least one policy and one nominee before generating your letter -
             otherwise it will be mostly empty.
           </p>
-        </div>
+        </Card>
       )}
 
       {/* Personalise */}
       <div className="space-y-3">
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Personalise</p>
-        <div>
-          <label className="text-xs text-gray-400 block mb-1.5">Your full name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="e.g. Santosh Pathak"
-            className="w-full px-4 py-3 rounded-xl border-2 text-sm outline-none"
-            style={{ borderColor: name ? 'var(--color-primary)' : '#E5E7EB' }}
-            autoCapitalize="words"
-          />
-        </div>
-        <div>
-          <label className="text-xs text-gray-400 block mb-1.5">Your contact number</label>
-          <input
-            type="tel"
-            inputMode="numeric"
-            value={phone}
-            onChange={e => setPhone(e.target.value)}
-            placeholder="+91 98765 43210"
-            className="w-full px-4 py-3 rounded-xl border-2 text-sm outline-none"
-            style={{ borderColor: phone ? 'var(--color-primary)' : '#E5E7EB' }}
-          />
-        </div>
+        <p className="t-micro text-muted">Personalise</p>
+        <Input
+          label="Your full name"
+          type="text"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="e.g. Santosh Pathak"
+          autoCapitalize="words"
+        />
+        <Input
+          label="Your contact number"
+          type="tel"
+          inputMode="numeric"
+          value={phone}
+          onChange={e => setPhone(e.target.value)}
+          placeholder="+91 98765 43210"
+        />
       </div>
 
       {/* What's included */}
-      <div className="rounded-xl bg-gray-50 border border-gray-100 p-4 space-y-2">
-        <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-2">
-          What the letter includes
-        </p>
+      <Card className="space-y-2">
+        <p className="t-micro text-muted mb-2">What the letter includes</p>
         {[
           `${documents.length} insurance polic${documents.length === 1 ? 'y' : 'ies'} with claim instructions`,
           `${nominees.length} nominee contact${nominees.length === 1 ? '' : 's'}`,
@@ -198,47 +187,40 @@ export function UnlockInstructions({ documents, nominees, holderName }: Props) {
           'EPFO EDLI claim process (Form 5IF)',
           'IRDAI Bima Bharosa helpline number',
         ].map((item, i) => (
-          <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
-            <span className="text-green-500 font-bold shrink-0">✓</span>
-            {item}
+          <div key={i} className="flex items-center gap-2">
+            <IconCheck size={16} className="text-teal-deep shrink-0" />
+            <span className="t-body-sm text-slate">{item}</span>
           </div>
         ))}
-      </div>
+      </Card>
 
       {/* Download */}
-      <button
-        onClick={handleDownload}
-        className="w-full py-4 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2"
-        style={{ backgroundColor: 'var(--color-primary)' }}
-      >
+      <Button fullWidth onClick={handleDownload}>
         ↓ Download Emergency Letter
-      </button>
+      </Button>
 
       {downloaded && (
-        <div className="rounded-xl bg-green-50 border border-green-100 p-3 text-center animate-fade-in">
-          <p className="text-sm font-bold text-green-700">✅ Downloaded!</p>
-          <p className="text-[11px] text-green-600 mt-0.5">
+        <Card className="border-teal/30 bg-mint text-center">
+          <p className="t-body font-bold text-teal-deep flex items-center justify-center gap-1.5"><IconCheckCircle size={18} className="text-teal-deep shrink-0" /> Downloaded!</p>
+          <p className="t-body-sm text-teal-deep mt-0.5">
             Share this file with a trusted family member or store it in Google Drive / iCloud.
           </p>
-        </div>
+        </Card>
       )}
 
       {/* WhatsApp teaser */}
-      <div className="rounded-xl border border-dashed border-green-200 bg-green-50 p-4 flex items-start gap-3">
-        <span className="text-2xl shrink-0">💬</span>
+      <div className="rounded-md border border-dashed border-teal/30 bg-mint p-4 flex items-start gap-3">
+        <IconChat size={24} className="text-teal-deep shrink-0" />
         <div>
-          <p className="text-xs font-bold text-green-800">Coming soon: WhatsApp delivery</p>
-          <p className="text-[11px] text-green-600 mt-0.5 leading-relaxed">
-            KIN will send this letter directly to your nominee's WhatsApp — encrypted,
+          <p className="t-body font-bold text-teal-deep">Coming soon: WhatsApp delivery</p>
+          <p className="t-body-sm text-teal-deep mt-0.5 leading-relaxed">
+            KIN will send this letter directly to your nominee's WhatsApp - encrypted,
             and only triggered on your explicit request.
           </p>
         </div>
       </div>
 
-      <p className="text-[10px] text-gray-400 leading-relaxed text-center">
-        This letter is a personal convenience document. It is not a policy document
-        or legal instrument. Benefits are subject to individual policy terms. Conditions apply.
-      </p>
+      <PrivacyLine />
     </div>
   )
 }

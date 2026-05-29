@@ -10,15 +10,25 @@
 
 import { useEffect, useState } from 'react'
 import type { StreakRecord } from './streakStore'
+import { IconBulb, IconCheck, IconStreak, IconSparkle, IconTrophy } from '@/components/ui/icons'
 
-function getMessage(streak: number): { text: string; emoji: string } {
-  if (streak === 0) return { text: 'Open KIN every day to build your streak', emoji: '💡' }
-  if (streak === 1) return { text: "Day 1 — great start! Come back tomorrow", emoji: '🌱' }
-  if (streak < 3) return { text: `${streak} days and building — keep it going!`, emoji: '🔥' }
-  if (streak < 7) return { text: `${streak}-day streak — you're developing a habit!`, emoji: '🔥' }
-  if (streak < 14) return { text: `${streak} days! Weekly Warrior unlocked 🏆`, emoji: '🔥' }
-  if (streak < 30) return { text: `${streak} days — extraordinary consistency!`, emoji: '⚡' }
-  return { text: `${streak} days — you're a KIN champion!`, emoji: '🏆' }
+type MsgIcon = 'bulb' | 'streak' | 'sparkle' | 'trophy'
+
+function getMessage(streak: number): { text: string; icon: MsgIcon } {
+  if (streak === 0) return { text: 'Open KIN every day to build your streak', icon: 'bulb' }
+  if (streak === 1) return { text: "Day 1 — great start! Come back tomorrow", icon: 'bulb' }
+  if (streak < 3) return { text: `${streak} days and building — keep it going!`, icon: 'streak' }
+  if (streak < 7) return { text: `${streak}-day streak — you're developing a habit!`, icon: 'streak' }
+  if (streak < 14) return { text: `${streak} days! Weekly Warrior unlocked`, icon: 'trophy' }
+  if (streak < 30) return { text: `${streak} days — extraordinary consistency!`, icon: 'sparkle' }
+  return { text: `${streak} days — you're a KIN champion!`, icon: 'trophy' }
+}
+
+function MsgIcon({ icon }: { icon: MsgIcon }) {
+  if (icon === 'bulb') return <IconBulb size={16} className="text-white/80 inline shrink-0" />
+  if (icon === 'streak') return <IconStreak size={16} className="text-amber inline shrink-0" />
+  if (icon === 'sparkle') return <IconSparkle size={16} className="text-teal-deep inline shrink-0" />
+  return <IconTrophy size={16} className="text-amber inline shrink-0" />
 }
 
 // Last 7 days as ISO strings, newest first
@@ -35,15 +45,14 @@ function DayDot({ date, visited }: { date: string; visited: boolean }) {
   return (
     <div className="flex flex-col items-center gap-1">
       <div
-        className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all"
-        style={{
-          backgroundColor: visited ? 'var(--color-primary)' : '#F3F4F6',
-          color: visited ? '#fff' : '#D1D5DB',
-        }}
+        className={[
+          'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all',
+          visited ? 'bg-teal text-navy' : 'bg-white/10 text-white/20',
+        ].join(' ')}
       >
-        {visited ? '✓' : ''}
+        {visited ? <IconCheck size={14} className="text-navy" /> : null}
       </div>
-      <span className="text-[9px] text-gray-400 font-medium">{dayName}</span>
+      <span className="t-micro text-white/50">{dayName}</span>
     </div>
   )
 }
@@ -55,6 +64,7 @@ type Props = {
 export function StreakCard({ streak }: Props) {
   const [displayCount, setDisplayCount] = useState(0)
   const msg = getMessage(streak.currentStreak)
+  const heroIconSize = streak.currentStreak >= 7 ? 48 : streak.currentStreak >= 3 ? 40 : 32
   const days = last7Days()
   const visitSet = new Set(streak.visitDates)
 
@@ -75,59 +85,48 @@ export function StreakCard({ streak }: Props) {
     requestAnimationFrame(tick)
   }, [streak.currentStreak])
 
-  const flameSize = streak.currentStreak >= 7 ? 'text-5xl' : streak.currentStreak >= 3 ? 'text-4xl' : 'text-3xl'
 
   return (
-    <div
-      className="rounded-2xl p-5 overflow-hidden relative"
-      style={{
-        background: streak.currentStreak >= 3
-          ? 'linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%)'
-          : 'linear-gradient(135deg, #374151 0%, #4B5563 100%)',
-      }}
-    >
-      {/* Background glow for high streaks */}
+    <div className="rounded-lg bg-navy p-5 overflow-hidden relative shadow-card">
+      {/* Ambient glow for high streaks - teal accent on dark navy */}
       {streak.currentStreak >= 7 && (
-        <div
-          className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-20 -translate-y-8 translate-x-8"
-          style={{ background: 'radial-gradient(circle, #F97316, transparent)' }}
-        />
+        <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10 -translate-y-8 translate-x-8 bg-teal" />
       )}
 
       {/* Main content */}
       <div className="relative flex items-start gap-4 mb-4">
         {/* Flame + count */}
         <div className="flex flex-col items-center min-w-[60px]">
-          <span className={`${flameSize} leading-none`}>🔥</span>
-          <span className="text-3xl font-extrabold text-white leading-tight mt-1">
+          <IconStreak size={heroIconSize} className="text-amber" />
+          <span className="t-numeric-hero text-white leading-tight mt-1 nums">
             {displayCount}
           </span>
-          <span className="text-[10px] text-white/60 font-medium">
+          <span className="t-micro text-white/60">
             {streak.currentStreak === 1 ? 'day' : 'days'}
           </span>
         </div>
 
         {/* Message + sub-stats */}
         <div className="flex-1">
-          <p className="text-sm font-bold text-white leading-snug mb-2">
-            {msg.emoji} {msg.text}
+          <p className="t-body-sm font-bold text-white leading-snug mb-2 flex items-center gap-1.5">
+            <MsgIcon icon={msg.icon} /> {msg.text}
           </p>
           <div className="flex gap-4">
             <div>
-              <p className="text-[10px] text-white/50 uppercase tracking-wide font-medium">Best</p>
-              <p className="text-sm font-bold text-white/80">{streak.longestStreak}d</p>
+              <p className="t-micro text-white/50">Best</p>
+              <p className="t-body-sm font-bold text-white/80 nums">{streak.longestStreak}d</p>
             </div>
             <div>
-              <p className="text-[10px] text-white/50 uppercase tracking-wide font-medium">Total</p>
-              <p className="text-sm font-bold text-white/80">{streak.totalDaysActive}d</p>
+              <p className="t-micro text-white/50">Total</p>
+              <p className="t-body-sm font-bold text-white/80 nums">{streak.totalDaysActive}d</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* 7-day calendar */}
-      <div className="bg-white/10 rounded-xl px-3 py-2.5">
-        <p className="text-[9px] text-white/50 uppercase tracking-widest font-bold mb-2">
+      <div className="bg-white/10 rounded-md px-3 py-2.5">
+        <p className="t-micro text-white/50 mb-2">
           Last 7 days
         </p>
         <div className="flex justify-between">

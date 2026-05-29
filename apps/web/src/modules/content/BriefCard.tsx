@@ -5,7 +5,7 @@
  *   - Category pill + emoji
  *   - Title (2 lines max)
  *   - Summary (3 lines max)
- *   - KIN Impact strip (yellow)
+ *   - KIN Impact strip
  *   - Read time + date + bookmark toggle
  *   - "Read" indicator when article has been opened
  *
@@ -15,6 +15,8 @@
 import { useState } from 'react'
 import type { BriefArticle } from './briefData'
 import { toggleBookmark } from './briefData'
+import { Button, Card } from '@/components/ui'
+import { IconBulb, IconClock, IconCheck, IconBookmark } from '@/components/ui/icons'
 
 function timeAgo(dateISO: string): string {
   const d = new Date(dateISO)
@@ -49,10 +51,12 @@ export function BriefCard({
   }
 
   return (
-    <article
+    <Card
       onClick={() => onOpen(article)}
-      className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:bg-gray-50 transition-colors animate-fade-in"
+      className="overflow-hidden cursor-pointer active:bg-sand-deep transition-colors animate-fade-in p-0"
       style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'both' }}
+      // Card renders a div; article semantics preserved via role below
+      role="article"
     >
       {/* Category stripe */}
       <div
@@ -64,60 +68,62 @@ export function BriefCard({
         {/* Category + badges row */}
         <div className="flex items-center gap-2 mb-2.5 flex-wrap">
           <span
-            className="text-[10px] font-bold px-2.5 py-1 rounded-full text-white"
+            className="t-micro px-2.5 py-1 rounded-pill text-white"
             style={{ backgroundColor: article.categoryColour }}
           >
             {article.categoryEmoji} {article.categoryLabel}
           </span>
           {article.isNew && (
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+            <span className="t-micro px-2 py-0.5 rounded-pill bg-mint text-teal-deep">
               NEW
             </span>
           )}
           {isRead && (
-            <span className="text-[9px] font-medium text-gray-300">✓ Read</span>
+            <span className="t-micro text-muted flex items-center gap-1"><IconCheck size={12} className="text-muted" /> Read</span>
           )}
         </div>
 
         {/* Title */}
         <h3
-          className="text-sm font-extrabold text-gray-900 leading-snug mb-1.5 line-clamp-2"
+          className="t-body font-extrabold text-navy leading-snug mb-1.5 line-clamp-2"
           style={{ opacity: isRead ? 0.65 : 1 }}
         >
           {article.title}
         </h3>
 
         {/* Summary */}
-        <p className="text-xs text-gray-500 leading-relaxed line-clamp-3 mb-3">
+        <p className="t-body-sm text-muted leading-relaxed line-clamp-3 mb-3">
           {article.summary}
         </p>
 
         {/* KIN Impact strip */}
-        <div className="rounded-xl bg-amber-50 border border-amber-100 px-3 py-2 mb-3">
-          <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-0.5">
-            💡 What this means for you
+        <div className="rounded-sm border border-hairline bg-sand-deep px-3 py-2 mb-3">
+          <p className="t-micro text-amber mb-0.5 flex items-center gap-1">
+            <IconBulb size={14} className="text-amber shrink-0" /> What this means for you
           </p>
-          <p className="text-[11px] text-amber-800 leading-snug">{article.kinImpact}</p>
+          <p className="t-body-sm text-slate leading-snug">{article.kinImpact}</p>
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[10px] text-gray-400">
-            <span>⏱ {article.readTime} min read</span>
+          <div className="flex items-center gap-2 t-caption text-muted">
+            <span className="flex items-center gap-1"><IconClock size={13} className="text-muted shrink-0" /> {article.readTime} min read</span>
             <span>·</span>
             <span>{timeAgo(article.date)}</span>
             <span>·</span>
             <span className="truncate max-w-[80px]">{article.source}</span>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="md"
             onClick={handleBookmark}
-            className="text-lg leading-none transition-transform active:scale-125"
+            className="text-lg leading-none px-2 h-auto min-h-[44px]"
             aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark article'}
           >
-            {bookmarked ? '🔖' : '🔲'}
-          </button>
+            <IconBookmark size={20} className={bookmarked ? 'text-teal-deep' : 'text-muted'} />
+          </Button>
         </div>
       </div>
-    </article>
+    </Card>
   )
 }

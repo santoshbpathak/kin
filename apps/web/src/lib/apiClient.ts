@@ -44,6 +44,49 @@ export function setJwt(token: string | null): void {
   }
 }
 
+// ── Anonymous session bootstrap ──────────────────────────────────────────
+// The whole product is "anonymous until you choose to save". Every backend
+// route is behind a JWT guard, but an anonymous identity token is enough for
+// the anonymous journey (diagnostic, AI advisor, etc.). A token is normally
+// minted by the diagnostic consent screen, but screens reachable directly from
+// the bottom nav (e.g. /connect) need one too. So we lazily mint an anonymous
+// session the first time an authed request finds no token. This does NOT set
+// the AuthContext consent session, so the diagnostic consent screen still shows.
+let sessionPromise: Promise<void> | null = null
+
+function isAuthPath(path: string): boolean {
+  return path.startsWith('/auth') || path.startsWith('auth')
+}
+
+async function ensureAnonymousSession(): Promise<void> {
+  if (getJwt()) return
+  if (!sessionPromise) {
+    sessionPromise = (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/auth/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          // Pure anonymous identity — no data-use consent is granted here; that
+          // remains the job of the diagnostic consent screen.
+          body: JSON.stringify({
+            consent: { diagnosticData: false, locationData: false, contactData: false },
+          }),
+        })
+        if (res.ok) {
+          const data = (await res.json()) as { token?: string }
+          if (data.token) setJwt(data.token)
+        }
+      } catch {
+        // API unavailable — proceed tokenless; the caller's error handling runs.
+      } finally {
+        // Allow a retry on a later request if this attempt produced no token.
+        if (!getJwt()) sessionPromise = null
+      }
+    })()
+  }
+  return sessionPromise
+}
+
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT'
   body?: unknown
@@ -59,6 +102,12 @@ export async function apiRequest<T = unknown>(
   const headers: Record<string, string> = {
     Accept: 'application/json',
     ...opts.headers,
+  }
+  // For default-token requests with no token yet, lazily mint an anonymous
+  // session so direct-entry screens work. Callers that pass an explicit token
+  // (e.g. vault-scope) or hit /auth routes are left untouched.
+  if (opts.token === undefined && !getJwt() && !isAuthPath(path)) {
+    await ensureAnonymousSession()
   }
   const token = opts.token === undefined ? getJwt() : opts.token
   if (token) headers['Authorization'] = `Bearer ${token}`

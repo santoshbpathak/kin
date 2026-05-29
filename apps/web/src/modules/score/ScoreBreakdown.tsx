@@ -9,55 +9,58 @@ interface AccordionItemProps {
 function AccordionItem({ sub, weight }: AccordionItemProps) {
   const [open, setOpen] = useState(false)
 
+  // Score colour follows value (Brand §04): ≥75 Teal · 45–74 Amber · <45 Coral
   const colour =
-    sub.score <= 30 ? '#EF4444'
-    : sub.score <= 55 ? '#F97316'
-    : sub.score <= 75 ? '#EAB308'
-    : sub.score <= 90 ? '#22C55E'
-    : '#14B8A6'
+    sub.score >= 75 ? 'var(--kin-teal)' : sub.score >= 45 ? 'var(--kin-amber)' : 'var(--kin-coral)'
 
   return (
-    <div className="border border-gray-100 rounded-2xl overflow-hidden">
+    <div className="overflow-hidden rounded-md border border-hairline bg-surface shadow-card">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center gap-3 px-4 py-3.5 text-left bg-white hover:bg-gray-50 transition-colors"
+        className="flex min-h-touch w-full items-center gap-3 px-4 py-3.5 text-left"
         aria-expanded={open}
       >
         {/* Score pill */}
         <div
-          className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm text-[15px] font-bold text-white"
           style={{ backgroundColor: colour }}
         >
-          {sub.score}
+          <span className="nums">{sub.score}</span>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-900">{sub.label}</p>
-          <p className="text-xs text-gray-400">{weight} of composite score</p>
+        <div className="min-w-0 flex-1">
+          <p className="t-body font-semibold text-navy">{sub.label}</p>
+          <p className="t-body-sm text-muted">{weight} of composite score</p>
         </div>
 
-        <span className={['text-gray-400 text-sm transition-transform', open ? 'rotate-180' : ''].join(' ')}>
-          ↓
+        <span className={['text-muted transition-transform duration-base', open ? 'rotate-180' : ''].join(' ')}>
+          ▾
         </span>
       </button>
 
       {open && (
-        <div className="px-4 pb-4 pt-1 bg-gray-50 border-t border-gray-100">
-          <p className="text-xs text-gray-600 leading-relaxed">{sub.description}</p>
+        <div className="border-t border-hairline bg-sand px-4 pb-4 pt-3">
+          <p className="t-body-sm text-slate">{sub.description}</p>
 
-          {/* "See the Math" section — CG-2 compliance: always present */}
-          <div className="mt-3 rounded-xl border border-dashed border-gray-200 p-3 bg-white">
-            <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
-              🔍 See the Math
-            </p>
-            <div className="text-xs text-gray-600 space-y-0.5 font-mono">
-              <p>Current cover: ₹{sub.currentCover.toLocaleString('en-IN')}</p>
-              <p>Recommended: ₹{sub.recommendedCover.toLocaleString('en-IN')}</p>
-              <p>Score = ({sub.currentCover.toLocaleString('en-IN')} ÷ {sub.recommendedCover.toLocaleString('en-IN')}) × 100</p>
-              <p className="font-bold text-gray-800">= {sub.score} / 100</p>
-            </div>
-            <p className="text-[10px] text-gray-400 mt-2">
-              This information is indicative. Conditions apply. For details read the sales brochure before concluding a sale.
+          {/* "See the Math" — CG-2 compliance: always present (UX Law 05) */}
+          <div className="mt-3 rounded-sm border border-hairline border-l-[3px] border-l-teal bg-surface p-3">
+            <p className="t-micro mb-1.5 text-muted">See the math</p>
+            <dl className="space-y-1 text-[13px]">
+              <div className="flex justify-between">
+                <dt className="text-slate">Current cover</dt>
+                <dd className="nums font-semibold text-navy">₹{sub.currentCover.toLocaleString('en-IN')}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-slate">Recommended</dt>
+                <dd className="nums font-semibold text-navy">₹{sub.recommendedCover.toLocaleString('en-IN')}</dd>
+              </div>
+              <div className="flex justify-between border-t border-hairline-strong pt-1.5">
+                <dt className="text-slate">Score = (have ÷ need) × 100</dt>
+                <dd className="nums font-bold text-navy">{sub.score} / 100</dd>
+              </div>
+            </dl>
+            <p className="mt-2 text-[11px] text-muted">
+              Indicative. Conditions apply. Read the sales brochure before concluding a sale.
             </p>
           </div>
         </div>
@@ -75,9 +78,7 @@ interface ScoreBreakdownProps {
 export function ScoreBreakdown({ life, health, income }: ScoreBreakdownProps) {
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-1 mb-3">
-        Score breakdown
-      </p>
+      <p className="t-micro mb-3 px-1 text-muted">Score breakdown</p>
       <AccordionItem sub={life}   weight="40%" />
       <AccordionItem sub={health} weight="35%" />
       <AccordionItem sub={income} weight="25%" />

@@ -8,10 +8,12 @@ interface BrandTokens {
   partnerName: string
 }
 
+// KIN locked brand (Brand & Build Guidelines v1.0). Navy is the ink/brand
+// colour, Teal is the action colour. Partners override these at runtime.
 const DEFAULT_BRAND: BrandTokens = {
-  primaryColor: '#1B4332',
-  accentColor: '#52B788',
-  fontFamily: 'Inter, system-ui, sans-serif',
+  primaryColor: '#102A43', // Navy — primary ink
+  accentColor: '#18A999', // Teal — primary action
+  fontFamily: '"Manrope", system-ui, sans-serif',
   logoUrl: '',
   partnerName: 'KIN',
 }

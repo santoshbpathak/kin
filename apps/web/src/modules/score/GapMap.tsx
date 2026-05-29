@@ -21,27 +21,24 @@ function GapBar({ sub, delay = 0 }: GapBarProps) {
     return () => clearTimeout(t)
   }, [sub.score, delay])
 
+  // Score colour follows value (Brand §04): ≥75 Teal · 45–74 Amber · <45 Coral
   const colour =
-    sub.score <= 30 ? '#EF4444'
-    : sub.score <= 55 ? '#F97316'
-    : sub.score <= 75 ? '#EAB308'
-    : sub.score <= 90 ? '#22C55E'
-    : '#14B8A6'
+    sub.score >= 75 ? 'var(--kin-teal)' : sub.score >= 45 ? 'var(--kin-amber)' : 'var(--kin-coral)'
 
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-gray-700">{sub.label}</span>
-        <span className="text-sm font-bold tabular-nums" style={{ color: colour }}>
+        <span className="t-body font-semibold text-navy">{sub.label}</span>
+        <span className="nums text-[15px] font-bold" style={{ color: colour }}>
           {sub.score}
-          <span className="text-xs text-gray-400 font-normal">/100</span>
+          <span className="text-[12px] font-normal text-muted">/100</span>
         </span>
       </div>
 
       {/* Bar track */}
-      <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden">
+      <div className="relative h-3 overflow-hidden rounded-pill bg-sand-deep">
         <div
-          className="absolute inset-y-0 left-0 rounded-full transition-all"
+          className="absolute inset-y-0 left-0 rounded-pill transition-all"
           style={{
             width: `${width}%`,
             backgroundColor: colour,
@@ -52,17 +49,15 @@ function GapBar({ sub, delay = 0 }: GapBarProps) {
       </div>
 
       {/* Cover amounts */}
-      <div className="flex items-center justify-between text-xs text-gray-400">
+      <div className="flex items-center justify-between text-[12px] text-muted">
         <span>
-          Have: <span className="font-medium text-gray-600">{formatCover(sub.currentCover)}</span>
+          Have: <span className="font-medium text-slate">{formatCover(sub.currentCover)}</span>
         </span>
         {sub.gap > 0 && (
-          <span className="text-red-400 font-medium">
-            Gap: {formatCover(sub.gap)}
-          </span>
+          <span className="font-semibold text-coral">Gap: {formatCover(sub.gap)}</span>
         )}
         <span>
-          Need: <span className="font-medium text-gray-600">{formatCover(sub.recommendedCover)}</span>
+          Need: <span className="font-medium text-slate">{formatCover(sub.recommendedCover)}</span>
         </span>
       </div>
     </div>

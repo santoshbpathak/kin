@@ -4,11 +4,11 @@
  * Displays a single discovered coverage item.
  *
  * Status colours:
- *   active         → green
- *   likely_active  → teal (with "Verify" nudge)
- *   check_required → amber (user needs to verify)
- *   not_activated  → orange (actionable gap)
- *   not_applicable → gray (greyed out)
+ *   active         → positive (mint/teal-deep)
+ *   likely_active  → positive (mint/teal-deep, with "Verify" nudge)
+ *   check_required → moderate (amber)
+ *   not_activated  → moderate (amber, actionable gap)
+ *   not_applicable → muted (greyed out)
  *
  * Compliance (CG-4, CG-2):
  *   - All amounts shown with "Conditions apply"
@@ -17,46 +17,49 @@
  */
 
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import type { DiscoveredCoverage, CoverageStatus } from './discoveryEngine'
+import { Button, StateChip } from '@/components/ui'
+import { IconCheckCircle, IconSearch, IconAlert, IconGift } from '@/components/ui/icons'
 
 // ── Status config ───────────────────────────────────────────────
 const STATUS_CONFIG: Record<
   CoverageStatus,
-  { label: string; colour: string; bg: string; border: string; icon: string }
+  { label: string; tone: 'positive' | 'moderate' | 'critical'; accentBg: string; borderClass: string; icon: ReactNode }
 > = {
   active: {
     label: 'Active',
-    colour: '#16A34A',
-    bg: '#F0FDF4',
-    border: '#BBF7D0',
-    icon: '✅',
+    tone: 'positive',
+    accentBg: 'bg-mint',
+    borderClass: 'border-teal/30',
+    icon: <IconCheckCircle size={14} className="text-teal-deep" />,
   },
   likely_active: {
     label: 'Likely Active',
-    colour: '#0D9488',
-    bg: '#F0FDFA',
-    border: '#99F6E4',
-    icon: '🟢',
+    tone: 'positive',
+    accentBg: 'bg-mint',
+    borderClass: 'border-teal/30',
+    icon: <span className="inline-block w-2 h-2 rounded-full bg-teal-deep shrink-0" />,
   },
   check_required: {
     label: 'Check Required',
-    colour: '#D97706',
-    bg: '#FFFBEB',
-    border: '#FDE68A',
-    icon: '🔍',
+    tone: 'moderate',
+    accentBg: 'bg-[rgba(245,166,35,0.08)]',
+    borderClass: 'border-amber/30',
+    icon: <IconSearch size={14} className="text-amber" />,
   },
   not_activated: {
     label: 'Not Activated',
-    colour: '#EA580C',
-    bg: '#FFF7ED',
-    border: '#FED7AA',
-    icon: '⚠️',
+    tone: 'moderate',
+    accentBg: 'bg-[rgba(245,166,35,0.08)]',
+    borderClass: 'border-amber/30',
+    icon: <IconAlert size={14} className="text-amber" />,
   },
   not_applicable: {
     label: 'Not Applicable',
-    colour: '#6B7280',
-    bg: '#F9FAFB',
-    border: '#E5E7EB',
+    tone: 'moderate',
+    accentBg: 'bg-sand-deep',
+    borderClass: 'border-hairline',
     icon: '—',
   },
 }
@@ -87,10 +90,8 @@ export function CoverageResultCard({ coverage, index, onAction }: Props) {
 
   return (
     <div
-      className="rounded-2xl border overflow-hidden shadow-sm animate-fade-in"
+      className={`rounded-md border overflow-hidden shadow-card animate-fade-in ${cfg.accentBg} ${cfg.borderClass}`}
       style={{
-        backgroundColor: cfg.bg,
-        borderColor: cfg.border,
         animationDelay: animDelay,
         animationFillMode: 'both',
       }}
@@ -103,43 +104,37 @@ export function CoverageResultCard({ coverage, index, onAction }: Props) {
         aria-label={`${coverage.name} — ${cfg.label}`}
       >
         {/* Emoji icon */}
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 mt-0.5"
-          style={{ backgroundColor: `${cfg.colour}18` }}
-        >
+        <div className="w-10 h-10 rounded-sm bg-surface border border-hairline flex items-center justify-center text-xl shrink-0 mt-0.5">
           {coverage.emoji}
         </div>
 
         {/* Title + badges */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center flex-wrap gap-1.5 mb-1">
-            {/* Status pill */}
-            <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: cfg.colour, color: '#fff' }}
-            >
+            {/* Status chip */}
+            <StateChip tone={cfg.tone}>
               {cfg.icon} {cfg.label}
-            </span>
+            </StateChip>
 
             {/* Bonus tag */}
             {coverage.isBonus && coverage.status !== 'not_applicable' && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
-                🎁 Bonus
+              <span className="t-micro px-2 py-0.5 rounded-pill bg-surface border border-hairline text-muted flex items-center gap-1">
+                <IconGift size={12} className="text-muted shrink-0" /> Bonus
               </span>
             )}
           </div>
 
-          <p className="text-sm font-bold text-gray-900 leading-tight truncate">
+          <p className="t-body-sm font-bold text-navy leading-tight truncate">
             {coverage.shortName}
           </p>
-          <p className="text-[11px] text-gray-500 leading-snug mt-0.5">
+          <p className="t-caption text-muted leading-snug mt-0.5">
             {coverage.name}
           </p>
         </div>
 
         {/* Chevron */}
         <div
-          className="text-gray-400 text-xs shrink-0 mt-1 transition-transform duration-200"
+          className="text-muted text-xs shrink-0 mt-1 transition-transform duration-200"
           style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
           ▼
@@ -147,19 +142,17 @@ export function CoverageResultCard({ coverage, index, onAction }: Props) {
       </button>
 
       {/* ── Cover + premium quick stats ── */}
-      <div className="mx-4 mb-3 rounded-xl overflow-hidden border"
-        style={{ borderColor: cfg.border }}
-      >
-        <div className="grid grid-cols-2 divide-x" style={{ borderColor: cfg.border }}>
+      <div className={`mx-4 mb-3 rounded-sm overflow-hidden border ${cfg.borderClass}`}>
+        <div className={`grid grid-cols-2 divide-x ${cfg.borderClass}`}>
           <div className="px-3 py-2 text-center">
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Cover</p>
-            <p className="text-sm font-extrabold text-gray-800">
+            <p className="t-micro text-muted">Cover</p>
+            <p className="t-body-sm font-extrabold text-navy nums">
               {formatCover(coverage.coverAmount)}
             </p>
           </div>
-          <div className="px-3 py-2 text-center" style={{ borderColor: cfg.border }}>
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Premium</p>
-            <p className="text-sm font-extrabold text-gray-800">
+          <div className="px-3 py-2 text-center">
+            <p className="t-micro text-muted">Annual cost</p>
+            <p className="t-body-sm font-extrabold text-navy nums">
               {formatPremium(coverage.annualPremium)}
             </p>
           </div>
@@ -170,48 +163,45 @@ export function CoverageResultCard({ coverage, index, onAction }: Props) {
       {expanded && (
         <div className="px-4 pb-4 space-y-3 animate-fade-in">
           {/* Description */}
-          <p className="text-[13px] text-gray-700 leading-relaxed">
+          <p className="t-body-sm text-slate leading-relaxed">
             {coverage.description}
           </p>
 
           {/* Why you have it */}
-          <div className="rounded-xl bg-white border p-3" style={{ borderColor: cfg.border }}>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">
+          <div className={`rounded-sm bg-surface border ${cfg.borderClass} p-3`}>
+            <p className="t-micro text-muted mb-1">
               Why you qualify
             </p>
-            <p className="text-xs text-gray-600 leading-relaxed">{coverage.whyYouHaveIt}</p>
+            <p className="t-caption text-slate leading-relaxed">{coverage.whyYouHaveIt}</p>
           </div>
 
           {/* How to verify */}
-          <div className="rounded-xl bg-white border p-3 space-y-1.5" style={{ borderColor: cfg.border }}>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">
+          <div className={`rounded-sm bg-surface border ${cfg.borderClass} p-3 space-y-1.5`}>
+            <p className="t-micro text-muted mb-1">
               How to verify
             </p>
             {coverage.howToVerify.map((step, i) => (
               <div key={i} className="flex gap-2">
-                <span
-                  className="text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-                  style={{ backgroundColor: cfg.colour, color: '#fff' }}
-                >
+                <span className="t-micro w-4 h-4 rounded-pill bg-navy text-sand flex items-center justify-center shrink-0 mt-0.5">
                   {i + 1}
                 </span>
-                <p className="text-[12px] text-gray-600 leading-snug">{step}</p>
+                <p className="t-caption text-slate leading-snug">{step}</p>
               </div>
             ))}
           </div>
 
           {/* Action button */}
-          <button
+          <Button
+            size="md"
+            fullWidth
             onClick={() => onAction(coverage)}
-            className="w-full py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-1.5"
-            style={{ backgroundColor: cfg.colour }}
           >
             {coverage.actionLabel}
             {coverage.actionIsExternal && <span className="text-xs opacity-80">↗</span>}
-          </button>
+          </Button>
 
           {/* Compliance note — CG-4 mandatory */}
-          <p className="text-[10px] text-gray-400 leading-relaxed">
+          <p className="t-micro text-muted leading-relaxed">
             {coverage.complianceNote}
           </p>
         </div>
@@ -220,8 +210,8 @@ export function CoverageResultCard({ coverage, index, onAction }: Props) {
       {/* ── Collapsed compliance nudge ── */}
       {!expanded && (
         <div className="px-4 pb-3">
-          <p className="text-[10px] text-gray-400">
-            Tap to see details & how to verify. Conditions apply.
+          <p className="t-caption text-muted">
+            Tap to see details and how to verify. Conditions apply.
           </p>
         </div>
       )}

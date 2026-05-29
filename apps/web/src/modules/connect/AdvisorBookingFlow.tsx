@@ -16,13 +16,37 @@
 import { useState } from 'react'
 import {
   QUERY_TYPE_LABELS,
-  QUERY_TYPE_EMOJI,
   getAvailableSlots,
   saveBooking,
   type QueryType,
   type TimeSlot,
   type AdvisorBooking,
 } from './connectStore'
+import { Button, Card, PrivacyLine } from '@/components/ui'
+import {
+  IconShield,
+  IconHealth,
+  IconSearch,
+  IconDoc,
+  IconChat,
+  IconCheckCircle,
+  IconClock,
+  IconMobile,
+  IconClose,
+  IconAlert,
+  IconLock,
+  IconUser,
+  IconCheck,
+} from '@/components/ui/icons'
+
+const QUERY_TYPE_ICON: Record<QueryType, React.ReactElement> = {
+  term_life:         <IconShield size={24} className="text-navy" />,
+  health_topup:      <IconHealth size={24} className="text-navy" />,
+  personal_accident: <IconShield size={24} className="text-navy" />,
+  general_review:    <IconSearch size={24} className="text-navy" />,
+  claim_help:        <IconDoc size={24} className="text-navy" />,
+  other:             <IconChat size={24} className="text-navy" />,
+}
 
 type Step = 1 | 2 | 3 | 4 | 5
 
@@ -38,11 +62,13 @@ function StepDots({ current, total }: { current: number; total: number }) {
       {Array.from({ length: total }).map((_, i) => (
         <div
           key={i}
-          className="rounded-full transition-all duration-300"
+          className={[
+            'rounded-pill transition-all duration-300',
+            i + 1 <= current ? 'bg-teal' : 'bg-sand-deep border border-hairline',
+          ].join(' ')}
           style={{
             width: i + 1 === current ? 20 : 6,
             height: 6,
-            backgroundColor: i + 1 <= current ? 'var(--color-primary)' : '#E5E7EB',
           }}
         />
       ))}
@@ -101,52 +127,45 @@ export function AdvisorBookingFlow({ onClose }: Props) {
   if (step === 5 && booking) {
     return (
       <div className="flex flex-col items-center py-10 px-6 text-center">
-        {/* Success animation */}
-        <div
-          className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-5"
-          style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 12%, white)' }}
-        >
-          ✅
+        {/* Success icon */}
+        <div className="w-20 h-20 rounded-full bg-mint flex items-center justify-center mb-5">
+          <IconCheckCircle size={36} className="text-teal-deep" />
         </div>
-        <h2 className="text-xl font-extrabold text-gray-900 mb-2">Booking Confirmed!</h2>
-        <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+        <h2 className="t-h2 text-navy mb-2">Booking Confirmed!</h2>
+        <p className="t-body-sm text-slate mb-6 leading-relaxed">
           Your request has been received. An advisor will call you on{' '}
-          <span className="font-semibold text-gray-700">+91 {booking.phone}</span> at{' '}
-          <span className="font-semibold text-gray-700">{booking.preferredSlot}</span>.
+          <span className="font-semibold text-navy">+91 {booking.phone}</span> at{' '}
+          <span className="font-semibold text-navy">{booking.preferredSlot}</span>.
         </p>
 
         {/* Summary card */}
-        <div className="w-full rounded-2xl bg-gray-50 border border-gray-100 p-4 text-left space-y-2 mb-6">
+        <Card className="w-full text-left space-y-2 mb-6">
           <div className="flex items-center gap-2">
-            <span className="text-lg">{QUERY_TYPE_EMOJI[booking.queryType]}</span>
-            <span className="text-sm font-semibold text-gray-700">{QUERY_TYPE_LABELS[booking.queryType]}</span>
+            <span className="shrink-0">{QUERY_TYPE_ICON[booking.queryType]}</span>
+            <span className="t-body font-semibold text-navy">{QUERY_TYPE_LABELS[booking.queryType]}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>🕐</span>
+          <div className="flex items-center gap-2 t-body-sm text-slate">
+            <IconClock size={16} className="text-muted shrink-0" />
             <span>{booking.preferredSlot}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>📱</span>
+          <div className="flex items-center gap-2 t-body-sm text-slate">
+            <IconMobile size={16} className="text-muted shrink-0" />
             <span>+91 {booking.phone}</span>
           </div>
-        </div>
+        </Card>
 
         {/* CG-2: Spurious call reminder */}
-        <div className="w-full rounded-xl bg-amber-50 border border-amber-200 p-3 mb-6 text-left">
-          <p className="text-[10px] text-amber-800 leading-relaxed">
-            <span className="font-bold">Reminder:</span> IRDAI or its officials do not solicit
+        <div className="w-full rounded-md border border-hairline bg-sand-deep p-3 mb-6 text-left">
+          <p className="t-caption text-muted leading-relaxed">
+            <span className="font-bold text-slate">Reminder:</span> IRDAI or its officials do not solicit
             insurance business via phone calls. Our advisor will call only at your requested slot
             and will never ask for OTP, Aadhaar, or bank details over the phone.
           </p>
         </div>
 
-        <button
-          onClick={onClose}
-          className="w-full py-3.5 rounded-2xl text-sm font-bold text-white"
-          style={{ backgroundColor: 'var(--color-primary)' }}
-        >
+        <Button fullWidth onClick={onClose}>
           Done
-        </button>
+        </Button>
       </div>
     )
   }
@@ -156,16 +175,15 @@ export function AdvisorBookingFlow({ onClose }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-2">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-            Talk to an Advisor
-          </p>
-          <h2 className="text-lg font-extrabold text-gray-900">Book a Free 15-min Call</h2>
+          <p className="t-micro text-muted">Talk to an Advisor</p>
+          <h2 className="t-h3 text-navy">Book a Free 15-min Call</h2>
         </div>
         <button
           onClick={onClose}
-          className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-sm font-bold"
+          className="w-11 h-11 rounded-pill bg-sand-deep flex items-center justify-center border border-hairline"
+          aria-label="Close"
         >
-          ✕
+          <IconClose size={18} className="text-muted" />
         </button>
       </div>
 
@@ -177,39 +195,46 @@ export function AdvisorBookingFlow({ onClose }: Props) {
         {step === 1 && (
           <div className="space-y-4">
             {/* CG-2: Spurious calls warning */}
-            <div className="rounded-xl bg-amber-50 border border-amber-200 p-3">
-              <p className="text-[10px] text-amber-800 leading-relaxed">
-                <span className="font-bold">⚠️ Important:</span> IRDAI or its officials do not
+            <div className="rounded-md border border-hairline bg-sand-deep p-3">
+              <p className="t-caption text-muted leading-relaxed">
+                <span className="inline-flex items-center gap-1 font-bold text-slate"><IconAlert size={14} className="text-amber shrink-0" /> Important:</span> IRDAI or its officials do not
                 involve themselves in activities like selling insurance policies, announcing bonuses
                 or investment of premiums. Public receiving such calls are requested to lodge a
                 police complaint.
               </p>
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-gray-600 block mb-1.5">Your Name</label>
+            {/* Name field */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">
+                Your Name
+              </label>
               <input
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="e.g. Priya Sharma"
-                className="w-full px-4 py-3 rounded-xl border text-sm text-gray-900 placeholder-gray-400 outline-none transition-all"
-                style={{
-                  borderColor: nameError ? '#EF4444' : name ? 'var(--color-primary)' : '#E5E7EB',
-                }}
+                className={[
+                  'h-[56px] w-full rounded-md border-[1.5px] bg-surface px-4 text-[15px] text-slate',
+                  'placeholder:text-muted focus:border-teal focus:outline-none transition-colors',
+                  nameError ? 'border-coral' : name ? 'border-teal' : 'border-hairline-strong',
+                ].join(' ')}
               />
-              {nameError && <p className="text-[11px] text-red-500 mt-1">{nameError}</p>}
+              {nameError && <p className="t-caption text-coral">{nameError}</p>}
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-gray-600 block mb-1.5">Mobile Number</label>
+            {/* Phone field */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">
+                Mobile Number
+              </label>
               <div
-                className="flex items-center rounded-xl border overflow-hidden transition-all"
-                style={{
-                  borderColor: phoneError ? '#EF4444' : phone ? 'var(--color-primary)' : '#E5E7EB',
-                }}
+                className={[
+                  'flex items-center rounded-md border-[1.5px] overflow-hidden bg-surface transition-colors',
+                  phoneError ? 'border-coral' : phone ? 'border-teal' : 'border-hairline-strong',
+                ].join(' ')}
               >
-                <span className="px-3 py-3 text-sm text-gray-500 bg-gray-50 border-r border-gray-200 font-semibold">
+                <span className="px-3 h-[56px] flex items-center t-body text-muted bg-sand-deep border-r border-hairline font-semibold">
                   +91
                 </span>
                 <input
@@ -217,155 +242,145 @@ export function AdvisorBookingFlow({ onClose }: Props) {
                   value={phone}
                   onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                   placeholder="10-digit mobile"
-                  className="flex-1 px-3 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none bg-white"
+                  className="flex-1 h-[56px] px-3 text-[15px] text-slate placeholder:text-muted outline-none bg-surface"
                 />
               </div>
-              {phoneError && <p className="text-[11px] text-red-500 mt-1">{phoneError}</p>}
-              <p className="text-[10px] text-gray-400 mt-1.5">
-                🔒 Used only for this call. We do not store full mobile numbers beyond booking.
+              {phoneError && <p className="t-caption text-coral">{phoneError}</p>}
+              <p className="t-caption text-muted flex items-center gap-1">
+                <IconLock size={13} className="text-muted shrink-0" /> Used only for this call. We do not store full mobile numbers beyond booking.
               </p>
             </div>
 
-            <button
-              onClick={handleStep1}
-              className="w-full py-3.5 rounded-2xl text-sm font-bold text-white mt-2"
-              style={{ backgroundColor: 'var(--color-primary)' }}
-            >
-              Continue →
-            </button>
+            <Button fullWidth onClick={handleStep1} className="mt-2">
+              Continue
+            </Button>
           </div>
         )}
 
         {/* ── Step 2: Query type ── */}
         {step === 2 && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">What would you like to discuss?</p>
+            <p className="t-body text-slate">What would you like to discuss?</p>
             <div className="grid grid-cols-2 gap-3">
               {QUERY_TYPES.map(qt => (
                 <button
                   key={qt}
                   onClick={() => { setQueryType(qt); setStep(3) }}
-                  className="flex flex-col items-start p-3.5 rounded-2xl border-2 text-left transition-all"
-                  style={{
-                    borderColor: queryType === qt ? 'var(--color-primary)' : '#E5E7EB',
-                    backgroundColor: queryType === qt
-                      ? 'color-mix(in srgb, var(--color-primary) 8%, white)'
-                      : '#FAFAFA',
-                  }}
+                  className={[
+                    'flex flex-col items-start p-3.5 rounded-md border-[1.5px] text-left transition-all min-h-[80px]',
+                    queryType === qt
+                      ? 'border-teal bg-mint'
+                      : 'border-hairline bg-sand-deep',
+                  ].join(' ')}
                 >
-                  <span className="text-2xl mb-1.5">{QUERY_TYPE_EMOJI[qt]}</span>
-                  <span
-                    className="text-xs font-bold leading-snug"
-                    style={{ color: queryType === qt ? 'var(--color-primary)' : '#374151' }}
-                  >
+                  <span className="mb-1.5 shrink-0">{QUERY_TYPE_ICON[qt]}</span>
+                  <span className={[
+                    't-body-sm font-bold leading-snug',
+                    queryType === qt ? 'text-teal-deep' : 'text-navy',
+                  ].join(' ')}>
                     {QUERY_TYPE_LABELS[qt]}
                   </span>
                 </button>
               ))}
             </div>
-            <button
-              onClick={() => setStep(1)}
-              className="text-sm text-gray-400 underline w-full text-center mt-1"
-            >
-              ← Back
-            </button>
+            <Button variant="ghost" fullWidth onClick={() => setStep(1)}>
+              Back
+            </Button>
           </div>
         )}
 
         {/* ── Step 3: Time slot ── */}
         {step === 3 && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">Pick a time that works for you:</p>
+            <p className="t-body text-slate">Pick a time that works for you:</p>
             {slots.length === 0 ? (
-              <div className="rounded-xl bg-gray-50 border border-gray-100 p-4 text-center">
-                <p className="text-sm text-gray-500">No slots available today. Try again tomorrow.</p>
-              </div>
+              <Card className="text-center">
+                <p className="t-body-sm text-muted">No slots available today. Try again tomorrow.</p>
+              </Card>
             ) : (
               <div className="space-y-2">
                 {slots.map(slot => (
                   <button
                     key={slot.id}
                     onClick={() => { setSelectedSlot(slot); setStep(4) }}
-                    className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl border-2 text-left transition-all"
-                    style={{
-                      borderColor: selectedSlot?.id === slot.id ? 'var(--color-primary)' : '#E5E7EB',
-                      backgroundColor: selectedSlot?.id === slot.id
-                        ? 'color-mix(in srgb, var(--color-primary) 8%, white)'
-                        : '#FAFAFA',
-                    }}
+                    className={[
+                      'w-full flex items-center justify-between px-4 py-3.5 rounded-md border-[1.5px] text-left transition-all min-h-[56px]',
+                      selectedSlot?.id === slot.id
+                        ? 'border-teal bg-mint'
+                        : 'border-hairline bg-sand-deep',
+                    ].join(' ')}
                   >
-                    <span className="text-sm font-semibold text-gray-700">🕐 {slot.label}</span>
+                    <span className="t-body font-semibold text-navy flex items-center gap-1.5">
+                      <IconClock size={16} className="text-muted shrink-0" />
+                      {slot.label}
+                    </span>
                     {selectedSlot?.id === slot.id && (
-                      <span style={{ color: 'var(--color-primary)' }} className="text-lg">✓</span>
+                      <IconCheck size={18} className="text-teal-deep shrink-0" />
                     )}
                   </button>
                 ))}
               </div>
             )}
-            <button
-              onClick={() => setStep(2)}
-              className="text-sm text-gray-400 underline w-full text-center mt-1"
-            >
-              ← Back
-            </button>
+            <Button variant="ghost" fullWidth onClick={() => setStep(2)}>
+              Back
+            </Button>
           </div>
         )}
 
         {/* ── Step 4: Notes + confirm ── */}
         {step === 4 && queryType && selectedSlot && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">Anything specific you want to discuss?</p>
+            <p className="t-body text-slate">Anything specific you want to discuss?</p>
 
-            <textarea
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              rows={3}
-              placeholder="Optional: share context so the advisor can prepare (e.g. 'I have a term plan but not sure if cover is enough')"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 outline-none resize-none"
-              style={{ borderColor: notes ? 'var(--color-primary)' : '#E5E7EB' }}
-            />
-
-            {/* Summary */}
-            <div className="rounded-2xl bg-gray-50 border border-gray-100 p-4 space-y-2.5">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-2">
-                Booking Summary
-              </p>
-              <div className="flex items-center gap-2 text-sm">
-                <span>👤</span>
-                <span className="text-gray-700 font-semibold">{name}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <span>📱</span>
-                <span className="text-gray-600">+91 {phone}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <span>{QUERY_TYPE_EMOJI[queryType]}</span>
-                <span className="text-gray-600">{QUERY_TYPE_LABELS[queryType]}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <span>🕐</span>
-                <span className="text-gray-600">{selectedSlot.label}</span>
-              </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">
+                Notes (optional)
+              </label>
+              <textarea
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                rows={3}
+                placeholder="Optional: share context so the advisor can prepare (e.g. 'I have a term plan but not sure if cover is enough')"
+                className={[
+                  'w-full rounded-md border-[1.5px] bg-surface px-4 py-3 text-[15px] text-slate',
+                  'placeholder:text-muted focus:border-teal focus:outline-none resize-none transition-colors',
+                  notes ? 'border-teal' : 'border-hairline-strong',
+                ].join(' ')}
+              />
             </div>
 
-            <p className="text-[10px] text-gray-400 leading-relaxed text-center">
+            {/* Summary */}
+            <Card className="space-y-2.5">
+              <p className="t-micro text-muted mb-2">Booking Summary</p>
+              <div className="flex items-center gap-2 t-body">
+                <IconUser size={16} className="text-muted shrink-0" />
+                <span className="text-navy font-semibold">{name}</span>
+              </div>
+              <div className="flex items-center gap-2 t-body-sm">
+                <IconMobile size={16} className="text-muted shrink-0" />
+                <span className="text-slate">+91 {phone}</span>
+              </div>
+              <div className="flex items-center gap-2 t-body-sm">
+                <span className="shrink-0">{QUERY_TYPE_ICON[queryType]}</span>
+                <span className="text-slate">{QUERY_TYPE_LABELS[queryType]}</span>
+              </div>
+              <div className="flex items-center gap-2 t-body-sm">
+                <IconClock size={16} className="text-muted shrink-0" />
+                <span className="text-slate">{selectedSlot.label}</span>
+              </div>
+            </Card>
+
+            <PrivacyLine>
               The advisor will receive your KIN protection summary — anonymised score and gap map.
               No personal documents are shared without your consent.
-            </p>
+            </PrivacyLine>
 
-            <button
-              onClick={handleConfirm}
-              className="w-full py-3.5 rounded-2xl text-sm font-bold text-white"
-              style={{ backgroundColor: 'var(--color-primary)' }}
-            >
-              Confirm Booking ✓
-            </button>
-            <button
-              onClick={() => setStep(3)}
-              className="text-sm text-gray-400 underline w-full text-center"
-            >
-              ← Back
-            </button>
+            <Button fullWidth onClick={handleConfirm}>
+              Connect to an Advisor ✓
+            </Button>
+            <Button variant="ghost" fullWidth onClick={() => setStep(3)}>
+              Back
+            </Button>
           </div>
         )}
 

@@ -113,23 +113,19 @@ export class AiAdvisorService {
       session.sessionToken ?? undefined,
     )
 
-    // The escalation detector runs against the user's latest turn plus
-    // the existing transcript so it can spot repeated questions.
+    // The escalation detector still runs as a SILENT signal (analytics /
+    // future routing) — but per UX Law 07 ("human handoff without pressure")
+    // we no longer append a "connect now?" line to the reply or surface a
+    // prompt. The advisor is always one tap away via the persistent
+    // "Connect to an advisor" control in the UI; the user initiates it.
     const escalation = await this.escalationDetector.check(
       session.tier1Transcript,
       userMessage,
     )
 
-    // The brief mandates that escalation messages append AFTER the AI's
-    // own best answer to the question — the AI never deflects without
-    // answering first.
-    const composedReply = escalation.shouldEscalate && escalation.escalationMessage
-      ? `${safe.message}\n\n${escalation.escalationMessage}`
-      : safe.message
-
     session.tier1Transcript.push({
       role: 'assistant',
-      content: composedReply,
+      content: safe.message,
       ts: new Date().toISOString(),
     })
     session.turnCount += 1
@@ -138,9 +134,9 @@ export class AiAdvisorService {
 
     return {
       advisorSessionId,
-      message: composedReply,
+      message: safe.message,
+      // Kept for analytics only; the frontend no longer renders a push.
       shouldEscalate: escalation.shouldEscalate,
-      escalationPrompt: escalation.escalationMessage ?? undefined,
       escalationReason: escalation.reason,
       isAiAssistant: true,
     }

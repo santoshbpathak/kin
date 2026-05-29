@@ -24,6 +24,8 @@ import { DisclaimerBanner } from './DisclaimerBanner'
 import { calculateScore } from '../score/scoreEngine'
 import type { UserProfile } from '../diagnostic/parser'
 import { apiRequest, ApiError } from '../../lib/apiClient'
+import { Button, Card, NavHeader, StateChip, PrivacyLine } from '@/components/ui'
+import { IconSearch, IconGift } from '@/components/ui/icons'
 
 function useDiagnosticProfile(): UserProfile | null {
   return useMemo(() => {
@@ -47,18 +49,12 @@ export function RecommendationsPage() {
   if (!profile) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-6 text-center gap-4">
-        <div className="text-5xl">🔍</div>
-        <h2 className="text-xl font-bold text-gray-900">Complete your check-in first</h2>
-        <p className="text-sm text-gray-500">
+        <IconSearch size={48} className="text-muted" />
+        <h2 className="t-h2 text-navy">Complete your check-in first</h2>
+        <p className="t-body text-muted">
           KIN generates personalised recommendations only after your protection score is calculated.
         </p>
-        <Link
-          to="/diagnose"
-          className="px-6 py-3 rounded-2xl text-white font-semibold text-sm"
-          style={{ backgroundColor: 'var(--color-primary)' }}
-        >
-          Start 2-Minute Check-in
-        </Link>
+        <Button onClick={() => navigate('/diagnose')}>Start 2-minute check-in</Button>
       </div>
     )
   }
@@ -179,65 +175,53 @@ export function RecommendationsPage() {
     }
   }
 
+  // Derive score chip tone from band
+  const scoreTone =
+    score.band === 'critical' ? 'critical' : score.band === 'significant' ? 'moderate' : 'positive'
+
   return (
     <>
       <div className="flex flex-col pb-10">
         {/* ── Page header ───────────────────────────────────────────── */}
-        <div
-          className="px-5 pt-6 pb-5"
-          style={{
-            background: 'linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 6%, white) 0%, white 100%)',
-          }}
-        >
-          {/* Back navigation */}
-          <button
-            onClick={() => navigate('/score')}
-            className="flex items-center gap-1.5 text-xs text-gray-500 mb-4 touch-target -ml-1"
-            aria-label="Back to score"
-          >
-            ← Your Score
-          </button>
+        <NavHeader
+          title="Recommendations"
+          onBack={() => navigate('/score')}
+          showBack
+        />
 
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
-            Personalised for you
-          </p>
-          <h1 className="text-xl font-extrabold text-gray-900 leading-tight">
+        <div className="px-5 pt-5 pb-4">
+          <p className="t-micro text-muted mb-1">Personalised for you</p>
+          <h1 className="t-h2 text-navy leading-tight">
             Your Protection<br />Recommendations
           </h1>
-          <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+          <p className="t-body-sm text-muted mt-1.5 leading-relaxed">
             {recommendations.length} rule-based actions ranked by their impact on your score ·
             Rule {score.ruleVersion}
           </p>
         </div>
 
         {/* ── Score recap strip ─────────────────────────────────────── */}
-        <div className="mx-5 mb-4">
-          <div
-            className="rounded-2xl p-3.5 flex items-center gap-3"
-            style={{ backgroundColor: `${score.bandColour}15`, borderColor: `${score.bandColour}40`, borderWidth: 1 }}
-          >
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-              style={{ backgroundColor: score.bandColour }}
-            >
-              <span className="text-white font-extrabold text-sm">{score.compositeScore}</span>
+        <div className="px-5 mb-4">
+          <Card className="flex items-center gap-3 p-3.5">
+            <div className="w-12 h-12 rounded-md bg-teal flex items-center justify-center shrink-0">
+              <span className="t-numeric-inline text-navy nums font-extrabold">{score.compositeScore}</span>
             </div>
-            <div>
-              <p className="text-xs font-bold text-gray-800">{score.bandLabel}</p>
-              <p className="text-[11px] text-gray-500 leading-snug">
+            <div className="flex-1 min-w-0">
+              <p className="t-body font-bold text-navy">{score.bandLabel}</p>
+              <p className="t-body-sm text-muted leading-snug">
                 Life {score.lifeScore.score} · Health {score.healthScore.score} · Income {score.incomeScore.score}
               </p>
             </div>
-            <div className="ml-auto">
+            <div className="flex flex-col items-end gap-1.5 shrink-0">
+              <StateChip tone={scoreTone}>{score.bandLabel}</StateChip>
               <Link
                 to="/score"
-                className="text-[10px] font-semibold underline"
-                style={{ color: 'var(--color-primary)' }}
+                className="t-caption text-teal-deep font-semibold underline"
               >
                 View score
               </Link>
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* ── Recommendation cards ──────────────────────────────────── */}
@@ -268,25 +252,27 @@ export function RecommendationsPage() {
 
         {/* ── Secondary action: discover hidden coverage ─────────────── */}
         <div className="px-5 mt-5">
-          <Link
-            to="/discover"
-            className="w-full py-3.5 rounded-2xl border-2 text-sm font-semibold flex items-center justify-center gap-2"
-            style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={() => navigate('/discover')}
           >
-            🎁 Discover Your Hidden Coverage
-          </Link>
+            <IconGift size={18} className="shrink-0" /> Discover your hidden cover
+          </Button>
         </div>
 
         {/* ── Rule transparency footer ───────────────────────────────── */}
         <div className="px-5 mt-4">
-          <div className="rounded-xl bg-gray-50 border border-gray-100 p-3">
-            <p className="text-[10px] text-gray-400 leading-relaxed text-center">
+          <div className="rounded-md border border-hairline bg-sand-deep p-3">
+            <p className="t-caption text-muted leading-relaxed text-center">
               Recommendations are <strong>100% rule-based</strong> — no AI black-box decisions.
               Same inputs always produce the same outputs. Rule version {score.ruleVersion} ·
               Retained for IRDAI audit (5 years).
             </p>
           </div>
         </div>
+
+        <PrivacyLine className="px-5 pt-4">Your answers stay private until you choose to share them</PrivacyLine>
       </div>
 
       {/* ── See the Math drawer — rendered outside scroll container ─── */}

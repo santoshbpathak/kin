@@ -18,6 +18,8 @@ import { useState, useEffect } from 'react'
 import type { DiscoveryAnswers } from './discoveryEngine'
 import { DISCOVERY_QUESTIONS } from './discoveryQuestions'
 import type { UserProfile } from '../diagnostic/parser'
+import { Button } from '@/components/ui'
+import { IconGift } from '@/components/ui/icons'
 
 // ── Option card (single select) ─────────────────────────────────
 function OptionCard({
@@ -38,22 +40,20 @@ function OptionCard({
   return (
     <button
       onClick={() => onSelect(value)}
-      className="w-full text-left px-4 py-3.5 rounded-2xl border-2 transition-all duration-150 flex items-center gap-3"
-      style={{
-        borderColor: selected ? 'var(--color-primary)' : '#E5E7EB',
-        backgroundColor: selected ? 'color-mix(in srgb, var(--color-primary) 8%, white)' : '#fff',
-      }}
+      className={[
+        'w-full text-left px-4 py-3.5 rounded-md border-2 transition-all duration-150 flex items-center gap-3',
+        selected
+          ? 'border-teal bg-teal/8'
+          : 'border-hairline bg-surface',
+      ].join(' ')}
     >
       <span className="text-xl">{emoji}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900">{label}</p>
-        {sublabel && <p className="text-xs text-gray-400 mt-0.5">{sublabel}</p>}
+        <p className="t-body-sm font-semibold text-navy">{label}</p>
+        {sublabel && <p className="t-caption text-muted mt-0.5">{sublabel}</p>}
       </div>
       {selected && (
-        <span
-          className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-bold"
-          style={{ backgroundColor: 'var(--color-primary)' }}
-        >
+        <span className="w-5 h-5 rounded-full bg-teal flex items-center justify-center shrink-0 text-navy text-xs font-bold">
           ✓
         </span>
       )}
@@ -80,25 +80,25 @@ function MultiOptionCard({
   return (
     <button
       onClick={() => onToggle(value)}
-      className="w-full text-left px-4 py-3.5 rounded-2xl border-2 transition-all duration-150 flex items-center gap-3"
-      style={{
-        borderColor: selected ? 'var(--color-primary)' : '#E5E7EB',
-        backgroundColor: selected ? 'color-mix(in srgb, var(--color-primary) 8%, white)' : '#fff',
-      }}
+      className={[
+        'w-full text-left px-4 py-3.5 rounded-md border-2 transition-all duration-150 flex items-center gap-3',
+        selected
+          ? 'border-teal bg-teal/8'
+          : 'border-hairline bg-surface',
+      ].join(' ')}
     >
       <span className="text-xl">{emoji}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900">{label}</p>
-        {sublabel && <p className="text-xs text-gray-400 mt-0.5">{sublabel}</p>}
+        <p className="t-body-sm font-semibold text-navy">{label}</p>
+        {sublabel && <p className="t-caption text-muted mt-0.5">{sublabel}</p>}
       </div>
       <div
-        className="w-5 h-5 rounded border-2 flex items-center justify-center shrink-0"
-        style={{
-          borderColor: selected ? 'var(--color-primary)' : '#D1D5DB',
-          backgroundColor: selected ? 'var(--color-primary)' : '#fff',
-        }}
+        className={[
+          'w-5 h-5 rounded border-2 flex items-center justify-center shrink-0',
+          selected ? 'border-teal bg-teal' : 'border-hairline-strong bg-surface',
+        ].join(' ')}
       >
-        {selected && <span className="text-white text-xs font-bold">✓</span>}
+        {selected && <span className="text-navy text-xs font-bold">✓</span>}
       </div>
     </button>
   )
@@ -107,11 +107,11 @@ function MultiOptionCard({
 // ── Typing indicator animation ──────────────────────────────────
 function TypingIndicator() {
   return (
-    <div className="flex items-center gap-1 px-4 py-3 rounded-2xl bg-gray-100 w-fit">
+    <div className="flex items-center gap-1 px-4 py-3 rounded-md bg-sand-deep w-fit">
       {[0, 1, 2].map(i => (
         <div
           key={i}
-          className="w-2 h-2 rounded-full bg-gray-400"
+          className="w-2 h-2 rounded-full bg-muted"
           style={{
             animation: 'bounce 1.2s ease-in-out infinite',
             animationDelay: `${i * 0.2}s`,
@@ -246,18 +246,15 @@ export function DiscoveryFlow({ profile, onComplete }: Props) {
       {/* ── Progress bar ── */}
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-semibold text-gray-500">
+          <p className="t-micro text-muted">
             Question {stepIndex + 1} of {totalSteps}
           </p>
-          <p className="text-xs text-gray-400">🎁 Finding your hidden coverage</p>
+          <p className="t-micro text-muted flex items-center gap-1"><IconGift size={14} className="text-muted shrink-0" /> Finding your hidden coverage</p>
         </div>
-        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-sand-deep rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full transition-all duration-400"
-            style={{
-              width: `${progressPct}%`,
-              backgroundColor: 'var(--color-primary)',
-            }}
+            className="h-full bg-teal rounded-full transition-all duration-400"
+            style={{ width: `${progressPct}%` }}
           />
         </div>
       </div>
@@ -269,11 +266,11 @@ export function DiscoveryFlow({ profile, onComplete }: Props) {
           {showTyping && <TypingIndicator />}
           {questionVisible && !showTyping && (
             <div className="animate-fade-in">
-              <h2 className="text-[17px] font-extrabold text-gray-900 leading-snug">
+              <h2 className="t-h3 text-navy leading-snug">
                 {currentQ.text}
               </h2>
               {currentQ.subtext && (
-                <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+                <p className="t-body-sm text-muted mt-1.5 leading-relaxed">
                   {currentQ.subtext}
                 </p>
               )}
@@ -313,23 +310,19 @@ export function DiscoveryFlow({ profile, onComplete }: Props) {
 
                 {/* Hint */}
                 {currentQ.hint && (
-                  <div className="rounded-xl bg-blue-50 border border-blue-100 px-3 py-2.5">
-                    <p className="text-xs text-blue-700 leading-relaxed">{currentQ.hint}</p>
+                  <div className="rounded-md border border-hairline bg-sand-deep px-3 py-2.5">
+                    <p className="t-caption text-slate leading-relaxed">{currentQ.hint}</p>
                   </div>
                 )}
 
                 {/* Multi-select Continue button */}
-                <button
+                <Button
+                  fullWidth
                   onClick={advance}
                   disabled={!hasAnswer}
-                  className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity"
-                  style={{
-                    backgroundColor: 'var(--color-primary)',
-                    opacity: hasAnswer ? 1 : 0.4,
-                  }}
                 >
-                  Continue →
-                </button>
+                  Continue
+                </Button>
               </>
             )}
           </div>
@@ -339,12 +332,14 @@ export function DiscoveryFlow({ profile, onComplete }: Props) {
       {/* ── Back button ── */}
       {stepIndex > 0 && (
         <div className="px-5 pb-6 pt-2">
-          <button
+          <Button
+            variant="ghost"
+            size="md"
             onClick={goBack}
-            className="flex items-center gap-1.5 text-sm text-gray-400 touch-target"
+            className="flex items-center gap-1.5 text-muted"
           >
             ← Back
-          </button>
+          </Button>
         </div>
       )}
     </div>

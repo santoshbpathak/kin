@@ -6,11 +6,11 @@ import { Link } from 'react-router-dom'
  */
 export function AppFooter() {
   return (
-    <footer className="border-t border-gray-100 bg-white px-4 py-3 text-center safe-bottom">
-      <p className="text-[11px] leading-tight text-gray-400">
+    <footer className="safe-bottom border-t border-hairline bg-sand px-4 py-3 text-center">
+      <p className="text-[11px] leading-tight text-muted">
         KIN is a financial wellness platform. Insurance products are underwritten by licensed
         insurers. IRDAI does not endorse any particular insurer.{' '}
-        <Link to="/privacy" className="underline hover:text-gray-600">
+        <Link to="/privacy" className="text-teal-deep underline">
           Privacy Policy
         </Link>
       </p>

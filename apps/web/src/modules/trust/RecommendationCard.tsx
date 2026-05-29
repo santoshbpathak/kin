@@ -1,19 +1,35 @@
+import { Button, Card, StateChip } from '@/components/ui'
+import { IconShield, IconHealth, IconBuilding, IconDoc, IconSearch, IconCard } from '@/components/ui/icons'
 import type { Recommendation } from './recommendationEngine'
+import type { ComponentType } from 'react'
 
-const CATEGORY_ICON: Record<string, string> = {
-  term_life: '🛡️',
-  health: '🏥',
-  top_up_health: '💊',
-  ci_rider: '🩺',
-  income_protection: '💼',
-  pmsby_activation: '🏛️',
-  edli_awareness: '📋',
-  review_existing: '🔍',
+const CATEGORY_ICON: Record<string, ComponentType<{ size?: number; className?: string }>> = {
+  term_life: IconShield,
+  health: IconHealth,
+  top_up_health: IconHealth,
+  ci_rider: IconHealth,
+  income_protection: IconCard,
+  pmsby_activation: IconBuilding,
+  edli_awareness: IconDoc,
+  review_existing: IconSearch,
 }
 
 const PRIORITY_LABEL: Record<number, string> = {
   1: '1st priority', 2: '2nd priority', 3: '3rd priority',
   4: '4th priority', 5: '5th priority',
+}
+
+// Priority 1 = critical, 2 = moderate, 3+ = mild (no special tone)
+function priorityTone(priority: number): 'critical' | 'moderate' | 'positive' {
+  if (priority === 1) return 'critical'
+  if (priority === 2) return 'moderate'
+  return 'positive'
+}
+
+// Top stripe colour class per priority
+const STRIPE_CLASS: Record<number, string> = {
+  1: 'bg-coral',
+  2: 'bg-amber',
 }
 
 interface RecommendationCardProps {
@@ -23,72 +39,67 @@ interface RecommendationCardProps {
 }
 
 export function RecommendationCard({ rec, onSeeTheMath, onAction }: RecommendationCardProps) {
-  const icon = CATEGORY_ICON[rec.productCategory] ?? '📄'
-  const priorityColour = rec.priority === 1 ? '#EF4444' : rec.priority === 2 ? '#F97316' : '#6B7280'
+  const IconComponent = CATEGORY_ICON[rec.productCategory] ?? IconDoc
+  const stripeClass = STRIPE_CLASS[rec.priority] ?? 'bg-sand-deep'
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+    <Card className="overflow-hidden p-0">
       {/* Priority stripe */}
-      <div className="h-1" style={{ backgroundColor: priorityColour }} />
+      <div className={`h-1 ${stripeClass}`} />
 
       <div className="p-4">
         {/* Header row */}
         <div className="flex items-start gap-3 mb-3">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-            style={{ backgroundColor: `${priorityColour}15` }}
-          >
-            {icon}
+          <div className="w-10 h-10 rounded-md flex items-center justify-center shrink-0 bg-sand-deep">
+            <IconComponent size={22} className="text-navy" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-              <span
-                className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full text-white shrink-0"
-                style={{ backgroundColor: priorityColour }}
-              >
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <StateChip tone={priorityTone(rec.priority)}>
                 {PRIORITY_LABEL[rec.priority]}
-              </span>
+              </StateChip>
               {rec.estimatedScoreImpact > 0 && (
-                <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full shrink-0">
-                  +{rec.estimatedScoreImpact} pts to score
-                </span>
+                <StateChip tone="positive">
+                  +{rec.estimatedScoreImpact} pts
+                </StateChip>
               )}
             </div>
-            <h3 className="text-sm font-bold text-gray-900 leading-snug">{rec.headline}</h3>
+            <h3 className="t-body font-bold text-navy leading-snug">{rec.headline}</h3>
           </div>
         </div>
 
         {/* Subtext */}
-        <p className="text-xs text-gray-500 leading-relaxed mb-3">{rec.subtext}</p>
+        <p className="t-body-sm text-muted leading-relaxed mb-3">{rec.subtext}</p>
 
         {/* Action row — "See the Math" is MANDATORY (CG-2) */}
         <div className="flex gap-2">
           {/* See the Math — always present, non-negotiable per PRD + CG-2 */}
-          <button
+          <Button
+            variant="secondary"
+            size="md"
             onClick={() => onSeeTheMath(rec)}
-            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-colors shrink-0"
             aria-label={`See the Math for ${rec.headline}`}
+            className="shrink-0 text-slate border-hairline"
           >
-            🔍 See the Math
-          </button>
+            <IconSearch size={16} className="text-navy mr-1.5 shrink-0" /> See the Math
+          </Button>
 
           {/* Primary action */}
           {rec.productCategory !== 'edli_awareness' && (
-            <button
+            <Button
+              size="md"
+              className="flex-1"
               onClick={() => onAction(rec)}
-              className="flex-1 py-2.5 rounded-xl text-white text-xs font-semibold transition-opacity"
-              style={{ backgroundColor: 'var(--color-primary)' }}
             >
               {rec.actionLabel} →
-            </button>
+            </Button>
           )}
           {rec.productCategory === 'edli_awareness' && (
             <a
               href="https://unifiedportal-mem.epfindia.gov.in"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 py-2.5 rounded-xl text-white text-xs font-semibold text-center"
-              style={{ backgroundColor: '#1B4332' }}
+              className="flex-1 inline-flex items-center justify-center h-[44px] px-[18px] rounded-sm text-[14px] font-bold bg-teal text-navy transition-transform duration-fast active:scale-[0.985]"
             >
               EPFO Portal →
             </a>
@@ -96,11 +107,11 @@ export function RecommendationCard({ rec, onSeeTheMath, onAction }: Recommendati
         </div>
 
         {/* Conditions apply footer — CG-2 */}
-        <p className="text-[10px] text-gray-400 mt-2.5 leading-relaxed">
+        <p className="t-micro text-muted mt-2.5 leading-relaxed normal-case tracking-normal">
           {rec.conditionsApply && <strong>Conditions apply. </strong>}
           This is indicative only. For details, read the sales brochure before concluding a sale.
         </p>
       </div>
-    </div>
+    </Card>
   )
 }

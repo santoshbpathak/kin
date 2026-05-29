@@ -18,7 +18,7 @@
  */
 
 import { useState, useMemo } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { DiscoveryFlow } from './DiscoveryFlow'
 import { CoverageResultCard } from './CoverageResultCard'
 import {
@@ -29,6 +29,8 @@ import {
   type DiscoveredCoverage,
 } from './discoveryEngine'
 import type { UserProfile } from '../diagnostic/parser'
+import { Button, Card, PrivacyLine } from '@/components/ui'
+import { IconGift, IconBuilding, IconShield, IconCard, IconShieldCheck, IconVault } from '@/components/ui/icons'
 
 type Phase = 'intro' | 'flow' | 'results'
 
@@ -52,24 +54,18 @@ function BonusBanner({ total, count }: { total: number; count: number }) {
     : `₹${(total / 100_000).toFixed(0)} L`
 
   return (
-    <div
-      className="rounded-2xl border-2 border-dashed p-5 flex items-start gap-4"
-      style={{
-        borderColor: 'var(--color-accent)',
-        background: 'color-mix(in srgb, var(--color-accent) 6%, white)',
-      }}
-    >
-      <span className="text-3xl shrink-0">🎁</span>
+    <div className="rounded-md border border-teal/30 bg-mint p-4 flex items-start gap-4">
+      <IconGift size={24} className="text-teal-deep shrink-0" />
       <div>
-        <p className="text-base font-extrabold text-gray-900">
-          {formatted} bonus coverage found!
+        <p className="t-body font-bold text-navy">
+          {formatted} bonus cover found!
         </p>
-        <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-          {count} hidden coverage{count > 1 ? 's' : ''} identified — most people never claim
+        <p className="t-body-sm mt-1 text-slate leading-relaxed">
+          {count} hidden cover{count > 1 ? 's' : ''} identified — most people never claim
           these because they don't know they have them. This is in addition to
           your KIN Protection Score.
         </p>
-        <p className="text-[10px] text-gray-400 mt-1.5">
+        <p className="t-micro mt-1.5 text-muted">
           Conditions apply. Amounts subject to scheme eligibility and claim conditions.
         </p>
       </div>
@@ -85,17 +81,17 @@ function StatusSummary({ coverages }: { coverages: DiscoveredCoverage[] }) {
 
   return (
     <div className="grid grid-cols-3 gap-2">
-      <div className="rounded-xl bg-green-50 border border-green-100 px-3 py-2.5 text-center">
-        <p className="text-lg font-extrabold text-green-700">{active}</p>
-        <p className="text-[10px] text-green-600 font-medium leading-tight">Active / Likely</p>
+      <div className="rounded-sm border border-hairline bg-mint px-3 py-2.5 text-center">
+        <p className="t-numeric-inline text-teal-deep">{active}</p>
+        <p className="t-micro text-teal-deep leading-tight mt-0.5">Active / Likely</p>
       </div>
-      <div className="rounded-xl bg-orange-50 border border-orange-100 px-3 py-2.5 text-center">
-        <p className="text-lg font-extrabold text-orange-600">{actionable}</p>
-        <p className="text-[10px] text-orange-500 font-medium leading-tight">Can Activate</p>
+      <div className="rounded-sm border border-hairline bg-sand-deep px-3 py-2.5 text-center">
+        <p className="t-numeric-inline text-navy">{actionable}</p>
+        <p className="t-micro text-muted leading-tight mt-0.5">Can Activate</p>
       </div>
-      <div className="rounded-xl bg-amber-50 border border-amber-100 px-3 py-2.5 text-center">
-        <p className="text-lg font-extrabold text-amber-600">{check}</p>
-        <p className="text-[10px] text-amber-500 font-medium leading-tight">Verify</p>
+      <div className="rounded-sm border border-hairline bg-sand-deep px-3 py-2.5 text-center">
+        <p className="t-numeric-inline text-amber">{check}</p>
+        <p className="t-micro text-muted leading-tight mt-0.5">Verify</p>
       </div>
     </div>
   )
@@ -104,63 +100,60 @@ function StatusSummary({ coverages }: { coverages: DiscoveredCoverage[] }) {
 // ── Intro landing screen ─────────────────────────────────────────
 function IntroScreen({ onStart }: { onStart: () => void }) {
   const items = [
-    { emoji: '🏛️', label: 'EDLI — ₹7L EPFO life cover (free)' },
-    { emoji: '🦺', label: 'PMSBY — ₹2L accident cover for ₹20/year' },
-    { emoji: '🚗', label: 'Motor PA — ₹15L mandatory in your policy' },
-    { emoji: '🏢', label: 'Employer group term life (2–5× salary)' },
-    { emoji: '💳', label: 'Credit card travel accident insurance' },
+    { icon: <IconBuilding size={18} className="text-navy shrink-0" />, label: 'EDLI — ₹7L EPFO life cover (free)' },
+    { icon: <IconShield size={18} className="text-navy shrink-0" />, label: 'PMSBY — ₹2L accident cover for ₹20/year' },
+    { icon: <IconCard size={18} className="text-navy shrink-0" />, label: 'Motor PA — ₹15L mandatory in your policy' },
+    { icon: <IconBuilding size={18} className="text-navy shrink-0" />, label: 'Employer group term life (2–5× salary)' },
+    { icon: <IconCard size={18} className="text-navy shrink-0" />, label: 'Credit card travel accident insurance' },
   ]
 
   return (
     <div className="flex flex-col px-5 pt-6 pb-10">
       {/* Hero */}
       <div className="text-center mb-8">
-        <div className="text-6xl mb-4">🎁</div>
-        <h1 className="text-2xl font-extrabold text-gray-900 leading-tight mb-3">
-          You probably have<br />coverage you don't know about
+        <div className="flex justify-center mb-4">
+          <IconGift size={48} className="text-teal-deep" />
+        </div>
+        <h1 className="t-h2 text-navy leading-tight mb-3">
+          You probably have<br />cover you don't know about
         </h1>
-        <p className="text-sm text-gray-500 leading-relaxed max-w-xs mx-auto">
-          8 questions · 2 minutes · surfaces hidden insurance most Indians miss
+        <p className="t-body-sm text-muted leading-relaxed max-w-xs mx-auto">
+          8 questions · 2 minutes · surfaces hidden protection most families miss
         </p>
       </div>
 
       {/* Hidden coverage examples */}
-      <div className="rounded-2xl bg-gray-50 border border-gray-100 p-4 mb-6">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-3">
+      <Card className="mb-6">
+        <p className="t-micro text-muted mb-3">
           What we look for
         </p>
         <div className="space-y-2.5">
           {items.map((item, i) => (
             <div key={i} className="flex items-center gap-3">
-              <span className="text-xl">{item.emoji}</span>
-              <p className="text-sm text-gray-700">{item.label}</p>
+              {item.icon}
+              <p className="t-body-sm text-slate">{item.label}</p>
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* Trust signal */}
-      <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 mb-6">
-        <p className="text-xs text-blue-800 leading-relaxed">
-          <strong>100% rule-based.</strong> KIN does not sell insurance in this module.
-          We only surface what you already own or are eligible for — then help you
+      <div className="rounded-sm border border-hairline bg-sand-deep p-4 mb-6">
+        <p className="t-body-sm text-slate leading-relaxed">
+          <strong className="text-navy">100% rule-based.</strong> KIN does not sell insurance in this module.
+          We only surface what you already own or are eligible for, then help you
           verify it.
         </p>
       </div>
 
       {/* CTA */}
-      <button
-        onClick={onStart}
-        className="w-full py-4 rounded-2xl text-white font-bold text-base"
-        style={{ backgroundColor: 'var(--color-primary)' }}
-      >
-        Start Discovery →
-      </button>
+      <Button fullWidth onClick={onStart}>
+        Start Discovery
+      </Button>
 
-      <p className="text-[10px] text-gray-400 text-center mt-3 leading-relaxed">
-        Your answers are used only to identify coverage. No data is shared with
-        insurers without your consent. Conditions apply.
-      </p>
+      <PrivacyLine className="mt-3">
+        Your answers are used only to identify cover. No data is shared with insurers without your consent. Conditions apply.
+      </PrivacyLine>
     </div>
   )
 }
@@ -224,12 +217,14 @@ export function DiscoveryPage() {
     return (
       <div className="flex flex-col">
         <div className="px-5 pt-5 pb-2">
-          <button
+          <Button
+            variant="ghost"
+            size="md"
             onClick={() => setPhase('intro')}
-            className="text-xs text-gray-400 mb-2 touch-target -ml-1"
+            className="-ml-2"
           >
-            ← Back to intro
-          </button>
+            ← Back
+          </Button>
         </div>
         <DiscoveryFlow
           profile={profile}
@@ -243,25 +238,22 @@ export function DiscoveryPage() {
   return (
     <div className="flex flex-col pb-10">
       {/* Header */}
-      <div
-        className="px-5 pt-6 pb-5"
-        style={{
-          background: 'linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 6%, white) 0%, white 100%)',
-        }}
-      >
-        <button
+      <div className="px-5 pt-6 pb-5">
+        <Button
+          variant="ghost"
+          size="md"
           onClick={() => navigate('/score')}
-          className="text-xs text-gray-400 mb-4 flex items-center gap-1 touch-target -ml-1"
+          className="-ml-2 mb-3"
         >
           ← Your Score
-        </button>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
+        </Button>
+        <p className="t-micro text-muted mb-1">
           Discovery complete
         </p>
-        <h1 className="text-xl font-extrabold text-gray-900 leading-tight">
-          Your Hidden Coverage
+        <h1 className="t-h2 text-navy leading-tight">
+          Your Hidden Cover
         </h1>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="t-caption text-muted mt-1">
           {coverages.length} coverages analysed · Rule {DISCOVERY_RULE_VERSION}
         </p>
       </div>
@@ -286,45 +278,45 @@ export function DiscoveryPage() {
         </div>
 
         {/* CG-2 disclaimer */}
-        <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-          <p className="text-[10px] text-gray-400 leading-relaxed">
-            This discovery analysis is based on your self-reported answers and general eligibility rules.
-            KIN does not verify actual policy status with insurers or government databases.
-            Always verify coverage directly with the relevant insurer, employer, or government portal.
-            This is not financial advice. <strong>Conditions apply.</strong>
-          </p>
-        </div>
+        <p className="rounded-sm border border-hairline bg-sand-deep/50 p-3 text-[11px] leading-relaxed text-muted">
+          This discovery analysis is based on your self-reported answers and general eligibility rules.
+          KIN does not verify actual policy status with insurers or government databases.
+          Always verify cover directly with the relevant insurer, employer, or government portal.
+          This is not financial advice. <strong>Conditions apply.</strong>
+        </p>
 
         {/* Next steps */}
-        <div className="rounded-2xl border border-gray-100 p-4 space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-3">
+        <Card className="space-y-3">
+          <p className="t-micro text-muted">
             Next steps
           </p>
-          <Link
-            to="/recommend"
-            className="w-full py-3 rounded-xl text-white font-semibold text-sm flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--color-primary)' }}
+          <Button
+            fullWidth
+            onClick={() => navigate('/recommend')}
           >
-            🛡️ View My Recommendations
-          </Link>
-          <Link
-            to="/vault"
-            className="w-full py-3 rounded-xl border-2 text-sm font-semibold flex items-center justify-center gap-2"
-            style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}
+            <IconShieldCheck size={16} className="text-white shrink-0" /> Connect to an advisor
+          </Button>
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={() => navigate('/vault')}
           >
-            📁 Store Documents in Vault
-          </Link>
-          <button
+            <IconVault size={16} className="shrink-0" /> Store Documents in Vault
+          </Button>
+          <Button
+            variant="ghost"
+            fullWidth
             onClick={() => {
               setCoverages([])
               setPhase('intro')
               window.scrollTo({ top: 0 })
             }}
-            className="w-full py-3 text-sm text-gray-400 border border-gray-100 rounded-xl"
           >
             Redo Discovery
-          </button>
-        </div>
+          </Button>
+        </Card>
+
+        <PrivacyLine className="pt-1">Your answers stay private until you choose to share them</PrivacyLine>
       </div>
     </div>
   )

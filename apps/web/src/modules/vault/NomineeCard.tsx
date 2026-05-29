@@ -10,13 +10,15 @@
 import { useState } from 'react'
 import type { VaultNominee } from './vaultStore'
 import { RELATIONSHIP_LABELS, deleteNominee } from './vaultStore'
+import { Button, Card, StateChip } from '@/components/ui'
+import { IconFamily, IconUser, IconPhone, IconMail, IconCard } from '@/components/ui/icons'
 
-const RELATIONSHIP_EMOJI: Record<string, string> = {
-  spouse: '💑',
-  child: '👶',
-  parent: '👨‍👩‍👧',
-  sibling: '👫',
-  other: '👤',
+const RELATIONSHIP_ICON: Record<string, typeof IconFamily> = {
+  spouse: IconFamily,
+  child: IconFamily,
+  parent: IconFamily,
+  sibling: IconFamily,
+  other: IconUser,
 }
 
 type Props = {
@@ -34,44 +36,42 @@ export function NomineeCard({ nominee, linkedPolicies, onDeleted }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+    <Card className="p-4">
       {/* Header */}
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-11 h-11 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-2xl shrink-0">
-          {RELATIONSHIP_EMOJI[nominee.relationship] ?? '👤'}
+        <div className="w-11 h-11 rounded-md border border-hairline bg-sand-deep flex items-center justify-center shrink-0">
+          {(() => { const Icon = RELATIONSHIP_ICON[nominee.relationship] ?? IconUser; return <Icon size={24} className="text-navy" /> })()}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-gray-900 truncate">{nominee.name}</p>
-          <p className="text-[11px] text-gray-400 capitalize">
+          <p className="t-body font-bold text-navy truncate">{nominee.name}</p>
+          <p className="t-micro text-muted capitalize">
             {RELATIONSHIP_LABELS[nominee.relationship]}
           </p>
         </div>
         {linkedPolicies > 0 && (
-          <div className="rounded-full bg-green-50 border border-green-100 px-2.5 py-1">
-            <p className="text-[10px] font-bold text-green-700">
-              {linkedPolicies} policy{linkedPolicies > 1 ? 'ies' : ''}
-            </p>
-          </div>
+          <StateChip tone="positive">
+            {linkedPolicies} polic{linkedPolicies > 1 ? 'ies' : 'y'}
+          </StateChip>
         )}
       </div>
 
       {/* Contact info */}
       <div className="space-y-1.5 mb-3">
         {nominee.phone && (
-          <div className="flex items-center gap-2 text-xs text-gray-600">
-            <span className="text-gray-300">📞</span>
+          <div className="flex items-center gap-2 t-body-sm text-slate">
+            <IconPhone size={16} className="text-muted shrink-0" />
             <span className="font-mono">{nominee.phone}</span>
           </div>
         )}
         {nominee.email && (
-          <div className="flex items-center gap-2 text-xs text-gray-600">
-            <span className="text-gray-300">✉️</span>
+          <div className="flex items-center gap-2 t-body-sm text-slate">
+            <IconMail size={16} className="text-muted shrink-0" />
             <span className="truncate">{nominee.email}</span>
           </div>
         )}
         {nominee.aadhaarLast4 && (
-          <div className="flex items-center gap-2 text-xs text-gray-600">
-            <span className="text-gray-300">🪪</span>
+          <div className="flex items-center gap-2 t-body-sm text-slate">
+            <IconCard size={16} className="text-muted shrink-0" />
             <span className="font-mono">Aadhaar: XXXX-XXXX-{nominee.aadhaarLast4}</span>
           </div>
         )}
@@ -79,8 +79,8 @@ export function NomineeCard({ nominee, linkedPolicies, onDeleted }: Props) {
 
       {/* No policies warning */}
       {linkedPolicies === 0 && (
-        <div className="rounded-xl bg-amber-50 border border-amber-100 px-3 py-2 mb-3">
-          <p className="text-[11px] text-amber-700">
+        <div className="rounded-md border border-hairline bg-sand-deep px-3 py-2 mb-3">
+          <p className="t-body-sm text-amber">
             Not linked to any policy — link from the Documents tab.
           </p>
         </div>
@@ -90,24 +90,29 @@ export function NomineeCard({ nominee, linkedPolicies, onDeleted }: Props) {
       {!confirming ? (
         <button
           onClick={() => setConfirming(true)}
-          className="text-[11px] text-red-400 hover:text-red-600 transition-colors"
+          className="t-micro text-muted hover:text-coral transition-colors min-h-[44px] flex items-center"
         >
           Remove nominee
         </button>
       ) : (
-        <div className="flex items-center gap-3">
-          <p className="text-xs text-red-600 font-semibold">Remove {nominee.name}?</p>
-          <button
+        <div className="flex items-center gap-3 flex-wrap">
+          <p className="t-body-sm text-coral font-semibold">Remove {nominee.name}?</p>
+          <Button
+            variant="danger"
+            size="md"
             onClick={handleDelete}
-            className="text-xs bg-red-500 text-white px-3 py-1 rounded-lg font-semibold"
           >
             Remove
-          </button>
-          <button onClick={() => setConfirming(false)} className="text-xs text-gray-400">
+          </Button>
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={() => setConfirming(false)}
+          >
             Cancel
-          </button>
+          </Button>
         </div>
       )}
-    </div>
+    </Card>
   )
 }
