@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Routes, Route, NavLink, useLocation } from 'react-router-dom'
 import { BrandProvider } from '@/theme/BrandProvider'
 import { AuthProvider } from '@/modules/auth/AuthContext'
@@ -26,6 +27,14 @@ const NAV_ITEMS = [
   { to: '/vault',  emoji: '📁', label: 'Vault'  },
   { to: '/engage', emoji: '🔥', label: 'Streak' },
 ]
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+  return null
+}
 
 function BottomNav() {
   const { pathname } = useLocation()
@@ -76,6 +85,7 @@ export default function App() {
     <BrandProvider>
       <AuthProvider>
         <div className="flex flex-col min-h-screen">
+          <ScrollToTop />
           <main className="flex-1 pb-16">
             <Routes>
               <Route path="/" element={<HomePage />} />

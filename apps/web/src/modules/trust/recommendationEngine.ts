@@ -127,24 +127,27 @@ export function generateRecommendations(
     })
   }
 
-  // ── R3: PMSBY activation (if bank account, not already opt-in flagged) ─
-  if (!profile.hasPersonalHealth || score.incomeScore.score < 50) {
-    recs.push({
-      id: 'R3_PMSBY',
-      priority: 3,
-      productCategory: 'pmsby_activation',
-      headline: 'Activate PMSBY — ₹2L accident cover at ₹20/year',
-      subtext: 'Pradhan Mantri Suraksha Bima Yojana is a government scheme available via your savings bank account. ₹2,00,000 accidental death/disability cover for just ₹20/year. Takes 2 minutes to activate.',
-      actionLabel: 'Activate via Bank',
-      estimatedScoreImpact: 3,
-      basisText: 'PMSBY provides ₹2,00,000 accidental death and disability cover at a premium of ₹20/year, auto-debited from your savings bank account. Eligibility: 18–70 years, Indian bank account holder. This is a government-backed opt-in scheme — it does not auto-enrol.',
-      formula: `Premium = ₹20/year\nCover = ₹2,00,000 accidental death or permanent total disability\nEligibility = active savings bank account, age 18–70\nImpact on score = +3 pts (counted as income protection bonus)`,
-      irdaiRuleReference: 'Pradhan Mantri Suraksha Bima Yojana — Ministry of Finance notification, IRDAI Circular on Government Micro-Insurance Schemes',
-      productDisclaimer: 'PMSBY covers accidental death and permanent total/partial disability only. It does not cover natural death or illness. Opt-in renewal required annually. Conditions apply.',
-      conditionsApply: true,
-      isUlip: false,
-    })
-  }
+  // ── R3: PMSBY activation ──────────────────────────────────────────────
+  // PMSBY is a ₹20/year accident-cover scheme available to every savings-
+  // account holder aged 18–70. Eligibility is independent of whether the
+  // user has life or health cover, so recommend it universally — the prior
+  // gating on !hasPersonalHealth hid PMSBY whenever the user declared any
+  // health cover, which was a bug.
+  recs.push({
+    id: 'R3_PMSBY',
+    priority: 3,
+    productCategory: 'pmsby_activation',
+    headline: 'Activate PMSBY — ₹2L accident cover at ₹20/year',
+    subtext: 'Pradhan Mantri Suraksha Bima Yojana is a government scheme available via your savings bank account. ₹2,00,000 accidental death/disability cover for just ₹20/year. Takes 2 minutes to activate.',
+    actionLabel: 'Activate via Bank',
+    estimatedScoreImpact: 3,
+    basisText: 'PMSBY provides ₹2,00,000 accidental death and disability cover at a premium of ₹20/year, auto-debited from your savings bank account. Eligibility: 18–70 years, Indian bank account holder. This is a government-backed opt-in scheme — it does not auto-enrol.',
+    formula: `Premium = ₹20/year\nCover = ₹2,00,000 accidental death or permanent total disability\nEligibility = active savings bank account, age 18–70\nImpact on score = +3 pts (counted as income protection bonus)`,
+    irdaiRuleReference: 'Pradhan Mantri Suraksha Bima Yojana — Ministry of Finance notification, IRDAI Circular on Government Micro-Insurance Schemes',
+    productDisclaimer: 'PMSBY covers accidental death and permanent total/partial disability only. It does not cover natural death or illness. Opt-in renewal required annually. Conditions apply.',
+    conditionsApply: true,
+    isUlip: false,
+  })
 
   // ── R4: Income protection / EMI coverage ─────────────────────────────
   if (obligations > 0 && score.incomeScore.score < 50) {
