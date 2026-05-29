@@ -42,6 +42,7 @@ export class DiagnosticService {
       estimatedFields: outcome.mapped.estimatedFields,
       unknownFields: outcome.mapped.unknownFields,
       groupBCount: outcome.groupBCount,
+      legacyProfile: outcome.legacyProfile,
     }
   }
 }
