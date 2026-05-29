@@ -33,6 +33,19 @@ export interface UserProfile {
   occupation: OccupationCategory
   /** Derived: eligible for EDLI */
   edliEligible: boolean
+
+  // ── Optional exact figures from conversational diagnostic (PRD v1.4) ──
+  // When present, the score engine uses these instead of TYPICAL_* defaults.
+  // The legacy 7-question DiagnosticFlow leaves these undefined so older
+  // sessions still score the same way they did before v1.4.
+  actualAnnualIncome?: number          // ₹ per year
+  actualMonthlyObligations?: number    // ₹ per month
+  actualPersonalLifeCover?: number     // ₹ term/personal life sum assured
+  actualEmployerGroupTerm?: number     // ₹ employer group term sum assured
+  actualPersonalHealthCover?: number   // ₹ retail health policy sum insured
+  actualEmployerMediclaim?: number     // ₹ employer mediclaim sum insured
+  actualCiCover?: number               // ₹ critical illness
+  actualIncomeProtectionCover?: number // ₹ income protection / disability
 }
 
 // ── City tier mapping (T1: metros, T2: large cities, T3: rest) ───────────────

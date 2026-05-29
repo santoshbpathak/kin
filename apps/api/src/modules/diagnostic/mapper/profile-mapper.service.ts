@@ -190,6 +190,10 @@ export class ProfileMapperService {
       employerGroupTerm,
       personalHealthCover,
       employerMediclaim,
+      ciCover,
+      incomeProtectionCover,
+      annualIncomeExact: incomeExact,
+      monthlyObligationsExact: numericOrNull(collected.monthly_obligations_exact),
     })
 
     return { mapped, groupBCount, legacyProfile }
@@ -211,6 +215,10 @@ interface LegacySynthesisInput {
   employerGroupTerm: number | null
   personalHealthCover: number | null
   employerMediclaim: number | null
+  ciCover: number | null
+  incomeProtectionCover: number | null
+  annualIncomeExact: number | null
+  monthlyObligationsExact: number | null
 }
 
 /**
@@ -218,11 +226,15 @@ interface LegacySynthesisInput {
  * shape consumed by the client-side score engine and the six downstream
  * pages that read sessionStorage['kin_diagnostic_profile'].
  *
- * Defaults are deliberately conservative: missing values resolve to the
- * lowest-score-impact band so the score is never inflated by absence.
+ * Booleans + bands remain so legacy callers (the 7-question flow) keep
+ * working unchanged. The conversational flow additionally populates the
+ * optional actual_* fields so the score engine uses the real amounts the
+ * user entered instead of TYPICAL_* defaults — without these the score
+ * engine would have shown a flat ₹50L for any "has term life" answer
+ * regardless of the user's actual ₹35L sum assured.
  */
 function synthesiseLegacyProfile(input: LegacySynthesisInput): LegacyClientProfile {
-  return {
+  const profile: LegacyClientProfile = {
     lifeStage: (input.lifeStage as LegacyClientProfile['lifeStage'] | null) ?? 'single',
     incomeBand: mapInternalToLegacyIncomeBand(input.internalIncomeBand),
     dependantsCount: input.dependantsCount ?? 0,
@@ -235,6 +247,17 @@ function synthesiseLegacyProfile(input: LegacySynthesisInput): LegacyClientProfi
     occupation: mapToLegacyOccupation(input.occupation),
     edliEligible: false, // PF status not collected; legacy parser only set this for salaried_pf
   }
+
+  if (input.annualIncomeExact != null) profile.actualAnnualIncome = input.annualIncomeExact
+  if (input.monthlyObligationsExact != null) profile.actualMonthlyObligations = input.monthlyObligationsExact
+  if (input.personalLifeCover != null) profile.actualPersonalLifeCover = input.personalLifeCover
+  if (input.employerGroupTerm != null) profile.actualEmployerGroupTerm = input.employerGroupTerm
+  if (input.personalHealthCover != null) profile.actualPersonalHealthCover = input.personalHealthCover
+  if (input.employerMediclaim != null) profile.actualEmployerMediclaim = input.employerMediclaim
+  if (input.ciCover != null) profile.actualCiCover = input.ciCover
+  if (input.incomeProtectionCover != null) profile.actualIncomeProtectionCover = input.incomeProtectionCover
+
+  return profile
 }
 
 function mapInternalToLegacyIncomeBand(b: IncomeBand | null): LegacyClientProfile['incomeBand'] {
