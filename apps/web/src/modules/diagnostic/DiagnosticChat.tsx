@@ -39,12 +39,27 @@ interface AgentTurnResponse {
   collectedFieldCount: number
 }
 
+interface LegacyClientProfile {
+  lifeStage: 'single' | 'married_no_kids' | 'married_with_kids' | 'parent_caregiver'
+  incomeBand: 'lt_5l' | '5_10l' | '10_20l' | '20_40l' | 'gt_40l'
+  dependantsCount: number
+  monthlyObligationsBand: 'none' | 'lt_15k' | '15_40k' | '40_80k' | 'gt_80k'
+  hasEmployerMediclaim: boolean
+  hasPersonalHealth: boolean
+  hasTermLife: boolean
+  hasEndowment: boolean
+  cityTier: 'T1' | 'T2' | 'T3'
+  occupation: 'salaried_pf' | 'salaried_no_pf' | 'self_employed' | 'govt'
+  edliEligible: boolean
+}
+
 interface CompleteResponse {
   userProfileId: string
   fieldsCollected: string[]
   estimatedFields: string[]
   unknownFields: string[]
   groupBCount: number
+  legacyProfile: LegacyClientProfile
 }
 
 const SKIP_MESSAGE = "I'd like to skip this question."
@@ -143,8 +158,15 @@ export function DiagnosticChat() {
         body: { conversationId },
       })
       try {
-        // Hand the disclosure lists to the Score screen so it can show
-        // the small ⓘ icon next to estimated/unknown sub-scores.
+        // Legacy UserProfile shape: every downstream page (/score, /recommend,
+        // /discover, lifecycle, streak, connect) reads this key and computes
+        // scores client-side. Must be written or the pages render their empty
+        // state.
+        sessionStorage.setItem(
+          'kin_diagnostic_profile',
+          JSON.stringify(res.legacyProfile),
+        )
+        // Confidence sidecar for the ⓘ disclosure icons on the Score screen.
         sessionStorage.setItem(
           'kin_diagnostic_confidence',
           JSON.stringify({

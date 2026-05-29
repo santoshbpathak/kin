@@ -39,6 +39,7 @@ import {
 import { getCityTier } from '../city-tier.constants'
 import type {
   FieldConfidence,
+  LegacyClientProfile,
   MappedProfile,
   MapperOutcome,
 } from './confidence.types'
@@ -178,7 +179,94 @@ export class ProfileMapperService {
       confidenceMap,
     }
 
-    return { mapped, groupBCount }
+    const legacyProfile = synthesiseLegacyProfile({
+      lifeStage,
+      internalIncomeBand,
+      dependantsCount,
+      monthlyObligationsBand,
+      cityTier,
+      occupation: stringOrNull(collected.occupation_category),
+      personalLifeCover,
+      employerGroupTerm,
+      personalHealthCover,
+      employerMediclaim,
+    })
+
+    return { mapped, groupBCount, legacyProfile }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Legacy client-profile synthesis
+// ─────────────────────────────────────────────────────────────────────
+
+interface LegacySynthesisInput {
+  lifeStage: string | null
+  internalIncomeBand: IncomeBand | null
+  dependantsCount: number | null
+  monthlyObligationsBand: string | null
+  cityTier: 'T1' | 'T2' | 'T3' | null
+  occupation: string | null
+  personalLifeCover: number | null
+  employerGroupTerm: number | null
+  personalHealthCover: number | null
+  employerMediclaim: number | null
+}
+
+/**
+ * Map the canonical conversational profile back to the legacy UserProfile
+ * shape consumed by the client-side score engine and the six downstream
+ * pages that read sessionStorage['kin_diagnostic_profile'].
+ *
+ * Defaults are deliberately conservative: missing values resolve to the
+ * lowest-score-impact band so the score is never inflated by absence.
+ */
+function synthesiseLegacyProfile(input: LegacySynthesisInput): LegacyClientProfile {
+  return {
+    lifeStage: (input.lifeStage as LegacyClientProfile['lifeStage'] | null) ?? 'single',
+    incomeBand: mapInternalToLegacyIncomeBand(input.internalIncomeBand),
+    dependantsCount: input.dependantsCount ?? 0,
+    monthlyObligationsBand: mapToLegacyObligationsBand(input.monthlyObligationsBand),
+    hasEmployerMediclaim: (input.employerMediclaim ?? 0) > 0,
+    hasPersonalHealth: (input.personalHealthCover ?? 0) > 0,
+    hasTermLife: (input.personalLifeCover ?? 0) > 0 || (input.employerGroupTerm ?? 0) > 0,
+    hasEndowment: false, // not collected by the conversational flow
+    cityTier: input.cityTier ?? 'T3',
+    occupation: mapToLegacyOccupation(input.occupation),
+    edliEligible: false, // PF status not collected; legacy parser only set this for salaried_pf
+  }
+}
+
+function mapInternalToLegacyIncomeBand(b: IncomeBand | null): LegacyClientProfile['incomeBand'] {
+  switch (b) {
+    case 'lt3l':
+    case '3l_5l':  return 'lt_5l'
+    case '5l_10l': return '5_10l'
+    case '10l_20l':return '10_20l'
+    case '20l_50l':return '20_40l'
+    case 'gt50l':  return 'gt_40l'
+    default:       return 'lt_5l'
+  }
+}
+
+function mapToLegacyObligationsBand(b: string | null): LegacyClientProfile['monthlyObligationsBand'] {
+  // Conversational agent's bands are "<10K" | "10K-30K" | "30K-50K" | "50K+";
+  // legacy bands are "none" | "lt_15k" | "15_40k" | "40_80k" | "gt_80k".
+  switch (b) {
+    case '<10K':    return 'lt_15k'
+    case '10K-30K': return '15_40k'
+    case '30K-50K': return '40_80k'
+    case '50K+':    return 'gt_80k'
+    default:        return 'none'
+  }
+}
+
+function mapToLegacyOccupation(o: string | null): LegacyClientProfile['occupation'] {
+  switch (o) {
+    case 'salaried':       return 'salaried_no_pf' // PF status not asked; conservative default
+    case 'self_employed':  return 'self_employed'
+    case 'business_owner': return 'self_employed'
+    default:               return 'salaried_no_pf'
   }
 }
 
