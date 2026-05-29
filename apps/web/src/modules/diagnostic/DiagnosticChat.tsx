@@ -51,6 +51,14 @@ interface LegacyClientProfile {
   cityTier: 'T1' | 'T2' | 'T3'
   occupation: 'salaried_pf' | 'salaried_no_pf' | 'self_employed' | 'govt'
   edliEligible: boolean
+  actualAnnualIncome?: number
+  actualMonthlyObligations?: number
+  actualPersonalLifeCover?: number
+  actualEmployerGroupTerm?: number
+  actualPersonalHealthCover?: number
+  actualEmployerMediclaim?: number
+  actualCiCover?: number
+  actualIncomeProtectionCover?: number
 }
 
 interface CompleteResponse {

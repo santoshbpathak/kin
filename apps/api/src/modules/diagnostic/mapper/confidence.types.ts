@@ -42,6 +42,17 @@ export interface LegacyClientProfile {
   cityTier: 'T1' | 'T2' | 'T3'
   occupation: 'salaried_pf' | 'salaried_no_pf' | 'self_employed' | 'govt'
   edliEligible: boolean
+
+  // Exact figures from the conversational flow. The client-side score
+  // engine prefers these over its TYPICAL_* defaults when present.
+  actualAnnualIncome?: number
+  actualMonthlyObligations?: number
+  actualPersonalLifeCover?: number
+  actualEmployerGroupTerm?: number
+  actualPersonalHealthCover?: number
+  actualEmployerMediclaim?: number
+  actualCiCover?: number
+  actualIncomeProtectionCover?: number
 }
 
 export interface MapperOutcome {

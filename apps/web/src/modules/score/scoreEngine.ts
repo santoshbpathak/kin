@@ -92,12 +92,21 @@ function fmt(n: number): string {
 
 // ── Main calculation ──────────────────────────────────────────────────────
 export function calculateScore(profile: UserProfile): ScoreResult {
-  const annualIncome    = INCOME_MIDPOINT[profile.incomeBand]
-  const monthlyObligation = OBLIGATION_MIDPOINT[profile.monthlyObligationsBand]
+  // Prefer exact figures from the conversational flow; fall back to band
+  // midpoints for legacy 7-question sessions.
+  const annualIncome      = profile.actualAnnualIncome ?? INCOME_MIDPOINT[profile.incomeBand]
+  const monthlyObligation = profile.actualMonthlyObligations ?? OBLIGATION_MIDPOINT[profile.monthlyObligationsBand]
 
   // ── Life sub-score ───────────────────────────────────────────────────
   const recommendedLifeCover = annualIncome * 10
-  const currentTermCover = profile.hasTermLife ? TYPICAL_TERM_COVER : 0
+  // Personal term life + employer group term both count toward life cover.
+  // When exact figures are not available, fall back to the typical assumption.
+  const personalLifeCover = profile.actualPersonalLifeCover
+    ?? (profile.hasTermLife && profile.actualEmployerGroupTerm == null
+        ? TYPICAL_TERM_COVER
+        : 0)
+  const employerGroupTermCover = profile.actualEmployerGroupTerm ?? 0
+  const currentTermCover = personalLifeCover + employerGroupTermCover
   const lifeRaw = recommendedLifeCover > 0
     ? (currentTermCover / recommendedLifeCover) * 100
     : 100
@@ -106,10 +115,11 @@ export function calculateScore(profile: UserProfile): ScoreResult {
   // ── Health sub-score ─────────────────────────────────────────────────
   const dependantFactor = 1 + (profile.dependantsCount * 0.1)  // more dependants → higher need
   const recommendedHealthCover = annualIncome * 3 * dependantFactor
-  const employerHealth = profile.hasEmployerMediclaim
-    ? TYPICAL_EMPLOYER_HEALTH * EMPLOYER_HEALTH_FACTOR
-    : 0
-  const personalHealth = profile.hasPersonalHealth ? TYPICAL_PERSONAL_HEALTH : 0
+  const employerHealthFace = profile.actualEmployerMediclaim
+    ?? (profile.hasEmployerMediclaim ? TYPICAL_EMPLOYER_HEALTH : 0)
+  const employerHealth = employerHealthFace * EMPLOYER_HEALTH_FACTOR
+  const personalHealth = profile.actualPersonalHealthCover
+    ?? (profile.hasPersonalHealth ? TYPICAL_PERSONAL_HEALTH : 0)
   const currentHealthCover = employerHealth + personalHealth
   const healthRaw = recommendedHealthCover > 0
     ? (currentHealthCover / recommendedHealthCover) * 100
@@ -119,8 +129,7 @@ export function calculateScore(profile: UserProfile): ScoreResult {
   // ── Income protection sub-score ──────────────────────────────────────
   // Recommended: cover obligations for 24 months
   const recommendedIncomeCover = monthlyObligation * 24
-  // MVP1: no declared income protection product — score is 0 unless obligations are 0
-  const currentIncomeCover = 0
+  const currentIncomeCover = profile.actualIncomeProtectionCover ?? 0
   const incomeRaw = recommendedIncomeCover === 0
     ? 100   // no obligations = no gap
     : (currentIncomeCover / recommendedIncomeCover) * 100
