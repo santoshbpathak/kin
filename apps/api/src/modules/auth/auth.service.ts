@@ -13,7 +13,7 @@
  * OTPs are stored hashed in the otp_requests table - serverless-safe and
  * resistant to DB-leak credential reuse.
  */
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -129,6 +129,17 @@ export class AuthService {
 
   // ── Vault token (elevated scope) ──────────────────────────────
   async issueVaultToken(userId: string): Promise<{ vaultToken: string }> {
+    // Step-up gate: the vault holds the most sensitive data (nominee Aadhaar,
+    // policy documents), so an anonymous session must NOT be able to mint an
+    // elevated vault token. Require a verified identity (WhatsApp-verified phone).
+    //
+    // NOTE (vault go-live): strengthen this to a FRESH OTP re-authentication so
+    // that a standard token stolen from Web Storage cannot be silently escalated
+    // to vault scope. The current check gates by identity, not by recency.
+    const user = await this.userRepo.findOne({ where: { userId } })
+    if (!user || !user.whatsappNumber) {
+      throw new ForbiddenException('Vault access requires a verified phone number')
+    }
     const vaultToken = this.jwtService.sign(
       { sub: userId, scope: 'vault' },
       {

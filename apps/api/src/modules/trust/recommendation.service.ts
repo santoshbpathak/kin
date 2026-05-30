@@ -16,6 +16,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { RecommendationAudit, RecommendationType } from '../../database/entities/recommendation-audit.entity'
+import { ProtectionScore } from '../../database/entities/protection-score.entity'
 import type { ScoreResult } from '../score/protection-score.service'
 import type { ParsedProfile } from '../diagnostic/nlp-parser.service'
 
@@ -41,6 +42,8 @@ export class RecommendationService {
   constructor(
     @InjectRepository(RecommendationAudit)
     private readonly auditRepo: Repository<RecommendationAudit>,
+    @InjectRepository(ProtectionScore)
+    private readonly scoreRepo: Repository<ProtectionScore>,
   ) {}
 
   generate(score: ScoreResult, profile: ParsedProfile): Recommendation[] {
@@ -207,6 +210,15 @@ export class RecommendationService {
     }>,
     profileSnapshot: Record<string, unknown>,
   ): Promise<RecommendationAudit[]> {
+    // Ownership check: the score these audit rows reference must belong to the
+    // caller. Otherwise an attacker who learns a victim's scoreId could write
+    // attacker-controlled, immutable audit rows against the victim's score and
+    // pollute the IRDAI suitability trail.
+    const owned = await this.scoreRepo.findOne({ where: { scoreId, userId } })
+    if (!owned) {
+      throw new NotFoundException('Score not found')
+    }
+
     const scrubbed = scrubPii(profileSnapshot)
     const audits = recommendations.map(rec => {
       const audit = new RecommendationAudit()
