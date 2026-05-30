@@ -170,9 +170,17 @@ export class IntakeAgentService {
     const collectedDelta = raw.collectedFields ?? {}
     session.collectedFields = mergeCollected(session.collectedFields, collectedDelta)
 
+    // The Life and Income sub-scores have no safe default, so the conversation
+    // must not finish until those two cover amounts are explicitly answered —
+    // not even if the model decides it is "done". This is what stops the Income
+    // Protection sub-score from silently coming out as zero.
+    const fields = session.collectedFields as CollectedFields
+    const scoreEssentialsAnswered =
+      fields.personal_life_cover_amount !== undefined &&
+      fields.income_protection_cover_amount !== undefined
     const isCompleteFlag =
-      raw.isComplete === true ||
-      isConversationComplete(session.collectedFields as CollectedFields)
+      (raw.isComplete === true && scoreEssentialsAnswered) ||
+      isConversationComplete(fields)
 
     if (isCompleteFlag) {
       session.isComplete = true
@@ -347,10 +355,12 @@ export function isConversationComplete(collected: CollectedFields): boolean {
   const groupADone = GROUP_A_FIELDS.every(f => collected[f] !== undefined)
   const groupBHit = GROUP_B_FIELDS.filter(f => collected[f] !== undefined).length
   // Hard rule per Brief §1.4: personal_life_cover_amount must be explicitly
-  // answered (number, 0, or "skipped") before the Life sub-score can run
-  // without a warning.
+  // answered (number, 0, or "skipped") before the Life sub-score can run.
   const lifeCoverAnswered = collected.personal_life_cover_amount !== undefined
-  return groupADone && groupBHit >= 3 && lifeCoverAnswered
+  // Same rule for income protection: the Income sub-score has no safe default,
+  // so without an explicit answer it silently scores zero. Require it too.
+  const incomeProtectionAnswered = collected.income_protection_cover_amount !== undefined
+  return groupADone && groupBHit >= 3 && lifeCoverAnswered && incomeProtectionAnswered
 }
 
 export function groupAProgress(collected: CollectedFields): number {

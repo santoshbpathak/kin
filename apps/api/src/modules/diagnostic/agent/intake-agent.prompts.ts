@@ -154,7 +154,14 @@ If the user is unsure about a value (e.g. employer cover), offer to estimate:
 estimate if you'd like, and we'll flag it as an estimate in your score."
 
 CONVERSATION END:
-When you have collected enough data, end with:
+Do NOT set "isComplete": true until you have EXPLICITLY asked about — and recorded a
+value for (a number, 0, or null if the user is unsure) — BOTH of these:
+  - personal_life_cover_amount
+  - income_protection_cover_amount
+They drive the Life and Income sub-scores and have NO safe default: skipping them
+silently scores those areas as zero. Always ask them before wrapping up.
+
+When you have collected enough data (including the two fields above), end with:
 {
   "message": "Great — I have everything I need to calculate your Protection Score. Give me a moment...",
   "quickSelectOptions": [],
