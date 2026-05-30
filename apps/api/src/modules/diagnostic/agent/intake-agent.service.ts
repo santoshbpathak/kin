@@ -125,9 +125,13 @@ export class IntakeAgentService {
 
   async processMessage(
     conversationId: string,
+    sessionToken: string,
     userMessage: string,
   ): Promise<AgentTurn> {
-    const session = await this.sessionRepo.findOne({ where: { conversationId } })
+    // Ownership-bound lookup: a conversation is only addressable by the session
+    // that created it. A mismatched/foreign id resolves to "not found" (we do
+    // not distinguish "not yours" from "missing", to avoid leaking existence).
+    const session = await this.sessionRepo.findOne({ where: { conversationId, sessionToken } })
     if (!session) throw new NotFoundException('Conversation not found or expired')
     if (session.isComplete) {
       // Idempotent: re-emit the last assistant message
@@ -188,8 +192,8 @@ export class IntakeAgentService {
     }
   }
 
-  async getStatus(conversationId: string) {
-    const session = await this.sessionRepo.findOne({ where: { conversationId } })
+  async getStatus(conversationId: string, sessionToken: string) {
+    const session = await this.sessionRepo.findOne({ where: { conversationId, sessionToken } })
     if (!session) throw new NotFoundException('Conversation not found or expired')
     return {
       conversationId,
@@ -200,9 +204,9 @@ export class IntakeAgentService {
     }
   }
 
-  /** Used by ProfileMapperService and the /complete endpoint. */
-  async getSession(conversationId: string): Promise<IntakeConversationSession> {
-    const session = await this.sessionRepo.findOne({ where: { conversationId } })
+  /** Used by ProfileMapperService and the /complete endpoint. Ownership-bound. */
+  async getSession(conversationId: string, sessionToken: string): Promise<IntakeConversationSession> {
+    const session = await this.sessionRepo.findOne({ where: { conversationId, sessionToken } })
     if (!session) throw new NotFoundException('Conversation not found or expired')
     return session
   }

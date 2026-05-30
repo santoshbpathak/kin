@@ -110,29 +110,32 @@ export class ConnectController {
 
   @Post('ai/message')
   @ApiOperation({ summary: 'Send a user message to the Tier 1 AI advisor' })
-  async aiMessage(@Body() dto: AiMessageDto) {
-    return this.aiAdvisor.processMessage(dto.advisorSessionId, dto.message)
+  async aiMessage(@CurrentUser() user: JwtPayload, @Body() dto: AiMessageDto) {
+    return this.aiAdvisor.processMessage(dto.advisorSessionId, user.sub, dto.message)
   }
 
   @Get('ai/transcript/:advisorSessionId')
   @ApiOperation({ summary: 'Return the Tier 1 transcript (consent preview before upgrade)' })
-  async aiTranscript(@Param('advisorSessionId') advisorSessionId: string) {
+  async aiTranscript(
+    @CurrentUser() user: JwtPayload,
+    @Param('advisorSessionId') advisorSessionId: string,
+  ) {
     if (!advisorSessionId) throw new NotFoundException()
-    return { transcript: await this.aiAdvisor.getTranscript(advisorSessionId) }
+    return { transcript: await this.aiAdvisor.getTranscript(advisorSessionId, user.sub) }
   }
 
   // ── Tier transitions ─────────────────────────────────────────
 
   @Post('upgrade')
   @ApiOperation({ summary: 'Upgrade an AI session to Tier 2 (human chat) or Tier 3 (call)' })
-  async upgrade(@Body() dto: UpgradeDto) {
-    return this.tierSession.upgrade(dto.advisorSessionId, dto.targetTier, dto.transcriptConsent)
+  async upgrade(@CurrentUser() user: JwtPayload, @Body() dto: UpgradeDto) {
+    return this.tierSession.upgrade(dto.advisorSessionId, user.sub, dto.targetTier, dto.transcriptConsent)
   }
 
   @Post('downgrade')
   @ApiOperation({ summary: 'Return a session to a lower tier (user-initiated only)' })
-  async downgrade(@Body() dto: DowngradeDto) {
-    return this.tierSession.downgrade(dto.advisorSessionId, dto.targetTier)
+  async downgrade(@CurrentUser() user: JwtPayload, @Body() dto: DowngradeDto) {
+    return this.tierSession.downgrade(dto.advisorSessionId, user.sub, dto.targetTier)
   }
 
   @Get('advisor-availability')

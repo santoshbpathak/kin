@@ -95,9 +95,11 @@ export class AiAdvisorService {
 
   async processMessage(
     advisorSessionId: string,
+    userId: string,
     userMessage: string,
   ): Promise<AdvisoryTurn> {
-    const session = await this.sessionRepo.findOne({ where: { advisorSessionId } })
+    // Ownership-bound: the advisor session must belong to the calling user.
+    const session = await this.sessionRepo.findOne({ where: { advisorSessionId, userId } })
     if (!session) throw new NotFoundException('Advisor session not found')
 
     session.tier1Transcript.push({
@@ -142,9 +144,9 @@ export class AiAdvisorService {
     }
   }
 
-  /** Read-only access to the current Tier 1 transcript (for upgrade preview). */
-  async getTranscript(advisorSessionId: string): Promise<AdvisorSessionMessage[]> {
-    const session = await this.sessionRepo.findOne({ where: { advisorSessionId } })
+  /** Read-only access to the current Tier 1 transcript (for upgrade preview). Ownership-bound. */
+  async getTranscript(advisorSessionId: string, userId: string): Promise<AdvisorSessionMessage[]> {
+    const session = await this.sessionRepo.findOne({ where: { advisorSessionId, userId } })
     if (!session) throw new NotFoundException('Advisor session not found')
     // Strip the system message — it should never leak to the client.
     return session.tier1Transcript.filter(m => m.role !== 'system')

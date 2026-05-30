@@ -23,16 +23,16 @@ export class DiagnosticService {
     return this.agent.startConversation(sessionToken, userId)
   }
 
-  processMessage(conversationId: string, message: string): Promise<AgentTurn> {
-    return this.agent.processMessage(conversationId, message)
+  processMessage(sessionToken: string, conversationId: string, message: string): Promise<AgentTurn> {
+    return this.agent.processMessage(conversationId, sessionToken, message)
   }
 
-  getStatus(conversationId: string) {
-    return this.agent.getStatus(conversationId)
+  getStatus(sessionToken: string, conversationId: string) {
+    return this.agent.getStatus(conversationId, sessionToken)
   }
 
-  async complete(userId: string, conversationId: string) {
-    const session = await this.agent.getSession(conversationId)
+  async complete(userId: string, sessionToken: string, conversationId: string) {
+    const session = await this.agent.getSession(conversationId, sessionToken)
     const collected = await this.agent.extractStructuredData(session)
     const outcome = await this.mapper.mapAndPersist(userId, collected)
 

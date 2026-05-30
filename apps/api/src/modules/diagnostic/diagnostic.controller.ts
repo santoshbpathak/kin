@@ -56,15 +56,15 @@ export class DiagnosticController {
 
   @Post('message')
   @ApiOperation({ summary: 'Send a user message to the in-flight conversation' })
-  async message(@Body() dto: MessageDto) {
-    return this.diagnostic.processMessage(dto.conversationId, dto.message)
+  async message(@CurrentUser() user: JwtPayload, @Body() dto: MessageDto) {
+    return this.diagnostic.processMessage(user.sessionToken, dto.conversationId, dto.message)
   }
 
   @Get('status/:conversationId')
   @ApiOperation({ summary: 'Read current progress and completion status' })
-  async status(@Param('conversationId') conversationId: string) {
+  async status(@CurrentUser() user: JwtPayload, @Param('conversationId') conversationId: string) {
     if (!conversationId) throw new NotFoundException()
-    return this.diagnostic.getStatus(conversationId)
+    return this.diagnostic.getStatus(user.sessionToken, conversationId)
   }
 
   @Post('complete')
@@ -72,6 +72,6 @@ export class DiagnosticController {
     summary: 'Extract the final structured profile and persist to user_profiles',
   })
   async complete(@CurrentUser() user: JwtPayload, @Body() dto: CompleteDto) {
-    return this.diagnostic.complete(user.sub, dto.conversationId)
+    return this.diagnostic.complete(user.sub, user.sessionToken, dto.conversationId)
   }
 }

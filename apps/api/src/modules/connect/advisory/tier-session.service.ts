@@ -45,13 +45,14 @@ export class TierSessionService {
 
   async upgrade(
     advisorSessionId: string,
+    userId: string,
     targetTier: 2 | 3,
     transcriptConsent: boolean,
   ): Promise<TierUpgradeResult> {
     if (targetTier !== 2 && targetTier !== 3) {
       throw new BadRequestException('targetTier must be 2 or 3')
     }
-    const session = await this.requireSession(advisorSessionId)
+    const session = await this.requireSession(advisorSessionId, userId)
     if (!session.kinReport) {
       throw new BadRequestException('Cannot upgrade — KIN report missing from session')
     }
@@ -84,11 +85,11 @@ export class TierSessionService {
     }
   }
 
-  async downgrade(advisorSessionId: string, targetTier: 1 | 2): Promise<TierUpgradeResult> {
+  async downgrade(advisorSessionId: string, userId: string, targetTier: 1 | 2): Promise<TierUpgradeResult> {
     if (targetTier !== 1 && targetTier !== 2) {
       throw new BadRequestException('targetTier must be 1 or 2')
     }
-    const session = await this.requireSession(advisorSessionId)
+    const session = await this.requireSession(advisorSessionId, userId)
 
     if (targetTier >= session.currentTier) {
       throw new BadRequestException(
@@ -118,13 +119,14 @@ export class TierSessionService {
     }
   }
 
-  async currentTier(advisorSessionId: string): Promise<Tier> {
-    const s = await this.requireSession(advisorSessionId)
+  async currentTier(advisorSessionId: string, userId: string): Promise<Tier> {
+    const s = await this.requireSession(advisorSessionId, userId)
     return s.currentTier
   }
 
-  private async requireSession(advisorSessionId: string): Promise<AdvisorSession> {
-    const session = await this.sessionRepo.findOne({ where: { advisorSessionId } })
+  // Ownership-bound: the advisor session must belong to the calling user.
+  private async requireSession(advisorSessionId: string, userId: string): Promise<AdvisorSession> {
+    const session = await this.sessionRepo.findOne({ where: { advisorSessionId, userId } })
     if (!session) throw new NotFoundException('Advisor session not found')
     return session
   }

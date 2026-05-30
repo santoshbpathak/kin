@@ -81,10 +81,20 @@ export class AuthService {
     sessionToken?: string,
   ): Promise<{ sessionToken: string; token: string; upgraded: boolean }> {
     const stored = await this.otpRepo.findOne({ where: { phone } })
-    if (!stored || stored.otpHash !== hashOtp(otp) || stored.expiresAt.getTime() < Date.now()) {
+    if (!stored) {
       throw new UnauthorizedException('Invalid or expired OTP')
     }
+    const matches = stored.otpHash === hashOtp(otp)
+    const expired = stored.expiresAt.getTime() < Date.now()
+    // Single-use OTP: consume the code on ANY verify attempt — success OR
+    // failure. A 6-digit code is only ~1M combinations, so without this a brute
+    // force could take over an account (phone == identity). Invalidating on the
+    // first wrong guess means an attacker must request a fresh code each time,
+    // which is rate-limited, re-randomised, and visible to the real user.
     await this.otpRepo.remove(stored)
+    if (!matches || expired) {
+      throw new UnauthorizedException('Invalid or expired OTP')
+    }
 
     // Find or create user by phone
     let user = await this.userRepo.findOne({ where: { whatsappNumber: phone } })
