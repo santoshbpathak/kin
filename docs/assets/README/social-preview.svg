@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="t d">
+  <title id="t">KIN — open-source Financial Protection Intelligence Platform</title>
+  <desc id="d">1280 by 640 social preview: KIN mark and wordmark, the tagline, three sub-score chips for life, health and income protection, and the stack line React, NestJS, PostgreSQL.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#102A43"/>
+      <stop offset="1" stop-color="#0F3D52"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#18A999"/>
+      <stop offset="1" stop-color="#5BD3C3"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <g stroke="#FFFFFF" stroke-opacity="0.045"><path d="M0 160H1280M0 320H1280M0 480H1280M320 0V640M640 0V640M960 0V640"/></g>
+  <g transform="translate(112 118)">
+    <path d="M72 6 6 60h18v78h96V60h18Z" fill="none" stroke="#F7F2EA" stroke-width="9" stroke-linejoin="round"/>
+    <circle cx="48" cy="112" r="9" fill="#18A999"/><circle cx="72" cy="112" r="9" fill="#F5A623"/><circle cx="96" cy="112" r="9" fill="#E85D5A"/>
+  </g>
+  <text x="284" y="178" font-family="Manrope, Inter, 'Segoe UI', system-ui, sans-serif" font-size="96" font-weight="700" fill="#F7F2EA" letter-spacing="-2">kin</text>
+  <text x="284" y="226" font-family="Manrope, Inter, 'Segoe UI', system-ui, sans-serif" font-size="28" font-weight="600" fill="#5BD3C3" letter-spacing="2">FINANCIAL PROTECTION INTELLIGENCE PLATFORM</text>
+  <text x="112" y="330" font-family="Manrope, Inter, 'Segoe UI', system-ui, sans-serif" font-size="40" font-weight="600" fill="#F7F2EA">Know how protected your family really is.</text>
+  <text x="112" y="380" font-family="Manrope, Inter, 'Segoe UI', system-ui, sans-serif" font-size="26" fill="#F7F2EA" fill-opacity="0.8">A two-minute, anonymous protection check with every number explained.</text>
+  <!-- sub-score chips -->
+  <g font-family="Manrope, Inter, system-ui, sans-serif" font-weight="600" font-size="22">
+    <rect x="112" y="430" width="250" height="64" rx="32" fill="#18A999" fill-opacity="0.18" stroke="#18A999" stroke-width="2"/>
+    <text x="237" y="470" text-anchor="middle" fill="#5BD3C3">Life protection</text>
+    <rect x="386" y="430" width="270" height="64" rx="32" fill="#F5A623" fill-opacity="0.16" stroke="#F5A623" stroke-width="2"/>
+    <text x="521" y="470" text-anchor="middle" fill="#F5C86A">Health protection</text>
+    <rect x="680" y="430" width="280" height="64" rx="32" fill="#E85D5A" fill-opacity="0.16" stroke="#E85D5A" stroke-width="2"/>
+    <text x="820" y="470" text-anchor="middle" fill="#F0908E">Income protection</text>
+  </g>
+  <text x="112" y="566" font-family="Manrope, Inter, system-ui, sans-serif" font-size="22" fill="#F7F2EA" fill-opacity="0.6">Open source · React PWA · NestJS API · PostgreSQL · built for India</text>
+  <g transform="translate(1080 420)">
+    <circle r="110" fill="none" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="18"/>
+    <circle r="110" fill="none" stroke="url(#ring)" stroke-width="18" stroke-linecap="round" stroke-dasharray="408 691" transform="rotate(-90)"/>
+    <text y="16" text-anchor="middle" font-family="Manrope, Inter, system-ui, sans-serif" font-size="72" font-weight="700" fill="#F7F2EA">59</text>
+    <text y="52" text-anchor="middle" font-family="Manrope, Inter, system-ui, sans-serif" font-size="16" font-weight="600" fill="#5BD3C3" letter-spacing="2">PROTECTION SCORE</text>
+  </g>
+</svg>

@@ -7,7 +7,7 @@
     "build": "nest build",
     "dev": "nest start --watch",
     "dev:local": "DATABASE_DRIVER=sqljs nest start --watch",
-    "start": "node dist/main",
+    "start": "node dist/src/main",
     "lint": "eslint \"{src,test}/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "test": "jest",

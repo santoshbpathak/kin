@@ -63,7 +63,9 @@ including how to point the API at a real Postgres or a real OpenAI key.
 
 ## Reporting bugs and proposing features
 
-Open a GitHub issue. For anything security related, do **not** open an
+Open a GitHub issue using the templates (bug report, financial methodology
+question, feature request) under `.github/ISSUE_TEMPLATE/`; pull requests
+get the checklist from `.github/PULL_REQUEST_TEMPLATE.md`. For anything security related, do **not** open an
 issue — follow [`SECURITY.md`](SECURITY.md).
 
 ## Licence of contributions

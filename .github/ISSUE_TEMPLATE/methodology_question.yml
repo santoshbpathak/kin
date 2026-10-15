@@ -1,0 +1,31 @@
+name: Financial methodology question or concern
+description: A score, gap, recommendation or assumption looks wrong
+labels: [methodology]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read `docs/financial-methodology.md` first — §8 lists known assumptions and divergences. Reference a section number where possible.
+  - type: input
+    id: section
+    attributes:
+      label: Methodology section
+      placeholder: "§3.2 Health protection"
+  - type: textarea
+    id: inputs
+    attributes:
+      label: Inputs (synthetic only)
+      description: The exact inputs that produce the questionable output. Use round, fictional numbers.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed output and why it looks wrong
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source for the alternative view
+      description: Regulation, published guideline, actuarial reference. Links welcome.

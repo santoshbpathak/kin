@@ -1,189 +1,209 @@
-# KIN — Financial Protection Intelligence Platform
+<p align="center">
+  <img src="docs/assets/README/kin-banner.png" width="100%" alt="KIN banner: the KIN house-and-three-dots mark, the wordmark, and the line 'Know how protected your family really is — anonymous, explainable, open source', with an illustrative Protection Score ring.">
+</p>
 
-> An open-source Financial Protection Intelligence Platform helping
-> families understand their protection needs and potential insurance
-> coverage gaps.
+<h1 align="center">KIN — Financial Protection Intelligence Platform</h1>
 
-KIN asks a household a dozen plain-language questions, turns the answers
-into a **Protection Score** with three explainable sub-scores (life,
-health, income), shows the rupee **gap** behind each one, surfaces
-**hidden coverage** people already have (EDLI, PMSBY, employer group
-cover…), and explains every recommendation with "See the Math". It is
-built for India (INR, lakhs/crores, IRDAI and government schemes) and runs
-as an installable PWA with a NestJS API.
+<p align="center">
+  An open-source InsurTech app that gives a family a two-minute, anonymous read on their life, health and income protection gaps — with every number explained.
+</p>
 
-**Status:** pilot-quality MVP, actively being prepared for public release.
-Not production-secure by assertion, not regulator-approved, not
-independently audited. See [the readiness report](OPEN_SOURCE_READINESS_REPORT.md).
+<p align="center">
+  <a href="https://github.com/santoshbpathak/kin-mvp/actions/workflows/ci.yml"><img src="https://github.com/santoshbpathak/kin-mvp/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <img src="https://img.shields.io/badge/version-0.1.0-102A43" alt="Version 0.1.0">
+  <img src="https://img.shields.io/badge/licence-pending-F5A623" alt="Licence pending owner confirmation">
+  <img src="https://img.shields.io/badge/node-%E2%89%A520-18A999" alt="Node 20 or newer">
+  <img src="https://img.shields.io/badge/pnpm-9.12-18A999" alt="pnpm 9.12">
+  <img src="https://img.shields.io/badge/TypeScript-strict-102A43" alt="TypeScript strict">
+  <img src="https://img.shields.io/badge/React-18-102A43" alt="React 18">
+  <img src="https://img.shields.io/badge/NestJS-10-102A43" alt="NestJS 10">
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#demo-mode-no-keys-no-real-data">Demo mode</a> ·
+  <a href="#how-the-protection-assessment-works">How it works</a> ·
+  <a href="docs/financial-methodology.md">Methodology</a> ·
+  <a href="docs/architecture.md">Architecture</a> ·
+  <a href="CONTRIBUTING.md">Contributing</a> ·
+  <a href="SECURITY.md">Security</a>
+</p>
 
 ---
 
+**Status:** pilot-quality MVP (v0.1.0). Everything shown below runs locally in demo mode with synthetic data. KIN is not production-certified, regulator-approved or independently audited, and the licence is still being confirmed. Read the [readiness report](OPEN_SOURCE_READINESS_REPORT.md) before deploying it for real users.
+
 ## The problem
 
-Most Indian households are under-insured and do not know it. Cover is
-scattered across employers, banks and government schemes; the numbers are
-confusing; and the only people offering to explain them earn commission
-on the answer. KIN gives a family a neutral, two-minute, anonymous first
-read — and keeps the arithmetic visible.
+Most Indian households are under-insured and do not know it. Cover is spread across employers, banks and government schemes; the numbers are hard to compare; and the people offering to explain them usually earn commission on the answer. KIN is a personal-finance tool that gives a family a neutral first read — a **Protection Score** with the arithmetic shown — before anyone talks to a seller.
 
-## Core features
+## See it
 
-- **Conversational diagnostic** — an AI intake agent (GPT-4o, or a
-  scripted demo) collects income, dependants, obligations and existing
-  cover; every field carries a confidence tag (confirmed / estimated /
-  unknown) that is disclosed on the score screen.
-- **Protection Score** — deterministic, versioned rules; composite plus
-  life/health/income sub-scores with rupee gaps and band labels.
-- **See the Math** — each recommendation ships its formula, basis text and
-  regulatory reference, and is written to an immutable audit trail.
-- **Hidden coverage discovery** — EDLI, PMSBY, PMJJBY, ESI, motor PA, card
-  and home-loan cover from eight yes/no questions.
-- **Protection Vault** — policy documents and nominees behind a separate
-  short-lived vault token; files go straight to private object storage via
-  signed URLs.
-- **AI advisor with human hand-off** — Tier-1 AI chat grounded in the
-  user's report, compliance-guarded output, escalation to human advisors.
-- **Engagement** — weekly briefs, a financial-literacy quiz, streaks.
-- **Privacy by design** — anonymous until the user chooses to verify a
-  phone; granular consent records; one-tap erasure; partner embedding
-  that never sees identity.
+<p align="center">
+  <img src="docs/assets/README/demo-diagnostic.gif" width="300" alt="Animated capture of the KIN diagnostic chat in demo mode: the assistant asks about life stage, dependants, income, occupation, city, monthly commitments and existing cover; the user answers with chips and typed amounts; the app then navigates to the Protection Score screen.">
+</p>
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/assets/README/01-home.png" width="220" alt="Home screen: 'Know how protected your family really is', chips for no phone number, no documents and you control sharing, and a teal 'Check my Protection Score' button. A demo-mode ribbon is shown at the top."><br><sub>Home — anonymous by default</sub></td>
+    <td align="center"><img src="docs/assets/README/03-diagnostic-chat.png" width="220" alt="Diagnostic chat at 86% complete: the assistant asks about income, occupation and city; answers appear as navy bubbles; quick-select chips offer monthly commitment ranges."><br><sub>Conversational diagnostic</sub></td>
+    <td align="center"><img src="docs/assets/README/04-score.png" width="220" alt="Protection Score screen showing 22 out of 100 in a coral ring, 'Serious gap — but closeable', a peer benchmark card, and life and health sub-scores with have, gap and need amounts in rupees."><br><sub>Score with rupee gaps</sub></td>
+    <td align="center"><img src="docs/assets/README/05-recommendations.png" width="220" alt="Recommendations screen: ranked cards such as 'Top up your term cover', each with a 'See the Math' button, an action button and a 'Conditions apply' line."><br><sub>Ranked, explainable actions</sub></td>
+  </tr>
+</table>
+
+More screens (discovery, vault, streaks, advisor) are in [`docs/assets/README/`](docs/assets/README/). All captures come from demo mode on a phone viewport.
+
+## What KIN does
+
+| Feature | What you get | Where it lives |
+|---|---|---|
+| **Conversational diagnostic** | Twelve plain-language questions about dependants, income, commitments and existing cover; every field carries a confidence tag (confirmed, estimated, unknown) that the score screen discloses. Real GPT-4o when a key is configured, a deterministic script in demo mode. | `apps/api/src/modules/diagnostic` |
+| **Protection Score** | Deterministic, versioned rules produce a 0–100 composite plus life, health and income sub-scores, each with the rupee amount you have, the amount recommended and the gap. | `apps/web/src/modules/score` |
+| **See the Math** | Every recommendation ships its formula, basis text and the regulation or scheme it rests on, and is written to an immutable audit trail. | `apps/web/src/modules/trust`, `apps/api/src/modules/trust` |
+| **Hidden coverage discovery** | Eight yes/no questions surface cover people already hold: EDLI, PMSBY, PMJJBY, ESI, motor personal accident, card and home-loan cover. | `apps/web/src/modules/discovery` |
+| **Protection Vault** | Policy details and nominees behind a separate short-lived vault token; files go straight to private object storage through signed URLs. | `apps/api/src/modules/vault` |
+| **AI advisor with human hand-off** | Tier-1 chat grounded in the user's own report, output filtered by a compliance guard (no insurer names, no premiums), escalation paths to human advisors. | `apps/api/src/modules/connect` |
+| **Engagement** | Weekly briefs sourced from public regulators, a financial-literacy quiz, streaks. | `apps/web/src/modules/content`, `quiz`, `engagement` |
+| **Privacy by design** | No identity until the user verifies a phone; granular consent records; one-tap erasure; partner embedding that never sees who the user is. | `apps/api/src/modules/auth`, `trust`, `partner` |
+
+## How the protection assessment works
+
+KIN deliberately uses transparent rules of thumb rather than a model:
+
+- **Life protection (40 %)** — recommended cover is 10 × annual income; the score is what you hold against that.
+- **Health protection (35 %)** — recommended cover is 3 × annual income scaled for dependants; employer mediclaim counts at 70 % because it ends with the job.
+- **Income protection (25 %)** — recommended cover is 24 months of EMIs and fixed commitments.
+- **Composite** — the weighted blend, banded from *Critical Risk* to *Fully Protected*. Hidden coverage is reported separately and never inflates the score.
+
+Every constant, fallback, rounding rule and known limitation, with hand-computed examples that the test suites assert, is in [`docs/financial-methodology.md`](docs/financial-methodology.md). That document also lists the assumptions a maintainer should review before trusting the numbers further — including the fact that the client and server engines have drifted and the client one is authoritative today.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Browser
+    PWA["React PWA<br/>score + recommendation engines run here"]
+  end
+  subgraph API["NestJS API"]
+    G["JWT guard · validation · throttling"]
+    M["auth · diagnostic · score · trust<br/>discovery · vault · connect · lifecycle"]
+    C["Compliance guard<br/>(every AI message)"]
+  end
+  DB[("PostgreSQL (Supabase)<br/>or SQL.js file locally")]
+  AI["OpenAI GPT-4o<br/>or scripted demo client"]
+  ST["Supabase Storage<br/>signed URLs, private bucket"]
+  WA["WhatsApp Cloud API<br/>sandbox unless configured"]
+  PWA -- "Bearer JWT" --> G --> M --> DB
+  M --> AI --> C
+  M --> ST
+  M --> WA
+```
+
+The web app computes the score locally and posts the result for the audit trail; the API owns identity, consent, the vault, AI orchestration and the immutable recommendation log. Full tour with the trust boundaries: [`docs/architecture.md`](docs/architecture.md).
 
 ## Technology stack
 
-| Layer | Tech |
+| Layer | Verified in the repository |
 |---|---|
-| Web | React 18, Vite 5, TypeScript, Tailwind 3, React Router 6, PWA (Workbox) |
-| API | NestJS 10, TypeORM 0.3, Passport-JWT, class-validator, Helmet, Throttler, Swagger |
-| Data | PostgreSQL (Supabase) in production; SQL.js single file for local/demo |
-| AI | OpenAI GPT-4o / GPT-4o-mini via the official SDK; deterministic scripted client in demo mode |
+| Web | React 18.3, Vite 5.4, TypeScript 5, Tailwind CSS 3.4, React Router 6, PWA via vite-plugin-pwa (Workbox) |
+| API | NestJS 10.4, TypeORM 0.3, Passport-JWT, class-validator, Helmet, @nestjs/throttler, Swagger |
+| Data | PostgreSQL (Supabase, migrations + RLS) in production; SQL.js single-file database for local and demo use |
+| AI | `openai` SDK (GPT-4o, GPT-4o-mini); deterministic scripted client for demo mode |
 | Messaging | Meta WhatsApp Cloud API (sandbox by default) |
-| Hosting | Vercel (static web + serverless API); Sentry optional |
-| Tooling | pnpm 9 workspaces, jest, vitest, ESLint 9, gitleaks, GitHub Actions |
+| Hosting | Vercel configs for the static web app and the serverless API; Sentry optional |
+| Tooling | pnpm 9 workspaces, Jest, Vitest, ESLint 9, gitleaks, GitHub Actions |
 
-## Architecture overview
+## Quick start
 
-```
-PWA (React) ──JWT──► NestJS API ──► Postgres / SQL.js
-                        ├──► OpenAI  (or scripted demo client)
-                        ├──► Supabase Storage (signed URLs, private bucket)
-                        └──► WhatsApp Cloud API (sandbox unless configured)
-```
-
-The web app computes the score locally and posts the result for the
-audit trail; the API owns identity, consent, the vault, the AI
-orchestration and the immutable recommendation log. Details:
-[`docs/architecture.md`](docs/architecture.md).
-
-## Screenshots
-
-_Placeholders — add captures of the home screen, the diagnostic chat, the
-score page with "See the Math", and the vault to `docs/screenshots/`._
-
-| Home | Diagnostic | Score & gaps | Vault |
-|---|---|---|---|
-| `docs/screenshots/home.png` | `docs/screenshots/diagnostic.png` | `docs/screenshots/score.png` | `docs/screenshots/vault.png` |
-
-## Installation
+Requirements: Node 20 or newer (tested on 24), pnpm 9.12 (picked up automatically with `corepack enable`), Git. No database server, Docker or API keys are needed.
 
 ```bash
-git clone <repo-url> kin && cd kin
-pnpm install --frozen-lockfile     # pnpm 9.12 (pinned via packageManager)
-pnpm dev:local                     # web :5173, API :3001, no keys needed
+git clone https://github.com/santoshbpathak/kin-mvp.git kin
+cd kin
+pnpm install --frozen-lockfile
+pnpm dev:local
 ```
 
-Full guide, including PostgreSQL and real integrations:
-[`docs/installation.md`](docs/installation.md).
+| Service | URL |
+|---|---|
+| Web app | http://localhost:5173 |
+| API | http://localhost:3001/api/v1 |
+| Health | http://localhost:3001/api/v1/health |
+| Swagger UI | http://localhost:3001/api/docs |
 
-## Local development
+Then open the web app, tap **Check my Protection Score**, choose **Skip – stay anonymous**, and answer the questions. Full walkthrough and troubleshooting: [`docs/installation.md`](docs/installation.md).
+
+## Demo mode (no keys, no real data)
+
+With no `OPENAI_API_KEY` outside production, or with `KIN_DEMO_MODE=true`, the AI layer becomes a deterministic offline script: a fixed twelve-question diagnostic, canned advisor replies, no network calls, no messages sent, and a visible "Demo mode" ribbon. Everything else — database, auth, vault, audit trail — runs the real code against a local SQL.js file. Production never enters demo mode silently.
+
+Synthetic personas, the answers that reproduce them, and the arithmetic behind each score: [`docs/demo/personas.md`](docs/demo/personas.md).
+
+## Configuration
+
+Copy `apps/api/.env.example` to `apps/api/.env`. Every variable is documented there with a placeholder; the most relevant ones:
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `KIN_DEMO_MODE` | `true` scripted AI, `false` force real client, unset auto-detect | unset |
+| `DATABASE_DRIVER` / `DATABASE_URL` | `sqljs` locally; `postgres` + connection URL for Supabase | `sqljs` via `dev:local` |
+| `DATABASE_SSL_REJECT_UNAUTHORIZED` | Verify the database TLS certificate (set `true` in production) | `false` |
+| `JWT_SECRET`, `VAULT_JWT_SECRET` | Signing secrets; generate with `scripts/generate-secrets.sh` | placeholders (refused in production) |
+| `OPENAI_API_KEY` | Enables the real diagnostic and advisor | placeholder |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Vault file storage | placeholders |
+| `WHATSAPP_*` | OTP delivery, nudges, webhook verify token and app secret | empty (sandbox) |
+| `MAX_CONVERSATION_TURNS`, `RATE_LIMIT_*`, `VAULT_RATE_LIMIT_MAX` | Spend and abuse guards | 40 / 100 per min / 10 per min |
+
+The web app has one public variable, `VITE_API_BASE_URL` (`apps/web/.env.example`). Secrets never go in the web bundle. Deployment to Vercel and Supabase is described in [`DEPLOYMENT.md`](DEPLOYMENT.md).
+
+## Tests and development
 
 ```bash
-pnpm test        # jest + vitest
-pnpm typecheck
-pnpm build
-pnpm --filter web lint
+pnpm typecheck              # all workspaces
+pnpm test                   # Jest (API) + Vitest (web)
+pnpm build                  # shared-types, web, api
+pnpm --filter web lint      # ESLint 9 flat config
 ```
 
-Conventions, environment variables, testing approach and how to add an
-endpoint safely: [`docs/development.md`](docs/development.md). Session
-hand-over notes: [`BUILD.md`](BUILD.md).
+The API suite covers the engines, vault DTOs and services, webhook signatures and the demo client; the web suite covers the client-side score, recommendation and discovery engines with hand-computed personas. CI runs typecheck, tests, build, a production dependency audit and a full-history gitleaks scan on every push and pull request ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)). Conventions and how to add an endpoint safely: [`docs/development.md`](docs/development.md). Session hand-over notes: [`BUILD.md`](BUILD.md).
 
-## Demo mode
+## Security and data privacy
 
-With no `OPENAI_API_KEY` (outside production) or with `KIN_DEMO_MODE=true`,
-the AI layer becomes a deterministic offline script: no paid APIs, no
-network calls, no messages sent, and a visible "Demo mode" ribbon in the
-app. Everything else — database, auth, vault, audit trail — runs the real
-code. Synthetic personas and the answers that reproduce them:
-[`docs/demo/personas.md`](docs/demo/personas.md).
+- Anonymous by default; personal data only after explicit verification and consent.
+- Server-side auth on every route, ownership checks on every record, a separate short-lived vault scope.
+- Validated request bodies, Helmet, strict CSP, CORS allow-list, per-IP throttling, hashed single-use OTPs, HMAC-verified webhooks.
+- No phone numbers, OTPs or tokens in logs; Sentry scrubbing; private storage with per-user prefixes.
+- Secrets live only in environment variables; CI scans the full history for leaks and audits production dependencies.
 
-## Financial calculation methodology
-
-Every formula, constant, rounding rule, fallback and known divergence is
-documented in [`docs/financial-methodology.md`](docs/financial-methodology.md),
-with hand-computed examples that the test suites assert. In short:
-life need = 10 × income, health need = 3 × income scaled for dependants
-(employer cover counted at 70 %), income need = 24 months of obligations;
-composite = 0.40 / 0.35 / 0.25. The document also lists the assumptions a
-maintainer should review before trusting the numbers further.
-
-## Security and privacy principles
-
-- Anonymous by default; PII only after explicit verification and consent.
-- Server-side auth on every route; ownership checks on every record;
-  separate short-lived vault scope.
-- Whitelisted request bodies, Helmet, strict CSP, CORS allow-list,
-  per-IP throttling, hashed single-use OTPs, HMAC-verified webhooks.
-- No PII in logs; Sentry scrubbing; private storage with per-user prefixes.
-- Secrets only in environment variables; CI runs gitleaks on the full
-  history and a production dependency audit.
-
-Findings, fixes and open items: [`docs/security/`](docs/security/) and
-[`SECURITY.md`](SECURITY.md) for responsible disclosure.
-
-## Known limitations
-
-- Two score engines (client and server) have drifted; the client one is
-  authoritative today. Unifying them is the top methodology task.
-- WhatsApp delivery is sandboxed (OTPs print to the dev log); Google login
-  is a stub.
-- Rate limiting is per API instance, not shared across serverless
-  instances.
-- Database TLS certificate verification is configurable but defaults to
-  off for backward compatibility — turn it on in production.
-- NestJS 10 is end-of-line; several moderate advisories only clear with
-  the Nest 11/12 migration.
-- Not yet licensed: ownership confirmation is pending (see
-  [`docs/OPEN_SOURCE_LICENSING_REVIEW.md`](docs/OPEN_SOURCE_LICENSING_REVIEW.md)).
-
-## Contributing
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
-[Code of Conduct](CODE_OF_CONDUCT.md). Never add real personal data; use
-the synthetic personas. Formula changes need a methodology update, a rule
-version bump and updated test expectations.
-
-## Disclaimer
-
-KIN provides general financial-protection education based on rules of
-thumb. It is **not** personalised or regulated financial advice, not an
-insurance product, not an underwriting decision, and not endorsed by IRDAI
-or any insurer. Figures are indicative. Consult a licensed adviser and read
-product documents before buying or changing any insurance cover. Insurance
-products are underwritten by licensed insurers; IRDAI does not endorse any
-particular insurer.
+Audit series, fixes and open items: [`docs/security/`](docs/security/). Responsible disclosure: [`SECURITY.md`](SECURITY.md).
 
 ## Roadmap
 
-1. Unify the score and recommendation engines into one shared, tested
-   package.
-2. NestJS 11/12 and React Router 7 migrations; Vite 6 tooling bump.
-3. Shared rate-limit store; fresh-OTP step-up for the vault.
-4. Live WhatsApp templates and inbound STOP/SCORE handling.
-5. Partner embedding hardening per `docs/security/PARTNER_EMBED_SECURITY.md`.
-6. Professional penetration test before any real policyholder data.
-7. Licence and trademark statement once ownership is confirmed.
+**Implemented today:** everything in the feature table above, demo mode, synthetic personas, deterministic engine tests, CI, security hardening described in the readiness report.
+
+**Planned, not yet built**
+
+1. One shared score and recommendation engine (the client and server copies have drifted).
+2. Live WhatsApp templates and inbound STOP / SCORE handling (currently sandboxed; OTPs print to the dev log).
+3. Google login (currently a stub endpoint).
+4. Shared rate-limit store for serverless instances; fresh-OTP step-up before the vault goes live.
+5. NestJS 11/12, React Router 7 and Vite 6 migrations.
+6. Partner embedding hardening per [`docs/security/PARTNER_EMBED_SECURITY.md`](docs/security/PARTNER_EMBED_SECURITY.md).
+7. Professional penetration test before any real policyholder data.
+
+## Contributing
+
+Issues and pull requests are welcome — read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md) first. Use the issue templates for [bugs](.github/ISSUE_TEMPLATE/bug_report.yml), [methodology questions](.github/ISSUE_TEMPLATE/methodology_question.yml) and [feature requests](.github/ISSUE_TEMPLATE/feature_request.yml). Never add real personal data; use the synthetic personas. Formula changes need a methodology update, a rule-version bump and updated test expectations.
+
+## Disclaimer
+
+KIN provides general financial-protection education based on published rules of thumb. It is **not** personalised or regulated financial advice, not an insurance product, not an underwriting decision, and not endorsed by IRDAI or any insurer. Figures are indicative. Consult a licensed adviser and read the product documents before buying or changing any insurance cover. Insurance products are underwritten by licensed insurers; IRDAI does not endorse any particular insurer.
 
 ## Licence
 
-Not yet applied. Apache-2.0 is recommended; see the licensing review. The
-KIN name and logo are not covered by the code licence.
+**Not yet applied.** Apache-2.0 is recommended and will be added once the owner confirms the rights to the code, brand and content ([`docs/OPEN_SOURCE_LICENSING_REVIEW.md`](docs/OPEN_SOURCE_LICENSING_REVIEW.md)). The KIN name and logo will not be covered by the code licence. Until then, contributions are accepted on the understanding that they will be released under the licence the maintainers adopt.
+
+## Maintainers
+
+Built and maintained by **Santosh Pathak** ([@santoshbpathak](https://github.com/santoshbpathak)), the sole author in the repository history.

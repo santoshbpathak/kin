@@ -15,6 +15,10 @@ Read this before touching anything. Update it before reporting completion.
   pre-rewrite backup bundle is at
   `/Users/santoshpathak/Projects/KIN-history-backup-before-rewrite.bundle`
   — keep it private, never commit it.
+- Branch **`docs/readme-overhaul`** (from the prep branch) carries the README
+  overhaul: banner/social assets, nine demo screenshots + GIF under
+  `docs/assets/README/`, fact check, discoverability guide, review report,
+  issue/PR templates, and the `apps/api` `start` script fix (`dist/src/main`).
 - `OPEN_SOURCE_READINESS_REPORT.md` verdict: **READY (security & privacy)**,
   subject to the owner's legal sign-off on IP ownership before a LICENSE is
   added.

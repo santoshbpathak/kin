@@ -1,0 +1,43 @@
+name: Bug report
+description: Something in KIN behaves incorrectly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. **Never paste real personal or financial data** — use the synthetic personas in `docs/demo/personas.md`.
+        Security problems go through private reporting instead (see `SECURITY.md`).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. `pnpm dev:local`
+        2. Open http://localhost:5173, tap "Check my Protection Score"
+        3. Answer with persona B …
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Web app (apps/web), API (apps/api), Score / recommendation engine, Demo mode, Docs, Build / tooling]
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "macOS 15, Node 24, pnpm 9.12, Chrome 131, demo mode"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Mask phone numbers and tokens. Screenshots must come from demo mode or synthetic data.
