@@ -9,8 +9,6 @@ kin-mvp/
 │   └── web/                # React 18 + Vite PWA (port 5173)
 ├── packages/
 │   └── shared-types/       # Canonical TypeScript domain types
-├── KIN_PRD_v3.md           # PRD source of truth (52 KB)
-├── KIN_MVP1_PRD_v3.docx    # Same PRD in Word (80 KB)
 ├── Compliance Manual.pdf   # 304 KB compliance reference
 ├── README.md               # Minimal: 30 lines, dev:local script only
 ├── package.json            # Root pnpm workspace

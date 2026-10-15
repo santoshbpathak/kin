@@ -10,7 +10,7 @@
 **Audit date:** 2026-05-26
 **Branch:** main (with 26 uncommitted modifications - included in scope)
 **Stack evaluated:** POC (Supabase + Vercel + Sentry free tier) per `~/.claude/projects/.../memory/CLAUDE.md`
-**PRD reference:** [KIN_PRD_v3.md](../../KIN_PRD_v3.md)
+**PRD reference:** the product requirements document is confidential and is not part of this repository.
 **Methodology:** Full static read of every backend/frontend module, dynamic boot of API+web on SQL.js, end-to-end 7-step flow probe via curl, load tests via ApacheBench (k6 unavailable on this machine, no Homebrew).
 
 ---
