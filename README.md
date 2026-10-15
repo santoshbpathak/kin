@@ -31,7 +31,7 @@
 
 ---
 
-**Status:** pilot-quality MVP (v0.1.0), MIT licensed. Everything shown below runs locally in demo mode with synthetic data. KIN is not production-certified, regulator-approved or independently audited. Read the [readiness report](OPEN_SOURCE_READINESS_REPORT.md) before deploying it for real users.
+**Status:** pilot-quality MVP (v0.1.0), MIT licensed. Everything shown below runs locally in demo mode with synthetic data. KIN is not production-certified, regulator-approved or independently audited. Read the [security notes](docs/security/) before deploying it for real users.
 
 ## The problem
 

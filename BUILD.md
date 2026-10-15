@@ -23,7 +23,7 @@ Read this before touching anything. Update it before reporting completion.
   overhaul: banner/social assets, nine demo screenshots + GIF under
   `docs/assets/README/`, fact check, discoverability guide, review report,
   issue/PR templates, and the `apps/api` `start` script fix (`dist/src/main`).
-- `OPEN_SOURCE_READINESS_REPORT.md` verdict: **READY (security & privacy)**.
+- Readiness review completed (verdict was READY for security & privacy; the report file was removed on 15 Oct 2026 at the owner's request, details live in `docs/security/`).
   The owner applied the **MIT licence** and made `santoshbpathak/kin`
   **public** on 15 Oct 2026; `license: MIT` is set in all four manifests.
 - Verified green at the end of the session: typecheck ×3 ✓ · API jest

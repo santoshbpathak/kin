@@ -43,7 +43,7 @@ Only the `main` branch is supported. There are no tagged releases yet.
 ## What we already know
 
 The current security posture, open risks and the design decisions behind
-them are documented in [`OPEN_SOURCE_READINESS_REPORT.md`](OPEN_SOURCE_READINESS_REPORT.md)
+them are documented in [`docs/security/`](docs/security/)
 and the files under [`docs/security/`](docs/security/). Please read the
 "Unresolved risks" section before reporting a known limitation.
 

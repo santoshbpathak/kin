@@ -43,7 +43,7 @@ All notable changes to KIN are recorded here. The format follows
 - Documentation: README, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT,
   architecture, installation, development, financial methodology,
   licensing review, demo personas, security audit series
-  (`docs/security/01…05`), readiness report, `BUILD.md`.
+  (`docs/security/01…05`), `BUILD.md`.
 
 ### Removed
 - `Compliance Mannual.pdf`, `KIN_MVP1_PRD_v3.docx` and `KIN_PRD_v3.md`

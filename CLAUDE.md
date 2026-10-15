@@ -34,7 +34,7 @@ gitleaks dir . --redact
 
 ## Where to look
 
-- Security posture and open risks: `OPEN_SOURCE_READINESS_REPORT.md`,
+- Security posture and open risks:
   `docs/security/`.
 - How the money maths works and what is questionable: `docs/financial-methodology.md`.
 - Running without keys (demo mode): `docs/development.md`.

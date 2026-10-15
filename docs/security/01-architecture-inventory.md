@@ -165,7 +165,7 @@ Supporting engines: `discoveryEngine` (hidden coverage such as EDLI, PMSBY),
 Before this branch: 6 jest specs (38 tests, 2 stale failures), no web
 tests, no CI, lint non-functional (ESLint 9 without flat config). After:
 12 jest suites / 114 tests, 3 vitest suites / 26 tests, CI workflow, web
-lint config. See `../../OPEN_SOURCE_READINESS_REPORT.md` §11.
+lint config. See `04-application-security.md` §4 for the verification log.
 
 ## 11. Classification
 

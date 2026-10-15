@@ -79,7 +79,7 @@ all pass.
 - `passport@0.7` pulls `pause@0.0.1`, which has no `license` field in its
   manifest (README says MIT). Tolerated.
 - ESLint 9 is installed but had no flat config; one is added on this
-  branch (see readiness report for its status).
+  branch (web lint: 0 errors).
 
 ## 5. Licences
 
