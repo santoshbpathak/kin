@@ -11,15 +11,17 @@ built application in demo mode. Supporting detail: `docs/security/01…05`,
 
 ## Overall recommendation
 
-# NOT READY FOR PUBLICATION
+# READY FOR PUBLICATION — security and privacy
+# (subject to the owner's legal sign-off on ownership and licence)
 
-Two separate gates are still closed, and they are different in kind:
+No confirmed critical or high-severity security or privacy risk remains in
+the branch or in its git history. The one open gate is legal, not technical:
 
 | Gate | Status | Why |
 |---|---|---|
 | **Security of the code** | **Ready, with one operator action** | Every confirmed HIGH and MEDIUM code finding is fixed and regression-tested; the production dependency graph has 0 critical / 0 high. The one remaining MEDIUM (database TLS verification) is mitigated by a new switch that the operator must turn on. |
-| **Sensitive content in the repository and its history** | **Not ready** | A third-party confidential document and a sensitivity-labelled PRD are still in git history, and a Markdown PRD marked "Confidential" is still in the tree. Fixing this needs the owner's decision on a history rewrite. |
-| **Ownership, licensing, legal** | **Not ready (outside security)** | No licence can be applied until the owner confirms the right to release the code, brand and content — several signals point at employer-owned material. |
+| **Sensitive content in the repository and its history** | **Ready** | All three confidential documents are removed from the tree and **purged from the history of every local branch** (rewritten 15 Oct 2026); historical image blobs were re-written without employer metadata. The GitHub remote still holds the old history until the owner publishes from this clone (see §5). |
+| **Ownership, licensing, legal** | **Owner sign-off required (outside security)** | No licence can be applied until the owner confirms the right to release the code, brand and content — several signals point at employer-owned material. This cannot be resolved by engineering work. |
 
 An automated audit cannot guarantee the absence of vulnerabilities; this
 report states what was checked and what was found.
@@ -41,12 +43,13 @@ negative-score paths from both financial engines without changing any
 formula. It removed unused and vulnerable dependencies and lifted the
 production dependency graph from 2 critical / 33 high to 0 / 0.
 
-The blocking issues are not in the code. They are: an employer's internal
-compliance manual and a corporate-labelled PRD that were committed (now
-removed from the tree, still in history), a Markdown PRD marked
-Confidential, logo assets whose metadata attributed them to an employer
-brand account (metadata now stripped), and the unanswered question of who
-owns the IP. A demo mode now lets anyone run the entire product with no
+The content problems have been fixed at the owner's instruction: an
+employer's internal compliance manual, a corporate-labelled PRD and a
+Markdown PRD marked Confidential are deleted from the tree and purged from
+the history of every local branch, and the logo assets were rewritten in
+every historical commit without the employer brand-kit metadata. What
+remains is the unanswered question of who owns the IP, which only the
+owner can settle. A demo mode lets anyone run the entire product with no
 keys and no real data.
 
 ## 2. Architecture overview
@@ -61,10 +64,10 @@ server-side audit trail.
 
 | ID | Severity | Status | Finding | Where documented |
 |---|---|---|---|---|
-| P-1 | **CRITICAL** | Removed from tree; **history purge pending owner approval** | Employer-internal compliance manual with third-party author metadata | `03-privacy-audit.md` |
-| P-2 | **HIGH** | Removed from tree; history purge pending | PRD `.docx` with Purview labels / corporate tenant id | `03-privacy-audit.md` |
-| P-3 | **HIGH** | **Open — owner decision** | `KIN_PRD_v3.md` marked Confidential, investor content | `03-privacy-audit.md` |
-| P-4 | **HIGH** | Fixed in tree; old blobs in history | Employer brand-kit attribution in PNG metadata | `03-privacy-audit.md` |
+| P-1 | **CRITICAL** | **Resolved** — deleted and purged from all local history | Employer-internal compliance manual with third-party author metadata | `03-privacy-audit.md` |
+| P-2 | **HIGH** | **Resolved** — deleted and purged | PRD `.docx` with Purview labels / corporate tenant id | `03-privacy-audit.md` |
+| P-3 | **HIGH** | **Resolved** — deleted and purged (owner instruction) | `KIN_PRD_v3.md` marked Confidential, investor content | `03-privacy-audit.md` |
+| P-4 | **HIGH** | **Resolved** — metadata stripped in every historical commit | Employer brand-kit attribution in PNG metadata | `03-privacy-audit.md` |
 | L-1 | **BLOCKING (legal)** | Open | IP ownership of code, brand and content unconfirmed | `OPEN_SOURCE_LICENSING_REVIEW.md` |
 | APP-1 | **HIGH** | Fixed + tests + live-verified | Mass assignment on vault PATCH routes (`Partial<>` DTOs bypassed validation) | `04-application-security.md` |
 | S-1 / APP-2 | **MEDIUM** (HIGH once public) | Fixed + tests | WhatsApp webhook: hard-coded verify token, header/query bug, no HMAC | `02`, `04` |
@@ -96,22 +99,34 @@ and attribution metadata**, not personal data (details in §3 and
 
 | Item | In history? | Recommendation |
 |---|---|---|
-| Secrets / credentials | **No** (gitleaks, all commits) | none |
-| `Compliance Mannual.pdf` | Yes (since initial commit) | purge |
-| `KIN_MVP1_PRD_v3.docx` | Yes | purge |
-| PNGs with employer attribution metadata | Yes (old blobs) | purge if attribution matters |
-| Personal author e-mail | Yes (all commits) | optional mailmap rewrite |
+| Secrets / credentials | **No** (gitleaks, all commits before and after the rewrite) | none |
+| `Compliance Mannual.pdf` | **No longer** — purged from every local branch | — |
+| `KIN_MVP1_PRD_v3.docx` | **No longer** — purged | — |
+| `KIN_PRD_v3.md` | **No longer** — purged | — |
+| PNGs with employer attribution metadata | **No longer** — every historical blob rewritten without metadata | — |
+| Personal author e-mail | Yes (all commits) | optional mailmap rewrite; not a publication blocker |
 | Deleted files with sensitive content | No | — |
 
-**Options:** (a) `git filter-repo` on this repository to drop the two files
-and old PNG blobs (and optionally rewrite the author e-mail), then
-force-push and re-clone — history and PR references are rewritten;
-(b) publish a **fresh repository** containing only the current tree as a
-single initial commit ("squash to public") and keep this repo private —
-simplest and safest, loses public history; (c) publish as-is — not
-acceptable while P-1/P-2 remain in history. Recommendation: **(b)** unless
-public commit history has value, in which case (a). Neither was performed:
-history rewriting requires explicit approval.
+**What was done (15 Oct 2026, on the owner's instruction):** a full backup
+bundle of the untouched history was written first
+(`/Users/santoshpathak/Projects/KIN-history-backup-before-rewrite.bundle`,
+keep it private and off the public repo). Then `git filter-branch` with a
+tree filter rewrote **all six local branches** (`main`,
+`prep/open-source-release` and the four `fix/*` branches), deleting the
+three documents from every commit and stripping image metadata in every
+commit; `refs/original` was removed, reflogs expired and objects pruned.
+Verification: zero commits touch the three paths on any branch; zero
+employer/Canva strings in any historical image blob; gitleaks: 42 commits,
+no leaks.
+
+**What is still required of the owner:** the GitHub remote
+(`origin/main` = `70aae42`) still has the old history. Publish from this
+clone only, either by **creating a new public repository and pushing these
+branches** (recommended — GitHub keeps unreachable objects of the old repo
+indefinitely unless support purges them), or by force-pushing all six
+branches to the existing repository and asking GitHub Support to purge
+unreachable objects before making it public. Any other clone of the old
+history must be discarded.
 
 ## 6. Dependency vulnerabilities
 
@@ -163,15 +178,14 @@ runbook note, historical-snapshot banner on `docs/audit/`.
 
 ## 10. Changes requiring manual approval (not performed)
 
-1. Git history rewrite or fresh-repository publication (§5).
-2. Decision on `KIN_PRD_v3.md` (strip / remove / keep private).
-3. Ownership confirmation and licence application (§8).
-4. Production config: `DATABASE_SSL_REJECT_UNAUTHORIZED=true`,
+1. Publication from this clone: new public repository (recommended) or
+   force-push of all six rewritten branches plus a GitHub Support purge (§5).
+2. Ownership confirmation and licence application (§8).
+3. Production config: `DATABASE_SSL_REJECT_UNAUTHORIZED=true`,
    `WHATSAPP_APP_SECRET`, `WHATSAPP_WEBHOOK_VERIFY_TOKEN`; rotate the old
    verify token in Meta if it was ever configured.
-5. Major dependency migrations (Nest 11/12, React Router 7, Vite 6).
-6. Push of this branch and creation of the pull request.
-7. Author e-mail rewrite (optional).
+4. Major dependency migrations (Nest 11/12, React Router 7, Vite 6).
+5. Author e-mail rewrite (optional).
 
 ## 11. Tests executed and results
 
@@ -185,7 +199,7 @@ All executed on 15 October 2026, Node 24, pnpm 9.12, after the final change.
 | Build | `pnpm build` | **pass** (shared-types, web, api) |
 | Web lint | `pnpm --filter web lint` | **0 errors, 6 warnings** (was: crashed — no flat config; 5 real errors once runnable, all fixed) |
 | API lint | `pnpm --filter @kin/api lint` | **not available** — script exists, no ESLint config/dependency for the API (known gap) |
-| Secrets, history | `gitleaks git . --redact` | **0 leaks, 22 commits** |
+| Secrets, history | `gitleaks git . --redact` | **0 leaks** — 22 commits before the rewrite, 42 commits (all six branches) after it |
 | Secrets, tree | `gitleaks dir . --redact` | 0 leaks in the repository (one gitignored local tool file flagged, outside scope) |
 | Dependency audit | `pnpm audit --prod` | **0 critical, 0 high, 6 moderate** |
 | Live API, demo mode (built `dist`, SQL.js) | curl | health ✓, 12-turn scripted diagnostic → profile persisted ✓, persona-B server score 17.9 ✓, junk body 400 ✓, mass-assignment exploit 400 ✓, cross-user PATCH 403 ✓, anonymous vault token 403 ✓, standard JWT on vault 401 ✓, old webhook token 403 ✓, OTP burst → 429 ✓, logs free of phones/JWTs ✓ |
@@ -201,8 +215,7 @@ demo), Google login (stub).
 
 | Risk | Severity | Owner action |
 |---|---|---|
-| Confidential documents in git history | CRITICAL/HIGH | purge or fresh repo (§5) |
-| `KIN_PRD_v3.md` marked Confidential in tree | HIGH | decide |
+| Old history still on the GitHub remote | HIGH until published correctly | publish from this clone only (§5) |
 | IP ownership unconfirmed | BLOCKING (legal) | confirm, then license |
 | DB TLS verification off by default | MEDIUM | enable in production |
 | NestJS 10 end-of-line; 6 moderate prod advisories | MEDIUM | plan migration |
@@ -232,9 +245,9 @@ paid API, no real data, no live transactions.
 
 ## 15. Recommended next actions
 
-1. **Owner:** decide the publication shape (fresh repo vs history rewrite)
-   and the fate of `KIN_PRD_v3.md`; confirm IP ownership; then add
-   `LICENSE` (Apache-2.0) + `NOTICE` + trademark note.
+1. **Owner:** confirm IP ownership, then add `LICENSE` (Apache-2.0) +
+   `NOTICE` + trademark note; publish from this clone into a new public
+   repository (§5) and discard every clone of the old history.
 2. **Operator:** set the new production variables (§10.4) and enable DB TLS
    verification; rotate the old webhook verify token if used.
 3. **Engineering:** unify the score/recommendation engines; NestJS 11/12

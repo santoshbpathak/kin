@@ -4,12 +4,20 @@ Read this before touching anything. Update it before reporting completion.
 
 ## Current state (15 Oct 2026)
 
-- Branch **`prep/open-source-release`** off `main` (`70aae42`). **Not pushed.**
-  All work for the open-source readiness review lives here, committed in
-  one commit per logical area (see `git log`).
-- Repo is still **private** and must stay so: `OPEN_SOURCE_READINESS_REPORT.md`
-  says **NOT READY FOR PUBLICATION** (history contains confidential docs;
-  `KIN_PRD_v3.md` still marked Confidential; IP ownership unconfirmed).
+- Branch **`prep/open-source-release`** off `main`. **Not pushed.** All work
+  for the open-source readiness review lives here, one commit per logical
+  area (see `git log`).
+- **Local git history was rewritten on 15 Oct 2026** (owner instruction) on
+  all six local branches to purge `Compliance Mannual.pdf`,
+  `KIN_MVP1_PRD_v3.docx`, `KIN_PRD_v3.md` and employer metadata in the logo
+  PNGs. The GitHub remote still has the OLD history (`origin/main` =
+  `70aae42`); publish only from this clone (new repo recommended). A
+  pre-rewrite backup bundle is at
+  `/Users/santoshpathak/Projects/KIN-history-backup-before-rewrite.bundle`
+  — keep it private, never commit it.
+- `OPEN_SOURCE_READINESS_REPORT.md` verdict: **READY (security & privacy)**,
+  subject to the owner's legal sign-off on IP ownership before a LICENSE is
+  added.
 - Verified green at the end of the session: typecheck ×3 ✓ · API jest
   **114/114 (12 suites)** ✓ · web vitest **26/26 (3 suites)** ✓ · `pnpm build` ✓ ·
   web lint **0 errors / 6 warnings** ✓ · gitleaks history+tree 0 leaks ✓ ·
@@ -106,8 +114,8 @@ Read this before touching anything. Update it before reporting completion.
 
 ## Next action
 
-Owner decisions first: choose **fresh public repo vs `git filter-repo`**,
-decide `KIN_PRD_v3.md`, confirm IP ownership → add `LICENSE`. Then the
-single most useful engineering task is **unifying the client and server
-score/recommendation engines** into one shared, tested package
+Owner: confirm IP ownership → add `LICENSE` (Apache-2.0) + `NOTICE` →
+create the new public repository and push these branches from this clone.
+Then the single most useful engineering task is **unifying the client and
+server score/recommendation engines** into one shared, tested package
 (`docs/financial-methodology.md` §8.1).

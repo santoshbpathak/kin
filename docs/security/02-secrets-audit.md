@@ -53,7 +53,8 @@ ignored), logs (only local scratch logs, outside the repo).
 
 ## Historical exposure statement
 
-Because no secret was ever committed, **no history rewrite is required for
-secrets.** History rewriting is still recommended for the confidential
-documents and image metadata described in `03-privacy-audit.md`; that is a
-separate decision for the owner.
+Because no secret was ever committed, **no history rewrite was required for
+secrets.** A history rewrite was nevertheless performed on 15 October 2026
+(owner's instruction) to purge the confidential documents and image
+metadata described in `03-privacy-audit.md`; gitleaks re-scanned the
+rewritten history (42 commits across six branches) with no findings.

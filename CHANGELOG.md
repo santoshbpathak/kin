@@ -46,10 +46,11 @@ All notable changes to KIN are recorded here. The format follows
   (`docs/security/01…05`), readiness report, `BUILD.md`.
 
 ### Removed
-- `Compliance Mannual.pdf` and `KIN_MVP1_PRD_v3.docx` (third-party /
-  confidential material) — still in git history pending the owner's
-  decision on a rewrite.
-- Employer/design-tool attribution metadata from PNG assets.
+- `Compliance Mannual.pdf`, `KIN_MVP1_PRD_v3.docx` and `KIN_PRD_v3.md`
+  (third-party / confidential material) — deleted and purged from the
+  history of every local branch.
+- Employer/design-tool attribution metadata from PNG assets, in every
+  historical commit.
 - Empty `Inst.md`; machine-specific paths in `dev-web.sh` and
   `DEPLOYMENT.md`.
 
