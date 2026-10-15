@@ -18,7 +18,7 @@
 import { Injectable, NotFoundException, ForbiddenException, InternalServerErrorException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import { VaultDocument, DocumentType, NomineeAccessLevel } from '../../database/entities/vault-document.entity'
 import { getSupabase, SUPABASE_VAULT_BUCKET } from '../../lib/supabase'
 
@@ -45,7 +45,9 @@ export class VaultService {
   ) {}
 
   async addDocument(userId: string, dto: AddDocumentDto): Promise<VaultDocument> {
-    const doc = this.docRepo.create({ ...dto, userId })
+    // Copy only the mutable policy fields. userId comes from the JWT, never
+    // from the body; docId and s3Key are server-assigned.
+    const doc = this.docRepo.create({ ...pickUpdatableDocumentFields(dto), docType: dto.docType, userId })
     return this.docRepo.save(doc)
   }
 
@@ -60,7 +62,10 @@ export class VaultService {
     const doc = await this.docRepo.findOne({ where: { docId } })
     if (!doc) throw new NotFoundException('Document not found')
     if (doc.userId !== userId) throw new ForbiddenException('Access denied')
-    Object.assign(doc, dto)
+    // Whitelist the mutable fields explicitly. A client body must never be
+    // able to reach identity or storage-key columns (userId, docId, s3Key);
+    // see docs/security/04-application-security.md, finding APP-1.
+    Object.assign(doc, pickUpdatableDocumentFields(dto))
     const saved = await this.docRepo.save(doc)
     return stripStorageKey(saved)
   }
@@ -99,7 +104,7 @@ export class VaultService {
     userId: string,
     docId?: string,
   ): Promise<{ uploadUrl: string; s3Key: string; expiresIn: number; docId: string }> {
-    const targetDocId = docId ?? uuidv4()
+    const targetDocId = docId ?? randomUUID()
     const s3Key = `vault/${userId}/${targetDocId}`
 
     const supabase = getSupabase()
@@ -194,6 +199,21 @@ export class VaultService {
     const totalSumAssured = docs.reduce((sum, d) => sum + Number(d.sumAssured ?? 0), 0)
     return { documentCount: docs.length, nomineeCount: 0, totalSumAssured, expiringSoon }
   }
+}
+
+/** The only vault_documents columns a client may set or change. */
+export const UPDATABLE_DOCUMENT_FIELDS = [
+  'docType', 'insurerName', 'policyNumber', 'sumAssured', 'annualPremium',
+  'renewalDate', 'nomineeId', 'nomineeAccessLevel', 'notes', 'fileName',
+] as const
+
+export function pickUpdatableDocumentFields(dto: Partial<AddDocumentDto>): Partial<AddDocumentDto> {
+  const out: Record<string, unknown> = {}
+  for (const key of UPDATABLE_DOCUMENT_FIELDS) {
+    const value = (dto as Record<string, unknown>)[key]
+    if (value !== undefined) out[key] = value
+  }
+  return out as Partial<AddDocumentDto>
 }
 
 function stripStorageKey(doc: VaultDocument): VaultDocument {

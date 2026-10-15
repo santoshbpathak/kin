@@ -1,10 +1,14 @@
 import { Controller, Post, Get, Body } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import {
+  IsBoolean,
+  IsIn,
+  IsInt,
   IsNumber,
   IsString,
   IsOptional,
   IsObject,
+  MaxLength,
   Min,
   Max,
 } from 'class-validator'
@@ -12,10 +16,33 @@ import { ProtectionScoreService } from './protection-score.service'
 import { PeerBenchmarkService } from './peer-benchmark.service'
 import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator'
 import type { ParsedProfile } from '../diagnostic/nlp-parser.service'
+import type { IncomeBand, CityTier, LifeStage } from '../../database/entities/user-profile.entity'
 
-class CalculateScoreDto {
-  // Accept the backend's ParsedProfile shape (kept for server-side flow)
-  [key: string]: unknown
+const INCOME_BANDS = ['lt3l', '3l_5l', '5l_10l', '10l_20l', '20l_50l', 'gt50l'] as const
+const CITY_TIERS = ['T1', 'T2', 'T3'] as const
+const LIFE_STAGES = ['single', 'married_no_kids', 'married_with_kids', 'parent_caregiver'] as const
+const OCCUPATIONS = ['salaried_pf', 'self_employed', 'govt', 'other'] as const
+const MAX_RUPEES = 1e12
+
+/**
+ * Validated ParsedProfile for the server-side engine. Previously typed as an
+ * interface, which Nest cannot validate, so arbitrary JSON reached the engine
+ * and the inputs_snapshot column.
+ */
+class CalculateScoreDto implements ParsedProfile {
+  @IsIn(INCOME_BANDS) incomeBand: IncomeBand
+  @IsIn(CITY_TIERS) cityTier: CityTier
+  @IsIn(LIFE_STAGES) lifeStage: LifeStage
+  @IsInt() @Min(0) @Max(20) dependantsCount: number
+  @IsString() @MaxLength(32) monthlyObligationsBand: string
+  @IsBoolean() hasLifeCover: boolean
+  @IsBoolean() hasHealthCover: boolean
+  @IsBoolean() hasAccidentCover: boolean
+  @IsNumber() @Min(0) @Max(MAX_RUPEES) termCoverAmount: number
+  @IsNumber() @Min(0) @Max(MAX_RUPEES) healthCoverAmount: number
+  @IsNumber() @Min(0) @Max(MAX_RUPEES) incomeProtectionAmount: number
+  @IsNumber() @Min(0) @Max(1e6) annualIncomeLakhs: number
+  @IsIn(OCCUPATIONS) occupationCategory: 'salaried_pf' | 'self_employed' | 'govt' | 'other'
 }
 
 /**
@@ -46,7 +73,7 @@ export class ScoreController {
   @ApiOperation({ summary: 'Calculate protection score from parsed profile (server-side engine)' })
   async calculate(
     @CurrentUser() user: JwtPayload,
-    @Body() profile: ParsedProfile,
+    @Body() profile: CalculateScoreDto,
   ) {
     const result = this.scoreService.calculate(profile)
     const saved = await this.scoreService.save(user.sub, result, profile)

@@ -21,6 +21,20 @@ export interface AddNomineeDto {
   accessLevel?: string
 }
 
+/** The only nominees columns a client may set or change. */
+export const UPDATABLE_NOMINEE_FIELDS = [
+  'name', 'relationship', 'mobile', 'whatsapp', 'email', 'aadhaarLast4', 'sharePercentage', 'accessLevel',
+] as const
+
+export function pickUpdatableNomineeFields(dto: Partial<AddNomineeDto>): Partial<AddNomineeDto> {
+  const out: Record<string, unknown> = {}
+  for (const key of UPDATABLE_NOMINEE_FIELDS) {
+    const value = (dto as Record<string, unknown>)[key]
+    if (value !== undefined) out[key] = value
+  }
+  return out as Partial<AddNomineeDto>
+}
+
 @Injectable()
 export class NomineeService {
   constructor(
@@ -33,7 +47,7 @@ export class NomineeService {
     if (dto.aadhaarLast4 && !/^\d{4}$/.test(dto.aadhaarLast4)) {
       dto.aadhaarLast4 = undefined
     }
-    const nominee = this.nomineeRepo.create({ ...dto, userId })
+    const nominee = this.nomineeRepo.create({ ...pickUpdatableNomineeFields(dto), name: dto.name, relationship: dto.relationship, userId })
     return this.nomineeRepo.save(nominee)
   }
 
@@ -45,7 +59,12 @@ export class NomineeService {
     const nominee = await this.nomineeRepo.findOne({ where: { nomineeId } })
     if (!nominee) throw new NotFoundException('Nominee not found')
     if (nominee.userId !== userId) throw new ForbiddenException('Access denied')
-    Object.assign(nominee, dto)
+    const patch = pickUpdatableNomineeFields(dto)
+    if (patch.aadhaarLast4 && !/^\d{4}$/.test(patch.aadhaarLast4)) {
+      patch.aadhaarLast4 = undefined
+    }
+    // Whitelisted copy only — userId / nomineeId are never client-assignable.
+    Object.assign(nominee, patch)
     return this.nomineeRepo.save(nominee)
   }
 

@@ -10,7 +10,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import { UnlockTrigger, TriggerType } from '../../database/entities/unlock-trigger.entity'
 
 @Injectable()
@@ -26,7 +26,7 @@ export class UnlockService {
       triggerType,
       status: 'pending',
       activatedAt: new Date(),
-      unlockToken: uuidv4(),
+      unlockToken: randomUUID(),
     })
     return this.triggerRepo.save(trigger)
   }

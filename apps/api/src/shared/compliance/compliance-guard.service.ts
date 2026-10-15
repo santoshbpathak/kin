@@ -130,7 +130,7 @@ export class ComplianceGuardService {
 
     if (violations.length > 0) {
       this.logger.warn(
-        `Compliance violation [${context}] session=${sessionToken ?? 'unknown'} ` +
+        `Compliance violation [${context}] session=${sessionToken ? sessionToken.slice(0, 8) + '…' : 'unknown'} ` +
         `types=${violations.join(',')}`,
       )
     }

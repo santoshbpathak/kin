@@ -1,53 +1,29 @@
-import { Controller, Post, Get, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common'
+import { Controller, Post, Get, Patch, Delete, Body, Param, UseGuards, ParseUUIDPipe } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
-import { IsString, IsNumber, IsOptional, IsEnum, IsDateString } from 'class-validator'
+import { Throttle } from '@nestjs/throttler'
 import { VaultGuard } from '../../common/guards/vault.guard'
 import { Public } from '../../common/decorators/public.decorator'
 import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator'
 import { VaultService } from './vault.service'
 import { NomineeService } from './nominee.service'
 import { UnlockService } from './unlock.service'
-import { DocumentType, NomineeAccessLevel } from '../../database/entities/vault-document.entity'
-import type { TriggerType } from '../../database/entities/unlock-trigger.entity'
+import {
+  AddDocumentDto, UpdateDocumentDto, AddNomineeDto, UpdateNomineeDto,
+  InitiateUnlockDto, UploadUrlDto, ConfirmUploadDto,
+} from './vault.dto'
 
-class AddDocumentDto {
-  @IsEnum(['term_life','health','vehicle','home','personal_accident','travel','critical_illness','other'])
-  docType: DocumentType
-  @IsOptional() @IsString() insurerName?: string
-  @IsOptional() @IsString() policyNumber?: string
-  @IsOptional() @IsNumber() sumAssured?: number
-  @IsOptional() @IsNumber() annualPremium?: number
-  @IsOptional() @IsDateString() renewalDate?: string
-  @IsOptional() @IsString() nomineeId?: string
-  @IsOptional() @IsEnum(['full','policies_only','emergency_only']) nomineeAccessLevel?: NomineeAccessLevel
-  @IsOptional() @IsString() notes?: string
-  @IsOptional() @IsString() fileName?: string
-}
-
-class AddNomineeDto {
-  @IsString() name: string
-  @IsString() relationship: string
-  @IsOptional() @IsString() mobile?: string
-  @IsOptional() @IsString() email?: string
-  @IsOptional() @IsString() aadhaarLast4?: string
-  @IsOptional() @IsNumber() sharePercentage?: number
-  @IsOptional() @IsString() accessLevel?: string
-}
-
-class InitiateUnlockDto {
-  @IsEnum(['death_cert','deadman','trusted_contact','emergency'])
-  triggerType: TriggerType
-}
-
-class ConfirmUploadDto {
-  @IsString() docId: string
-  @IsString() s3Key: string
-}
+// Vault routes carry the most sensitive data, so they get a tighter per-IP
+// budget than the global limit (PRD: 10 req/min). Read at module load so the
+// decorator can use it; see VAULT_RATE_LIMIT_MAX in .env.example.
+const VAULT_RATE_LIMIT_MAX = parseInt(process.env.VAULT_RATE_LIMIT_MAX ?? '10', 10)
 
 @ApiTags('vault')
 @ApiBearerAuth()
+// @Public() opts this controller out of the *global* standard-JWT guard;
+// VaultGuard then enforces the separate vault-scoped JWT on every route.
 @Public()
 @UseGuards(VaultGuard)
+@Throttle({ default: { limit: VAULT_RATE_LIMIT_MAX, ttl: 60_000 } })
 @Controller({ path: 'vault', version: '1' })
 export class VaultController {
   constructor(
@@ -80,21 +56,21 @@ export class VaultController {
   @ApiOperation({ summary: 'Update document details' })
   updateDocument(
     @CurrentUser() user: JwtPayload,
-    @Param('docId') docId: string,
-    @Body() dto: Partial<AddDocumentDto>,
+    @Param('docId', new ParseUUIDPipe()) docId: string,
+    @Body() dto: UpdateDocumentDto,
   ) {
     return this.vaultService.updateDocument(user.sub, docId, dto)
   }
 
   @Delete('document/:docId')
   @ApiOperation({ summary: 'Delete a vault document' })
-  deleteDocument(@CurrentUser() user: JwtPayload, @Param('docId') docId: string) {
+  deleteDocument(@CurrentUser() user: JwtPayload, @Param('docId', new ParseUUIDPipe()) docId: string) {
     return this.vaultService.deleteDocument(user.sub, docId)
   }
 
   @Post('document/upload-url')
   @ApiOperation({ summary: 'Get Supabase Storage signed upload URL (15-min expiry)' })
-  getUploadUrl(@CurrentUser() user: JwtPayload, @Body() dto?: { docId?: string }) {
+  getUploadUrl(@CurrentUser() user: JwtPayload, @Body() dto: UploadUrlDto) {
     return this.vaultService.getUploadUrl(user.sub, dto?.docId)
   }
 
@@ -106,7 +82,7 @@ export class VaultController {
 
   @Get('document/:docId/download-url')
   @ApiOperation({ summary: 'Get a short-lived signed download URL for the uploaded vault document' })
-  getDownloadUrl(@CurrentUser() user: JwtPayload, @Param('docId') docId: string) {
+  getDownloadUrl(@CurrentUser() user: JwtPayload, @Param('docId', new ParseUUIDPipe()) docId: string) {
     return this.vaultService.getDownloadUrl(user.sub, docId)
   }
 
@@ -128,15 +104,15 @@ export class VaultController {
   @ApiOperation({ summary: 'Update nominee details' })
   updateNominee(
     @CurrentUser() user: JwtPayload,
-    @Param('nomineeId') nomineeId: string,
-    @Body() dto: Partial<AddNomineeDto>,
+    @Param('nomineeId', new ParseUUIDPipe()) nomineeId: string,
+    @Body() dto: UpdateNomineeDto,
   ) {
     return this.nomineeService.updateNominee(user.sub, nomineeId, dto)
   }
 
   @Delete('nominee/:nomineeId')
   @ApiOperation({ summary: 'Remove a nominee' })
-  deleteNominee(@CurrentUser() user: JwtPayload, @Param('nomineeId') nomineeId: string) {
+  deleteNominee(@CurrentUser() user: JwtPayload, @Param('nomineeId', new ParseUUIDPipe()) nomineeId: string) {
     return this.nomineeService.deleteNominee(user.sub, nomineeId)
   }
 
@@ -156,7 +132,7 @@ export class VaultController {
 
   @Get('nominee-view/:unlockToken')
   @ApiOperation({ summary: 'Nominee view — accessed via unlock token' })
-  getNomineeView(@Param('unlockToken') token: string) {
+  getNomineeView(@Param('unlockToken', new ParseUUIDPipe()) token: string) {
     return this.unlockService.getNomineeView(token)
   }
 }

@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Delete, HttpCode, HttpStatus } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { IsString, IsMobilePhone, Length, IsOptional } from 'class-validator'
 import { Public } from '../../common/decorators/public.decorator'
@@ -30,6 +31,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })   // per-IP: 5 OTP requests / minute
   @Post('whatsapp/otp')
   @ApiOperation({ summary: 'Send WhatsApp OTP to phone number' })
   sendOtp(@Body() dto: SendOtpDto) {
@@ -37,6 +39,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })  // per-IP: 10 verify attempts / minute
   @Post('whatsapp/verify')
   @ApiOperation({ summary: 'Verify OTP and upgrade to authenticated session' })
   verifyOtp(@Body() dto: VerifyOtpDto) {

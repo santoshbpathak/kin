@@ -28,6 +28,8 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log'],
+    // Keep the raw request bytes so webhook HMAC signatures can be verified.
+    rawBody: true,
   })
 
   const config = app.get(ConfigService)

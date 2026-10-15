@@ -28,6 +28,8 @@ async function getApp(): Promise<INestApplication> {
 
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log'],
+    // Keep the raw request bytes so webhook HMAC signatures can be verified.
+    rawBody: true,
   })
   const config = app.get(ConfigService)
   const allowedOrigins = config.get<string[]>('partner.allowedOrigins') ?? []

@@ -21,6 +21,7 @@ const RECOMMENDED_IN_PRODUCTION = [
   'WHATSAPP_ACCESS_TOKEN',
   'WHATSAPP_PHONE_NUMBER_ID',
   'WHATSAPP_WEBHOOK_VERIFY_TOKEN',
+  'WHATSAPP_APP_SECRET',
 ] as const
 
 function assertProductionEnv(): void {
@@ -40,6 +41,17 @@ function assertProductionEnv(): void {
       `Some features (Sentry, WhatsApp) will be disabled.`,
     )
   }
+  if (process.env.DATABASE_SSL === 'true' && process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'true') {
+    // eslint-disable-next-line no-console
+    console.warn(
+      '[startup] DATABASE_SSL is on but DATABASE_SSL_REJECT_UNAUTHORIZED is not "true": the database ' +
+      'TLS certificate is NOT verified. Set it to true (and DATABASE_SSL_CA if needed) to prevent MITM.',
+    )
+  }
+  if (process.env.KIN_DEMO_MODE === 'true') {
+    // eslint-disable-next-line no-console
+    console.warn('[startup] KIN_DEMO_MODE=true in production: the AI layer is the scripted demo client.')
+  }
 }
 
 export default () => {
@@ -47,6 +59,8 @@ export default () => {
   return ({
   port: parseInt(process.env.PORT ?? '3001', 10),
   nodeEnv: process.env.NODE_ENV ?? 'development',
+  // Demo mode: scripted AI client, no paid APIs. See docs/development.md.
+  demoMode: process.env.KIN_DEMO_MODE === 'true',
 
   database: {
     driver: process.env.DATABASE_DRIVER ?? 'postgres',
@@ -57,6 +71,14 @@ export default () => {
     user: process.env.DATABASE_USER ?? 'kin_user',
     pass: process.env.DATABASE_PASS ?? 'kin_pass',
     ssl: process.env.DATABASE_SSL === 'true',
+    // Verify the server certificate when DATABASE_SSL is on. Defaults to the
+    // historical behaviour (false) so existing deployments keep working, but
+    // production should set this to true. Optional PEM CA bundle for
+    // providers that use a private CA (e.g. Supabase direct connections).
+    sslRejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === 'true',
+    sslCa: process.env.DATABASE_SSL_CA || undefined,
+    // Opt-in SQL query logging (prints bound parameters). Never on in production.
+    logQueries: process.env.DATABASE_LOG_QUERIES === 'true',
     sqljsLocation: process.env.DATABASE_SQLJS_LOCATION ?? 'kin-local.sqlite',
   },
 
@@ -79,6 +101,8 @@ export default () => {
     phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID ?? '',
     accessToken: process.env.WHATSAPP_ACCESS_TOKEN ?? '',
     webhookVerifyToken: process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN ?? '',
+    // Meta app secret used to verify X-Hub-Signature-256 on inbound webhooks.
+    appSecret: process.env.WHATSAPP_APP_SECRET ?? '',
   },
 
   partner: {
@@ -112,6 +136,9 @@ export default () => {
     maxTokensAdvisor: parseInt(process.env.OPENAI_MAX_TOKENS_ADVISOR ?? '1500', 10),
     maxTokensExtraction: parseInt(process.env.OPENAI_MAX_TOKENS_EXTRACTION ?? '3000', 10),
     conversationTtlSeconds: parseInt(process.env.CONVERSATION_TTL_SECONDS ?? '1800', 10),
+    // Hard cap on user turns per conversation (diagnostic and advisor). Bounds
+    // the LLM spend a single session can generate.
+    maxConversationTurns: parseInt(process.env.MAX_CONVERSATION_TURNS ?? '40', 10),
   },
 })
 }

@@ -13,6 +13,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { ThrottlerModule } from '@nestjs/throttler'
+import type { LoggerOptions } from 'typeorm'
 import { APP_GUARD } from '@nestjs/core'
 import { ThrottlerGuard } from '@nestjs/throttler'
 
@@ -48,6 +49,7 @@ import { EngagementModule } from './modules/engagement/engagement.module'
 import { ContentModule } from './modules/content/content.module'
 import { ConnectModule } from './modules/connect/connect.module'
 import { LifecycleModule } from './modules/lifecycle/lifecycle.module'
+import { HealthModule } from './modules/health/health.module'
 
 const ALL_ENTITIES = [
   UserProfile,
@@ -67,12 +69,19 @@ const ALL_ENTITIES = [
   AdvisorSession,
 ]
 
+// Development default: no query echo (bound parameters contain phone numbers).
+const QUIET_DEV_LOGGING: LoggerOptions = ['error', 'warn', 'migration']
+
 function createTypeOrmOptions(config: ConfigService): TypeOrmModuleOptions {
   const nodeEnv = config.get<string>('nodeEnv')
   const driver = config.get<string>('database.driver')
   const common = {
     entities: ALL_ENTITIES,
-    logging: nodeEnv === 'development',
+    // Query logging prints bound parameters (phone numbers, tokens) to stdout,
+    // so it is opt-in even in development: DATABASE_LOG_QUERIES=true.
+    logging: nodeEnv === 'development'
+      ? (config.get<boolean>('database.logQueries') ? true : QUIET_DEV_LOGGING)
+      : false,
   }
 
   if (driver === 'sqljs') {
@@ -95,7 +104,10 @@ function createTypeOrmOptions(config: ConfigService): TypeOrmModuleOptions {
     username: config.get<string>('database.user'),
     password: config.get<string>('database.pass'),
     ssl: config.get<boolean>('database.ssl')
-      ? { rejectUnauthorized: false }
+      ? {
+          rejectUnauthorized: config.get<boolean>('database.sslRejectUnauthorized') ?? false,
+          ca: config.get<string | undefined>('database.sslCa'),
+        }
       : false,
     migrations: ['dist/database/migrations/*.js'],
     migrationsRun: false,
@@ -149,6 +161,7 @@ function createTypeOrmOptions(config: ConfigService): TypeOrmModuleOptions {
     ContentModule,
     ConnectModule,
     LifecycleModule,
+    HealthModule,
   ],
   providers: [
     // Global JWT auth guard - all routes require JWT unless @Public() decorator is present

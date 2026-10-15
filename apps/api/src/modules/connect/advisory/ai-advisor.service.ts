@@ -15,7 +15,7 @@
  * when OpenAI calls error (Brief §0.4) so the user is never blocked.
  */
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ConfigService } from '@nestjs/config'
 import { Repository } from 'typeorm'
@@ -101,6 +101,15 @@ export class AiAdvisorService {
     // Ownership-bound: the advisor session must belong to the calling user.
     const session = await this.sessionRepo.findOne({ where: { advisorSessionId, userId } })
     if (!session) throw new NotFoundException('Advisor session not found')
+
+    // Spend guard: a single advisor session cannot generate unbounded model calls.
+    const maxTurns = this.config.get<number>('openai.maxConversationTurns') ?? 40
+    if (session.turnCount >= maxTurns) {
+      throw new HttpException(
+        'This advisor session has reached its turn limit. Please start a new session or connect to an advisor.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      )
+    }
 
     session.tier1Transcript.push({
       role: 'user',

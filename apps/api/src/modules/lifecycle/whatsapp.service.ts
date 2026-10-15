@@ -18,21 +18,28 @@ export interface WhatsAppMessage {
   bodyText?: string    // For non-template messages (only for session messages)
 }
 
+/** Keep only the last four digits of a phone number for logs. */
+export function maskPhone(phone: string | undefined | null): string {
+  if (typeof phone !== 'string' || phone.length < 4) return '******'
+  return `******${phone.slice(-4)}`
+}
+
 @Injectable()
 export class WhatsAppService {
   private readonly logger = new Logger(WhatsAppService.name)
   private readonly sandboxMode: boolean
 
   constructor(private readonly config: ConfigService) {
-    this.sandboxMode = !config.get<string>('whatsapp.apiToken')
+    this.sandboxMode = !config.get<string>('whatsapp.accessToken')
   }
 
   async sendTemplate(message: WhatsAppMessage): Promise<{ messageId: string; status: string }> {
     const messageId = `wa_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 
     if (this.sandboxMode) {
+      // Never log the full phone number or template parameters (DPDP boundary).
       this.logger.log(
-        `[WhatsApp SANDBOX] To: ${message.to} | Template: ${message.templateName} | Params: ${JSON.stringify(message.templateParams)}`,
+        `[WhatsApp SANDBOX] To: ${maskPhone(message.to)} | Template: ${message.templateName}`,
       )
       return { messageId, status: 'sandbox_sent' }
     }
@@ -52,7 +59,7 @@ export class WhatsAppService {
     //   })
     // })
 
-    this.logger.log(`[WhatsApp] Sent ${message.templateName} to ${message.to}`)
+    this.logger.log(`[WhatsApp] Sent ${message.templateName} to ${maskPhone(message.to)}`)
     return { messageId, status: 'sent' }
   }
 

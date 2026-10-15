@@ -18,7 +18,7 @@ import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, LessThan } from 'typeorm'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import { randomBytes, createHash } from 'crypto'
 import { UserProfile } from '../../database/entities/user-profile.entity'
 import { OtpRequest } from '../../database/entities/otp-request.entity'
@@ -39,7 +39,7 @@ export class AuthService {
 
   // ── Anonymous session ─────────────────────────────────────────
   async createAnonymousSession(): Promise<{ sessionToken: string; token: string }> {
-    const sessionToken = uuidv4()
+    const sessionToken = randomUUID()
     const user = this.userRepo.create({ sessionToken, consentedPii: false })
     await this.userRepo.save(user)
     const token = this.signToken(user.userId, sessionToken, false, 'standard')
@@ -64,8 +64,9 @@ export class AuthService {
       await this.otpRepo.save(this.otpRepo.create({ phone, otpHash, expiresAt }))
     }
 
-    // In non-production, print a sanitised hint so engineers can test locally
-    // without leaking the full phone number or OTP to logs (DPDP boundary).
+    // Non-production only: print the OTP (with the phone masked to its last 4
+    // digits) so the flow can be exercised locally without a WhatsApp account.
+    // Production never logs OTPs; NODE_ENV=production is asserted at startup.
     if (process.env.NODE_ENV !== 'production') {
       const tail = phone.slice(-4)
       // eslint-disable-next-line no-console
@@ -109,7 +110,7 @@ export class AuthService {
         user = await this.userRepo.save(existing)
       } else {
         user = await this.userRepo.save(
-          this.userRepo.create({ sessionToken: uuidv4(), whatsappNumber: phone, consentedPii: true }),
+          this.userRepo.create({ sessionToken: randomUUID(), whatsappNumber: phone, consentedPii: true }),
         )
       }
     }

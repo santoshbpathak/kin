@@ -21,7 +21,7 @@
  *   - Calculate the Protection Score; that stays in score-engine.
  */
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ConfigService } from '@nestjs/config'
 import { LessThan, Repository } from 'typeorm'
@@ -144,6 +144,15 @@ export class IntakeAgentService {
         progressPercent: 100,
         collectedFieldCount: Object.keys(session.collectedFields).length,
       }
+    }
+
+    // Spend guard: a single conversation cannot generate unbounded model calls.
+    const maxTurns = this.config.get<number>('openai.maxConversationTurns') ?? 40
+    if (session.turnCount >= maxTurns) {
+      throw new HttpException(
+        'This conversation has reached its turn limit. Please start a new diagnostic.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      )
     }
 
     session.history.push({
