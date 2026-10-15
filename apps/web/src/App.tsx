@@ -3,6 +3,7 @@ import { Routes, Route, NavLink, useLocation } from 'react-router-dom'
 import { BrandProvider } from '@/theme/BrandProvider'
 import { AuthProvider } from '@/modules/auth/AuthContext'
 import { AppFooter } from '@/components/AppFooter'
+import { DemoBanner } from '@/components/DemoBanner'
 import { IconScore, IconBrief, IconHome, IconVault, IconStreak } from '@/components/ui/icons'
 import { HomePage } from '@/modules/home/HomePage'
 import { DiagnosticPage } from '@/modules/diagnostic/DiagnosticPage'
@@ -81,6 +82,7 @@ export default function App() {
     <BrandProvider>
       <AuthProvider>
         <div className="flex flex-col min-h-screen">
+          <DemoBanner />
           <ScrollToTop />
           <main className="flex-1 pb-16">
             <Routes>
