@@ -51,7 +51,7 @@ require_status "unauth /score/latest" "401" "$CODE"
 header "3. POST /auth/whatsapp/otp"
 CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/auth/whatsapp/otp" \
   -H "Content-Type: application/json" \
-  -d '{"phone":"+919876543210"}')
+  -d '{"phone":"${SMOKE_PHONE:?Set SMOKE_PHONE to a Meta test number (an OTP will be sent to it)}"}')
 require_status "otp send" "201" "$CODE"
 
 # ── Test 4: Google OAuth stub ────────────────────────────────────

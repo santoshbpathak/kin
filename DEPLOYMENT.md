@@ -6,6 +6,17 @@ Estimated total time: **~3 hours of active work** (most of it waiting for DNS pr
 
 ---
 
+> **October 2026 update (open-source preparation).** New environment
+> variables since this runbook was written — set them in the Vercel project
+> alongside the ones below:
+> `WHATSAPP_APP_SECRET` (required for inbound webhooks in production),
+> `DATABASE_SSL_REJECT_UNAUTHORIZED=true` (+ `DATABASE_SSL_CA` if your
+> provider uses a private CA), `MAX_CONVERSATION_TURNS` (default 40),
+> `KIN_DEMO_MODE` (leave unset in production unless deploying a public demo).
+> The WhatsApp webhook now reads Meta's `hub.*` parameters from the query
+> string and has no default verify token. `apps/api/.env.example` is the
+> authoritative list.
+
 ## Pre-flight checklist
 
 Tick these off before you start:
@@ -88,7 +99,7 @@ Verify in Supabase dashboard → **Table Editor**: you should see 13 tables (use
 ## Step 4 — Generate secrets (1 min)
 
 ```bash
-cd /Users/santoshpathak/kin-mvp/kin-mvp     # repo root
+cd <your-checkout>     # repo root
 ./scripts/generate-secrets.sh
 ```
 
@@ -225,7 +236,7 @@ curl -I https://app.kin.ai.in/                       # should return HTTP 200
 This script runs the full 13-test pack against the production URLs.
 
 ```bash
-cd /Users/santoshpathak/kin-mvp/kin-mvp
+cd <your-checkout>
 ./scripts/smoke-test-prod.sh https://api.kin.ai.in
 ```
 
@@ -283,7 +294,7 @@ Share with the pilot team:
 
 We deferred Sentry for week-1 launch. To enable it:
 
-1. Follow Appendix A in the plan file (`/Users/santoshpathak/.claude/plans/poc-infrastructure-context-graceful-sketch.md`) to create a Sentry project and get a DSN.
+1. Follow Appendix A in the plan file (`the appendices below`) to create a Sentry project and get a DSN.
 2. Vercel dashboard → kin-api → Settings → Environment Variables → add:
    ```
    SENTRY_DSN=<paste from Sentry dashboard>

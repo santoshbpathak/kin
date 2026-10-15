@@ -164,7 +164,7 @@ export function UnlockInstructions({ documents, nominees, holderName }: Props) {
           type="text"
           value={name}
           onChange={e => setName(e.target.value)}
-          placeholder="e.g. Santosh Pathak"
+          placeholder="e.g. Priya Sharma"
           autoCapitalize="words"
         />
         <Input
