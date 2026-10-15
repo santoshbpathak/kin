@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://github.com/santoshbpathak/kin/actions/workflows/ci.yml"><img src="https://github.com/santoshbpathak/kin/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <img src="https://img.shields.io/badge/version-0.1.0-102A43" alt="Version 0.1.0">
-  <img src="https://img.shields.io/badge/licence-pending-F5A623" alt="Licence pending owner confirmation">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-18A999" alt="MIT licence"></a>
   <img src="https://img.shields.io/badge/node-%E2%89%A520-18A999" alt="Node 20 or newer">
   <img src="https://img.shields.io/badge/pnpm-9.12-18A999" alt="pnpm 9.12">
   <img src="https://img.shields.io/badge/TypeScript-strict-102A43" alt="TypeScript strict">
@@ -31,7 +31,7 @@
 
 ---
 
-**Status:** pilot-quality MVP (v0.1.0). Everything shown below runs locally in demo mode with synthetic data. KIN is not production-certified, regulator-approved or independently audited, and the licence is still being confirmed. Read the [readiness report](OPEN_SOURCE_READINESS_REPORT.md) before deploying it for real users.
+**Status:** pilot-quality MVP (v0.1.0), MIT licensed. Everything shown below runs locally in demo mode with synthetic data. KIN is not production-certified, regulator-approved or independently audited. Read the [readiness report](OPEN_SOURCE_READINESS_REPORT.md) before deploying it for real users.
 
 ## The problem
 
@@ -202,7 +202,7 @@ KIN provides general financial-protection education based on published rules of 
 
 ## Licence
 
-**Not yet applied.** Apache-2.0 is recommended and will be added once the owner confirms the rights to the code, brand and content ([`docs/OPEN_SOURCE_LICENSING_REVIEW.md`](docs/OPEN_SOURCE_LICENSING_REVIEW.md)). The KIN name and logo will not be covered by the code licence. Until then, contributions are accepted on the understanding that they will be released under the licence the maintainers adopt.
+Released under the [MIT License](LICENSE), Copyright (c) 2026 Santosh Pathak. The KIN name and the Shelter logo are brand assets and are not covered by the code licence; see [`docs/OPEN_SOURCE_LICENSING_REVIEW.md`](docs/OPEN_SOURCE_LICENSING_REVIEW.md) for the third-party and font notices. Contributions are accepted under the same licence.
 
 ## Maintainers
 

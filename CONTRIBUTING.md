@@ -70,8 +70,6 @@ issue — follow [`SECURITY.md`](SECURITY.md).
 
 ## Licence of contributions
 
-The project licence is still being finalised (see
-`docs/OPEN_SOURCE_LICENSING_REVIEW.md`). Until a `LICENSE` file is added,
-contributions are accepted on the understanding that they will be released
-under the licence the maintainers adopt, which is expected to be
-Apache-2.0.
+KIN is released under the MIT License (`LICENSE`). By contributing you
+agree that your contribution is licensed under the same terms. The KIN name
+and logo are not covered by the code licence.

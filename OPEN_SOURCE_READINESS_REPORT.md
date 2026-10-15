@@ -1,7 +1,7 @@
 # KIN — Open-Source Readiness Report
 
-**Branch:** `prep/open-source-release` (not pushed) · **Date:** 15 October 2026 ·
-**Scope:** full repository `santoshbpathak/kin-mvp` (22 commits, 5 branches) ·
+**Published as:** `santoshbpathak/kin` (public, MIT) · **Date:** 15 October 2026 ·
+**Scope:** full history of the original private repository `santoshbpathak/kin-mvp` (22 commits, 5 branches) ·
 **Method:** AI-assisted audit with gitleaks, pnpm audit, static review of every
 controller/service/engine, and active HTTP and browser verification of the
 built application in demo mode. Supporting detail: `docs/security/01…05`,
@@ -12,16 +12,18 @@ built application in demo mode. Supporting detail: `docs/security/01…05`,
 ## Overall recommendation
 
 # READY FOR PUBLICATION — security and privacy
-# (subject to the owner's legal sign-off on ownership and licence)
+# (published; MIT licence applied by the owner)
 
 No confirmed critical or high-severity security or privacy risk remains in
-the branch or in its git history. The one open gate is legal, not technical:
+the published repository or its git history. The owner applied the MIT
+licence and made `santoshbpathak/kin` public on 15 October 2026; the
+ownership gate below is therefore closed by the owner's own assertion:
 
 | Gate | Status | Why |
 |---|---|---|
 | **Security of the code** | **Ready, with one operator action** | Every confirmed HIGH and MEDIUM code finding is fixed and regression-tested; the production dependency graph has 0 critical / 0 high. The one remaining MEDIUM (database TLS verification) is mitigated by a new switch that the operator must turn on. |
 | **Sensitive content in the repository and its history** | **Ready** | All three confidential documents are removed from the tree and **purged from the history of every local branch** (rewritten 15 Oct 2026); historical image blobs were re-written without employer metadata. The GitHub remote still holds the old history until the owner publishes from this clone (see §5). |
-| **Ownership, licensing, legal** | **Owner sign-off required (outside security)** | No licence can be applied until the owner confirms the right to release the code, brand and content — several signals point at employer-owned material. This cannot be resolved by engineering work. |
+| **Ownership, licensing, legal** | **Closed by the owner** | The owner applied the MIT licence, which asserts the right to release the code, brand and content. The signals that prompted the question (`docs/OPEN_SOURCE_LICENSING_REVIEW.md` §2) are recorded but were not independently verified. |
 
 An automated audit cannot guarantee the absence of vulnerabilities; this
 report states what was checked and what was found.
@@ -119,14 +121,12 @@ Verification: zero commits touch the three paths on any branch; zero
 employer/Canva strings in any historical image blob; gitleaks: 42 commits,
 no leaks.
 
-**What is still required of the owner:** the GitHub remote
-(`origin/main` = `70aae42`) still has the old history. Publish from this
-clone only, either by **creating a new public repository and pushing these
-branches** (recommended — GitHub keeps unreachable objects of the old repo
-indefinitely unless support purges them), or by force-pushing all six
-branches to the existing repository and asking GitHub Support to purge
-unreachable objects before making it public. Any other clone of the old
-history must be discarded.
+**Publication (done):** the cleaned branches were pushed to a **new**
+repository, `santoshbpathak/kin`, which the owner then made public. The
+original `santoshbpathak/kin-mvp` still contains the confidential history
+(including merged pull-request refs that only GitHub Support can purge);
+it must stay private or be deleted, and must never be pushed to again.
+Any other clone of the old history should be discarded.
 
 ## 6. Dependency vulnerabilities
 
@@ -145,11 +145,14 @@ history is stored in the DB (deliberate deviation from the brief, with TTL).
 
 ## 8. Licensing and ownership concerns
 
-No `LICENSE`; `license: null` everywhere. Dependencies permit any
-permissive licence. **Apache-2.0 recommended**, to be applied only after
-ownership confirmation (employer sign-off or counsel). Trademark statement
-for the KIN name/logo required. Manrope (OFL) notice if font files are
-kept. Details: `docs/OPEN_SOURCE_LICENSING_REVIEW.md`.
+**MIT License applied by the owner** (`LICENSE`, `license: "MIT"` in all
+manifests, README trademark note for the KIN name and logo). Dependencies
+are all permissive and compatible. Remaining: Manrope (OFL) notice if the
+font files in the brand HTML are kept. The ownership signals that prompted
+the original recommendation are recorded in
+`docs/OPEN_SOURCE_LICENSING_REVIEW.md` §2 and were not independently
+verified. The repository was pushed to a new, clean repository
+(`santoshbpathak/kin`) and made public by the owner.
 
 ## 9. Changes implemented on this branch
 
@@ -178,9 +181,8 @@ runbook note, historical-snapshot banner on `docs/audit/`.
 
 ## 10. Changes requiring manual approval (not performed)
 
-1. Publication from this clone: new public repository (recommended) or
-   force-push of all six rewritten branches plus a GitHub Support purge (§5).
-2. Ownership confirmation and licence application (§8).
+1. ~~Publication from this clone~~ — done (`santoshbpathak/kin`, public).
+2. ~~Licence~~ — done (MIT, owner's decision).
 3. Production config: `DATABASE_SSL_REJECT_UNAUTHORIZED=true`,
    `WHATSAPP_APP_SECRET`, `WHATSAPP_WEBHOOK_VERIFY_TOKEN`; rotate the old
    verify token in Meta if it was ever configured.
@@ -215,8 +217,7 @@ demo), Google login (stub).
 
 | Risk | Severity | Owner action |
 |---|---|---|
-| Old history still on the GitHub remote | HIGH until published correctly | publish from this clone only (§5) |
-| IP ownership unconfirmed | BLOCKING (legal) | confirm, then license |
+| Original `kin-mvp` repository still holds the confidential history | HIGH if it is ever made public | keep private or delete; never push to it |
 | DB TLS verification off by default | MEDIUM | enable in production |
 | NestJS 10 end-of-line; 6 moderate prod advisories | MEDIUM | plan migration |
 | Per-instance rate limiting on serverless | LOW–MEDIUM | shared store before scale |
@@ -245,9 +246,9 @@ paid API, no real data, no live transactions.
 
 ## 15. Recommended next actions
 
-1. **Owner:** confirm IP ownership, then add `LICENSE` (Apache-2.0) +
-   `NOTICE` + trademark note; publish from this clone into a new public
-   repository (§5) and discard every clone of the old history.
+1. **Owner:** keep `santoshbpathak/kin-mvp` private or delete it; discard
+   every clone of the old history; upload the social preview image in the
+   new repository's settings.
 2. **Operator:** set the new production variables (§10.4) and enable DB TLS
    verification; rotate the old webhook verify token if used.
 3. **Engineering:** unify the score/recommendation engines; NestJS 11/12

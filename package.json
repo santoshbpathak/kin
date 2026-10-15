@@ -2,6 +2,7 @@
   "name": "kin",
   "private": true,
   "version": "0.1.0",
+  "license": "MIT",
   "description": "KIN \u2014 Knowledge Intelligence Network. Embedded financial wellness PWA for India.",
   "scripts": {
     "dev": "pnpm --parallel --filter web --filter api dev",

@@ -1,17 +1,19 @@
 # Open-source licensing and IP review
 
-Status: **no licence applied**. This document records what was found and
-recommends a licence, but ownership and compatibility must be confirmed by
-the repository owner (and, where employment is involved, by their employer
-or counsel) before a `LICENSE` file is added. Possession of the source does
-not establish the right to release it.
+Status: **MIT License applied by the owner on 15 October 2026**
+(`LICENSE`, Copyright (c) 2026 Santosh Pathak), and the repository was made
+public the same day. Applying the licence is the owner's assertion that they
+hold the rights to release the code, brand and content; the ownership
+questions in §2 are recorded for the owner's own records and were not
+independently verified. This document otherwise stands as the review that
+preceded the decision.
 
 ## 1. Existing notices
 
 | Item | Finding |
 |---|---|
-| `LICENSE` file | none |
-| `license` field in all four `package.json` | absent / `null` |
+| `LICENSE` file | MIT (added by the owner, 15 Oct 2026) |
+| `license` field in all four `package.json` | `MIT` |
 | Copyright headers in source | none |
 | Third-party notices | none required so far (all dependencies are consumed as packages, not copied in) |
 
@@ -39,7 +41,11 @@ and no custom licences.** Any permissive licence for KIN is compatible. The
 CC-BY-4.0 entry (`caniuse-lite` data, build-time only) requires no action
 for a web build.
 
-## 4. Licence recommendation
+## 4. Licence recommendation (made before the owner's decision)
+
+The owner chose **MIT**, which is fully compatible with every dependency
+and is the simpler of the two options below. The original recommendation is
+kept for the record.
 
 **Apache License 2.0**, because:
 
@@ -55,17 +61,11 @@ for a web build.
 MIT would also be acceptable if simplicity is preferred over the patent
 language.
 
-### When ownership is confirmed, apply it by
+### Remaining follow-ups after the MIT decision
 
-1. Adding `LICENSE` (Apache-2.0 text) and a short `NOTICE` ("KIN — Financial
-   Protection Intelligence Platform. Copyright © <year> <owner>.").
-2. Setting `"license": "Apache-2.0"` in all four `package.json` files.
-3. Adding a README section: code under Apache-2.0; the KIN name and logo
-   are trademarks of <owner> and are not covered.
-4. Adding the SIL OFL notice for Manrope if font files are kept in
-   `docs/brand`.
-5. Optionally adopting the Developer Certificate of Origin for
-   contributions (`git commit -s`).
-
-Until then, `CONTRIBUTING.md` tells contributors the licence is pending and
-expected to be Apache-2.0.
+1. ~~Add `LICENSE`~~ — done (MIT).
+2. ~~Set `"license"` in all four `package.json` files~~ — done (`MIT`).
+3. ~~README licence section with the trademark note~~ — done.
+4. Add the SIL OFL notice for Manrope if the font files inside
+   `docs/brand/KIN_Brand_Guidelines.html` are kept.
+5. Optionally adopt the Developer Certificate of Origin (`git commit -s`).

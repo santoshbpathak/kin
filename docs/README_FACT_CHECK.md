@@ -39,8 +39,8 @@ taken from marketing material; the previous README is preserved at
 
 | Item | Status |
 |---|---|
-| CI badge | Renders only after the workflow has run on GitHub; the repository is private and unpushed, so it shows "no status" until then. |
-| Licence badge "pending" | Accurate: no `LICENSE` file; see `docs/OPEN_SOURCE_LICENSING_REVIEW.md`. |
+| CI badge | Live: the workflow has run on `santoshbpathak/kin` (public) and passed. |
+| Licence badge | MIT, matching `LICENSE` added by the owner on 15 Oct 2026. |
 | Banner / social preview score ring showing "82" | Illustrative graphic, not a screenshot; alt text says so. The mark is the official Shelter vector from `KinLogo.tsx` / `favicon.svg`; colours and flat treatment follow the brand guidelines (score ≥ 75 is shown in Teal). A sand variant exists as `kin-banner-light.png`. |
 | Mermaid diagram | Syntax is standard `flowchart LR`; GitHub renders Mermaid, but it was not rendered here. |
 
@@ -55,4 +55,4 @@ taken from marketing material; the previous README is preserved at
 - `apps/api` has a `lint` script but no ESLint configuration or dependency.
 - `test:e2e` points at a missing `test/` folder.
 - `docs/audit/` is a historical snapshot (banner added) and references features that have since changed.
-- No `LICENSE`, `NOTICE` or trademark statement (blocked on ownership confirmation).
+- `NOTICE`/OFL note for the Manrope files embedded in the brand HTML not yet added.
