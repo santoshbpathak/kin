@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/santoshbpathak/kin-mvp/actions/workflows/ci.yml"><img src="https://github.com/santoshbpathak/kin-mvp/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <a href="https://github.com/santoshbpathak/kin/actions/workflows/ci.yml"><img src="https://github.com/santoshbpathak/kin/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <img src="https://img.shields.io/badge/version-0.1.0-102A43" alt="Version 0.1.0">
   <img src="https://img.shields.io/badge/licence-pending-F5A623" alt="Licence pending owner confirmation">
   <img src="https://img.shields.io/badge/node-%E2%89%A520-18A999" alt="Node 20 or newer">
@@ -119,7 +119,7 @@ The web app computes the score locally and posts the result for the audit trail;
 Requirements: Node 20 or newer (tested on 24), pnpm 9.12 (picked up automatically with `corepack enable`), Git. No database server, Docker or API keys are needed.
 
 ```bash
-git clone https://github.com/santoshbpathak/kin-mvp.git kin
+git clone https://github.com/santoshbpathak/kin.git kin
 cd kin
 pnpm install --frozen-lockfile
 pnpm dev:local

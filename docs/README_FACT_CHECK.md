@@ -24,7 +24,7 @@ taken from marketing material; the previous README is preserved at
 | URLs and ports | `apps/web/vite.config.ts` (5173, proxy to 3001), `apps/api/src/main.ts` (`/api/v1`, `/api/docs` outside production) |
 | CI steps | `.github/workflows/ci.yml` |
 | Security bullets | `docs/security/04-application-security.md` §2 with live verification log |
-| Sole author | `git log --format=%an` → one person under two display names; remote `santoshbpathak/kin-mvp` |
+| Sole author | `git log --format=%an` → one person under two display names; remote `santoshbpathak/kin` |
 | Test counts quoted in docs (114 API, 26 web) | run on 15 Oct 2026; not quoted as a badge because they go stale |
 
 ## Claims deliberately not made

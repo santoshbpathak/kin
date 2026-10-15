@@ -48,7 +48,7 @@ Reviewed and left as they were (accurate after the readiness work):
 ## 4. Actions requiring the owner
 
 1. **Licence**: confirm rights, add `LICENSE` + `NOTICE`, then replace the "licence pending" badge with the real one (see `docs/OPEN_SOURCE_LICENSING_REVIEW.md`).
-2. **Publish from this clone** (new repository recommended, see `OPEN_SOURCE_READINESS_REPORT.md` §5); the badges and template links assume the `santoshbpathak/kin-mvp` path — update them if the public repository has a different name.
+2. **Publish from this clone** (new repository recommended, see `OPEN_SOURCE_READINESS_REPORT.md` §5); the badges and template links assume the `santoshbpathak/kin` path — update them if the public repository has a different name.
 3. Apply the About description, topics and social preview from `docs/GITHUB_DISCOVERABILITY.md`.
 4. Optionally enable Discussions and add the link under "Contributing".
 5. Review the banner and social preview for brand approval; both are derived from the brand guidelines' palette and the existing mark.
