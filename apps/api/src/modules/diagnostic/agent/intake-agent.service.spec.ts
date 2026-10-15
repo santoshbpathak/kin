@@ -38,21 +38,34 @@ describe('intake-agent pure helpers', () => {
       expect(isConversationComplete(c)).toBe(false)
     })
 
-    it('completes once Group A done, Life cover answered, and ≥3 Group B fields collected', () => {
+    it('still returns false if Group A is done but Income Protection cover not answered (hard rule)', () => {
       const c: CollectedFields = {
         ...fullGroupA(),
         personal_life_cover_amount: 5000000,
         personal_health_cover_amount: 500000,
         employer_mediclaim_amount: 300000,
+        // income_protection_cover_amount intentionally absent
+      }
+      expect(isConversationComplete(c)).toBe(false)
+    })
+
+    it('completes once Group A done, Life + Income Protection answered, and ≥3 Group B fields collected', () => {
+      const c: CollectedFields = {
+        ...fullGroupA(),
+        personal_life_cover_amount: 5000000,
+        personal_health_cover_amount: 500000,
+        employer_mediclaim_amount: 300000,
+        income_protection_cover_amount: 0,
       }
       expect(isConversationComplete(c)).toBe(true)
     })
 
-    it('accepts an explicit "skipped" value for Group A fields', () => {
+    it('accepts an explicit "skipped" value for Group A and hard-rule fields', () => {
       const c: CollectedFields = {
         ...fullGroupA(),
         monthly_obligations_band: 'skipped',
         personal_life_cover_amount: 'skipped',
+        income_protection_cover_amount: 'skipped',
         personal_health_cover_amount: 0,
         employer_mediclaim_amount: 0,
       }

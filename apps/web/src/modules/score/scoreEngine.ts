@@ -90,12 +90,46 @@ function fmt(n: number): string {
   return `₹${n}`
 }
 
+// ── Input guards ──────────────────────────────────────────────────────────
+// The formulas below are unchanged. These helpers only decide what an invalid
+// input *means*: a non-finite or negative rupee figure is treated as "not
+// answered" (so the band / typical fallback applies), an unknown band maps to
+// ₹0, and an invalid dependant count is 0. Without them a bad input produced
+// NaN scores. See docs/financial-methodology.md §"Missing and invalid inputs".
+
+/** A finite, non-negative rupee amount, else 0. */
+export function safeAmount(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 0
+}
+
+/** A finite, non-negative exact figure, else undefined (= not answered). */
+function optionalAmount(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined
+}
+
+/** Returns a copy of the profile with every numeric input validated. */
+export function sanitiseProfile(input: UserProfile): UserProfile {
+  return {
+    ...input,
+    dependantsCount: Math.floor(safeAmount(input.dependantsCount)),
+    actualAnnualIncome: optionalAmount(input.actualAnnualIncome),
+    actualMonthlyObligations: optionalAmount(input.actualMonthlyObligations),
+    actualPersonalLifeCover: optionalAmount(input.actualPersonalLifeCover),
+    actualEmployerGroupTerm: optionalAmount(input.actualEmployerGroupTerm),
+    actualPersonalHealthCover: optionalAmount(input.actualPersonalHealthCover),
+    actualEmployerMediclaim: optionalAmount(input.actualEmployerMediclaim),
+    actualCiCover: optionalAmount(input.actualCiCover),
+    actualIncomeProtectionCover: optionalAmount(input.actualIncomeProtectionCover),
+  }
+}
+
 // ── Main calculation ──────────────────────────────────────────────────────
-export function calculateScore(profile: UserProfile): ScoreResult {
+export function calculateScore(input: UserProfile): ScoreResult {
+  const profile = sanitiseProfile(input)
   // Prefer exact figures from the conversational flow; fall back to band
   // midpoints for legacy 7-question sessions.
-  const annualIncome      = profile.actualAnnualIncome ?? INCOME_MIDPOINT[profile.incomeBand]
-  const monthlyObligation = profile.actualMonthlyObligations ?? OBLIGATION_MIDPOINT[profile.monthlyObligationsBand]
+  const annualIncome      = safeAmount(profile.actualAnnualIncome ?? INCOME_MIDPOINT[profile.incomeBand])
+  const monthlyObligation = safeAmount(profile.actualMonthlyObligations ?? OBLIGATION_MIDPOINT[profile.monthlyObligationsBand])
 
   // ── Life sub-score ───────────────────────────────────────────────────
   const recommendedLifeCover = annualIncome * 10

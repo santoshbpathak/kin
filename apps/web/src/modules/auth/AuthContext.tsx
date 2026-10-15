@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         consent,
       })
       setJwt(jwt ?? null)
-    } catch (err) {
+    } catch {
       setError('Failed to start session. Please try again.')
     } finally {
       setIsLoading(false)

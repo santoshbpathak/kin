@@ -51,19 +51,25 @@ export class ProtectionScoreService {
   ) {}
 
   calculate(profile: ParsedProfile, hiddenCoverageTotal = 0): ScoreResult {
-    const annualIncome = profile.annualIncomeLakhs * 100000
+    // Input guards: non-finite or negative figures are treated as 0 so the
+    // formulas below (unchanged) can never produce NaN or negative scores.
+    const annualIncome = safeAmount(profile.annualIncomeLakhs) * 100000
+    const termCover = safeAmount(profile.termCoverAmount)
+    const healthCover = safeAmount(profile.healthCoverAmount)
+    const incomeProtection = safeAmount(profile.incomeProtectionAmount)
+    const dependants = safeAmount(profile.dependantsCount)
 
     // ── Life Score ───────────────────────────────────────────────
     const recommendedTermCover = annualIncome * 10
     const rawLife = recommendedTermCover > 0
-      ? Math.min(100, (profile.termCoverAmount / recommendedTermCover) * 100)
+      ? Math.min(100, (termCover / recommendedTermCover) * 100)
       : 0
 
     // ── Health Score ─────────────────────────────────────────────
-    const ageFactor = profile.dependantsCount > 0 ? 1.2 : 1.0
+    const ageFactor = dependants > 0 ? 1.2 : 1.0
     const recommendedHealth = annualIncome * 3 * ageFactor
     // Employer mediclaim at 70% (inflation guard)
-    const effectiveHealth = profile.healthCoverAmount * 0.70
+    const effectiveHealth = healthCover * 0.70
     const rawHealth = recommendedHealth > 0
       ? Math.min(100, (effectiveHealth / recommendedHealth) * 100)
       : 0
@@ -72,7 +78,7 @@ export class ProtectionScoreService {
     const monthlyObligations = this.parseObligationBand(profile.monthlyObligationsBand)
     const recommendedIncome = monthlyObligations * 24
     const rawIncome = recommendedIncome > 0
-      ? Math.min(100, (profile.incomeProtectionAmount / recommendedIncome) * 100)
+      ? Math.min(100, (incomeProtection / recommendedIncome) * 100)
       : (monthlyObligations === 0 ? 50 : 0) // no EMI = neutral
 
     // ── Composite ────────────────────────────────────────────────
@@ -95,9 +101,9 @@ export class ProtectionScoreService {
       band: label,
       bandColour: colour,
       gaps: {
-        life:   Math.max(0, recommendedTermCover - profile.termCoverAmount),
+        life:   Math.max(0, recommendedTermCover - termCover),
         health: Math.max(0, recommendedHealth - effectiveHealth),
-        income: Math.max(0, recommendedIncome - profile.incomeProtectionAmount),
+        income: Math.max(0, recommendedIncome - incomeProtection),
       },
     }
   }
@@ -155,8 +161,13 @@ export class ProtectionScoreService {
   }
 
   private parseObligationBand(band: string): number {
-    const match = band?.match(/(\d+)/)?.[1]
+    const match = typeof band === 'string' ? band.match(/(\d+)/)?.[1] : undefined
     if (!match) return 0
     return parseInt(match, 10) * 1000
   }
+}
+
+/** A finite, non-negative number, else 0. */
+export function safeAmount(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 0
 }

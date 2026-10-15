@@ -45,22 +45,12 @@ export function RecommendationsPage() {
   // "See the Math" drawer state
   const [mathRec, setMathRec] = useState<Recommendation | null>(null)
 
-  // Guard: no profile → redirect to diagnosis
-  if (!profile) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-6 text-center gap-4">
-        <IconSearch size={48} className="text-muted" />
-        <h2 className="t-h2 text-navy">Complete your check-in first</h2>
-        <p className="t-body text-muted">
-          KIN generates personalised recommendations only after your protection score is calculated.
-        </p>
-        <Button onClick={() => navigate('/diagnose')}>Start 2-minute check-in</Button>
-      </div>
-    )
-  }
-
-  const score = calculateScore(profile)
-  const recommendations = generateRecommendations(profile, score)
+  // Hooks must run unconditionally. `profile` is read once from sessionStorage
+  // and never changes for the life of this component, so computing the score
+  // conditionally keeps behaviour identical while satisfying rules-of-hooks;
+  // the "complete your check-in" early return now sits after the last hook.
+  const score = profile ? calculateScore(profile) : null
+  const recommendations = profile && score ? generateRecommendations(profile, score) : []
 
   // Derive a stable session reference from profile timestamp or fallback UUID
   const sessionId: string = useMemo(() => {
@@ -85,21 +75,22 @@ export function RecommendationsPage() {
   const auditedRef = useRef(false)
   useEffect(() => {
     if (auditedRef.current) return
-    if (!profile) return // narrowing for closure (the early return above means this is a no-op at runtime)
+    if (!profile || !score) return
     auditedRef.current = true
     const p = profile
+    const s = score
 
     async function logAudit() {
       try {
         const saved = await apiRequest<{ scoreId: string }>('/score/save', {
           method: 'POST',
           body: {
-            compositeScore: score.compositeScore,
-            lifeSubScore: score.lifeScore.score,
-            healthSubScore: score.healthScore.score,
-            incomeSubScore: score.incomeScore.score,
+            compositeScore: s.compositeScore,
+            lifeSubScore: s.lifeScore.score,
+            healthSubScore: s.healthScore.score,
+            incomeSubScore: s.incomeScore.score,
             hiddenCoverageTotal: 0,
-            ruleVersion: score.ruleVersion,
+            ruleVersion: s.ruleVersion,
             inputsSnapshot: {
               // Profile snapshot for audit (PII scrubbed server-side)
               incomeBand: p.incomeBand,
@@ -160,6 +151,21 @@ export function RecommendationsPage() {
     void logAudit()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Guard: no profile → redirect to diagnosis (placed after the last hook)
+  if (!profile || !score) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-6 text-center gap-4">
+        <IconSearch size={48} className="text-muted" />
+        <h2 className="t-h2 text-navy">Complete your check-in first</h2>
+        <p className="t-body text-muted">
+          KIN generates personalised recommendations only after your protection score is calculated.
+        </p>
+        <Button onClick={() => navigate('/diagnose')}>Start 2-minute check-in</Button>
+      </div>
+    )
+  }
+
 
   // Handle "Take Action" tap — in MVP1 navigates to Connect or external link
   const handleAction = (rec: Recommendation) => {
