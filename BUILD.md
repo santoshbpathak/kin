@@ -4,9 +4,13 @@ Read this before touching anything. Update it before reporting completion.
 
 ## Current state (15 Oct 2026)
 
-- Branch **`prep/open-source-release`** off `main`. **Not pushed.** All work
-  for the open-source readiness review lives here, one commit per logical
-  area (see `git log`).
+- **Pushed on 15 Oct 2026 to a NEW private repository `santoshbpathak/kin`**
+  (remote `origin`); `main` was fast-forwarded to the docs branch, so it holds
+  the final state. The old repo `santoshbpathak/kin-mvp` (local remote
+  `kin-mvp-old`) still has the pre-rewrite history: never push to it, and
+  delete or keep it private. The owner makes `kin` public manually.
+- Branch **`prep/open-source-release`** (readiness work, one commit per
+  logical area) and `docs/readme-overhaul` are both merged into `main`.
 - **Local git history was rewritten on 15 Oct 2026** (owner instruction) on
   all six local branches to purge `Compliance Mannual.pdf`,
   `KIN_MVP1_PRD_v3.docx`, `KIN_PRD_v3.md` and employer metadata in the logo
