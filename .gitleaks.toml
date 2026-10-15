@@ -1,0 +1,22 @@
+# Gitleaks configuration for KIN.
+# Run locally:  gitleaks git . --redact     (history)
+#               gitleaks dir . --redact     (working tree)
+# CI runs the same scan on every push and pull request.
+title = "KIN secrets policy"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented placeholders only — never real values"
+paths = [
+  '''(^|/)\.env\.example$''',
+  '''(^|/)pnpm-lock\.yaml$''',
+]
+regexes = [
+  '''change-me-[a-z0-9-]+''',
+  '''sk-REPLACE_ME''',
+  '''your-(anon|service-role)-key-here''',
+  '''your-project-ref\.supabase\.co''',
+  '''kin_user:kin_pass@localhost''',
+]

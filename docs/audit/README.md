@@ -1,3 +1,10 @@
+> **Historical snapshot (May 2026).** This folder is the pre-remediation audit
+> of the MVP as it stood before the open-source preparation work. Many of the
+> findings below (missing global JWT guard, in-memory OTPs, no Sentry, no
+> deletion API, PII in logs) have since been fixed. For the current posture see
+> [`../../OPEN_SOURCE_READINESS_REPORT.md`](../../OPEN_SOURCE_READINESS_REPORT.md)
+> and [`../security/`](../security/). Kept for traceability only.
+
 # KIN MVP1 - Go-Live Readiness Report
 
 **Audit date:** 2026-05-26

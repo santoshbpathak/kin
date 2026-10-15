@@ -12,3 +12,15 @@ coverage/
 .nyc_output/
 *.tsbuildinfo
 .claude/
+.gstack/
+
+# ── never commit these ──
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.vercel/
+*.sqlite-wal
+*.sqlite-shm
