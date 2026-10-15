@@ -8,7 +8,7 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import { PartnerConfig } from '../../database/entities/partner-config.entity'
 
 export interface BrandTokens {
@@ -30,7 +30,7 @@ export class PartnerService {
     const partner = await this.partnerRepo.findOne({ where: { partnerKey, active: true } })
     if (!partner) throw new UnauthorizedException('Unknown or inactive partner')
     // Session token is a UUID — no decodable user identity (partner layer boundary)
-    return { sessionToken: uuidv4(), partnerId: partner.partnerId }
+    return { sessionToken: randomUUID(), partnerId: partner.partnerId }
   }
 
   async getBrandTokens(partnerKey: string): Promise<BrandTokens> {

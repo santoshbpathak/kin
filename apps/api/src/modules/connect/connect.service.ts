@@ -13,7 +13,7 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import { AdvisorBooking } from '../../database/entities/advisor-booking.entity'
 
 export interface AdvisorSlot {
@@ -133,7 +133,7 @@ export class ConnectService {
     const partner = PRODUCT_PARTNERS.find(p => p.partnerId === partnerId)
     if (!partner) throw new NotFoundException('Partner not found')
 
-    const purchaseToken = uuidv4()
+    const purchaseToken = randomUUID()
     const redirectUrl = `${partner.purchaseUrlBase}?ref=kin&token=${purchaseToken}`
 
     return {

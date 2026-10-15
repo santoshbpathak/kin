@@ -1,7 +1,7 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { tap } from 'rxjs/operators'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import { Response } from 'express'
 
 @Injectable()
@@ -9,7 +9,7 @@ export class RequestIdInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const ctx = context.switchToHttp()
     const res = ctx.getResponse<Response>()
-    const requestId = uuidv4()
+    const requestId = randomUUID()
     res.setHeader('X-Request-ID', requestId)
 
     return next.handle().pipe(

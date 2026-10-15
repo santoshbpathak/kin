@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common'
 import { Request, Response } from 'express'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import { captureException } from '../sentry'
 
 @Catch()
@@ -45,7 +45,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       error: typeof message === 'string' ? message : (message as Record<string, unknown>),
       path: req.url,
       timestamp: new Date().toISOString(),
-      request_id: res.getHeader('X-Request-ID') ?? uuidv4(),
+      request_id: res.getHeader('X-Request-ID') ?? randomUUID(),
     })
   }
 }

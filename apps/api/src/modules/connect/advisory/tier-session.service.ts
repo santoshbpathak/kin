@@ -18,7 +18,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 
 import { AdvisorSession } from '../../../database/entities/advisor-session.entity'
 import { AdvisorBriefService } from './advisor-brief.service'
@@ -79,7 +79,7 @@ export class TierSessionService {
         generatedAt: new Date().toISOString(),
         ...brief,
       },
-      humanChatSessionId: targetTier === 2 ? `chat_${uuidv4()}` : undefined,
+      humanChatSessionId: targetTier === 2 ? `chat_${randomUUID()}` : undefined,
       callBookingUrl: targetTier === 3 ? '/connect/advisor/slots' : undefined,
       transcriptSharedConsent: transcriptConsent,
     }

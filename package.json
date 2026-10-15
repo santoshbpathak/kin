@@ -2,7 +2,7 @@
   "name": "kin",
   "private": true,
   "version": "0.1.0",
-  "description": "KIN — Knowledge Intelligence Network. Embedded financial wellness PWA for India.",
+  "description": "KIN \u2014 Knowledge Intelligence Network. Embedded financial wellness PWA for India.",
   "scripts": {
     "dev": "pnpm --parallel --filter web --filter api dev",
     "dev:local": "DATABASE_DRIVER=sqljs pnpm --parallel --filter web --filter api dev",
@@ -14,5 +14,37 @@
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ],
+    "overrides": {
+      "proxy-addr@2": "^2.0.8",
+      "handlebars@4": "^4.7.10",
+      "brace-expansion@1": "^1.1.21",
+      "brace-expansion@2": "^2.1.7",
+      "brace-expansion@5": "^5.0.12",
+      "browserslist@4": "^4.28.7",
+      "baseline-browser-mapping@2": "^2.11.0",
+      "fast-uri@3": "^3.1.8",
+      "nanoid@3": "^3.3.18",
+      "postcss@8": "^8.5.23",
+      "source-map-js@1": "^1.2.2",
+      "js-yaml@4": "^4.3.2",
+      "js-yaml@3": "^3.15.2",
+      "lodash@4": "^4.18.1",
+      "picomatch@4": "^4.0.4",
+      "ajv@8": "^8.18.0",
+      "body-parser@1": "^1.20.6",
+      "postcss-selector-parser@6": "^6.1.4",
+      "@babel/core@7": "^7.29.6",
+      "@babel/plugin-transform-modules-systemjs@7": "^7.29.4",
+      "@humanfs/node@0.16": "^0.16.8",
+      "multer@2": "^2.3.0",
+      "qs@6": "^6.16.1",
+      "glob@10": "^10.5.0"
+    }
   }
 }
