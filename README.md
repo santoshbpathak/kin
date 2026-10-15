@@ -2,10 +2,10 @@
   <img src="docs/assets/README/kin-banner.png" width="100%" alt="KIN banner: the official Shelter mark (a roof over three dots with a foundation line) and the kin wordmark in sand on navy, the headline Know how protected your family really is, a one-line description, and an illustrative Protection Score ring reading 82.">
 </p>
 
-<h1 align="center">KIN — Financial Protection Intelligence Platform</h1>
+<h1 align="center">KIN - Financial Protection Intelligence Platform</h1>
 
 <p align="center">
-  An open-source InsurTech app that gives a family a two-minute, anonymous read on their life, health and income protection gaps — with every number explained.
+  An open-source InsurTech app that gives a family a two-minute, anonymous read on their life, health and income protection gaps - with every number explained.
 </p>
 
 <p align="center">
@@ -35,7 +35,7 @@
 
 ## The problem
 
-Most Indian households are under-insured and do not know it. Cover is spread across employers, banks and government schemes; the numbers are hard to compare; and the people offering to explain them usually earn commission on the answer. KIN is a personal-finance tool that gives a family a neutral first read — a **Protection Score** with the arithmetic shown — before anyone talks to a seller.
+Most Indian households are under-insured and do not know it. Cover is spread across employers, banks and government schemes; the numbers are hard to compare; and the people offering to explain them usually earn commission on the answer. KIN is a personal-finance tool that gives a family a neutral first read - a **Protection Score** with the arithmetic shown - before anyone talks to a seller.
 
 ## See it
 
@@ -45,9 +45,9 @@ Most Indian households are under-insured and do not know it. Cover is spread acr
 
 <table>
   <tr>
-    <td align="center"><img src="docs/assets/README/01-home.png" width="220" alt="Home screen: 'Know how protected your family really is', chips for no phone number, no documents and you control sharing, and a teal 'Check my Protection Score' button. A demo-mode ribbon is shown at the top."><br><sub>Home — anonymous by default</sub></td>
+    <td align="center"><img src="docs/assets/README/01-home.png" width="220" alt="Home screen: 'Know how protected your family really is', chips for no phone number, no documents and you control sharing, and a teal 'Check my Protection Score' button. A demo-mode ribbon is shown at the top."><br><sub>Home - anonymous by default</sub></td>
     <td align="center"><img src="docs/assets/README/03-diagnostic-chat.png" width="220" alt="Diagnostic chat at 86% complete: the assistant asks about income, occupation and city; answers appear as navy bubbles; quick-select chips offer monthly commitment ranges."><br><sub>Conversational diagnostic</sub></td>
-    <td align="center"><img src="docs/assets/README/04-score.png" width="220" alt="Protection Score screen showing 22 out of 100 in a coral ring, 'Serious gap — but closeable', a peer benchmark card, and life and health sub-scores with have, gap and need amounts in rupees."><br><sub>Score with rupee gaps</sub></td>
+    <td align="center"><img src="docs/assets/README/04-score.png" width="220" alt="Protection Score screen showing 22 out of 100 in a coral ring, 'Serious gap - but closeable', a peer benchmark card, and life and health sub-scores with have, gap and need amounts in rupees."><br><sub>Score with rupee gaps</sub></td>
     <td align="center"><img src="docs/assets/README/05-recommendations.png" width="220" alt="Recommendations screen: ranked cards such as 'Top up your term cover', each with a 'See the Math' button, an action button and a 'Conditions apply' line."><br><sub>Ranked, explainable actions</sub></td>
   </tr>
 </table>
@@ -71,12 +71,12 @@ More screens (discovery, vault, streaks, advisor) are in [`docs/assets/README/`]
 
 KIN deliberately uses transparent rules of thumb rather than a model:
 
-- **Life protection (40 %)** — recommended cover is 10 × annual income; the score is what you hold against that.
-- **Health protection (35 %)** — recommended cover is 3 × annual income scaled for dependants; employer mediclaim counts at 70 % because it ends with the job.
-- **Income protection (25 %)** — recommended cover is 24 months of EMIs and fixed commitments.
-- **Composite** — the weighted blend, banded from *Critical Risk* to *Fully Protected*. Hidden coverage is reported separately and never inflates the score.
+- **Life protection (40 %)** - recommended cover is 10 × annual income; the score is what you hold against that.
+- **Health protection (35 %)** - recommended cover is 3 × annual income scaled for dependants; employer mediclaim counts at 70 % because it ends with the job.
+- **Income protection (25 %)** - recommended cover is 24 months of EMIs and fixed commitments.
+- **Composite** - the weighted blend, banded from *Critical Risk* to *Fully Protected*. Hidden coverage is reported separately and never inflates the score.
 
-Every constant, fallback, rounding rule and known limitation, with hand-computed examples that the test suites assert, is in [`docs/financial-methodology.md`](docs/financial-methodology.md). That document also lists the assumptions a maintainer should review before trusting the numbers further — including the fact that the client and server engines have drifted and the client one is authoritative today.
+Every constant, fallback, rounding rule and known limitation, with hand-computed examples that the test suites assert, is in [`docs/financial-methodology.md`](docs/financial-methodology.md). That document also lists the assumptions a maintainer should review before trusting the numbers further - including the fact that the client and server engines have drifted and the client one is authoritative today.
 
 ## Architecture
 
@@ -136,7 +136,7 @@ Then open the web app, tap **Check my Protection Score**, choose **Skip – stay
 
 ## Demo mode (no keys, no real data)
 
-With no `OPENAI_API_KEY` outside production, or with `KIN_DEMO_MODE=true`, the AI layer becomes a deterministic offline script: a fixed twelve-question diagnostic, canned advisor replies, no network calls, no messages sent, and a visible "Demo mode" ribbon. Everything else — database, auth, vault, audit trail — runs the real code against a local SQL.js file. Production never enters demo mode silently.
+With no `OPENAI_API_KEY` outside production, or with `KIN_DEMO_MODE=true`, the AI layer becomes a deterministic offline script: a fixed twelve-question diagnostic, canned advisor replies, no network calls, no messages sent, and a visible "Demo mode" ribbon. Everything else - database, auth, vault, audit trail - runs the real code against a local SQL.js file. Production never enters demo mode silently.
 
 Synthetic personas, the answers that reproduce them, and the arithmetic behind each score: [`docs/demo/personas.md`](docs/demo/personas.md).
 
@@ -194,7 +194,7 @@ Audit series, fixes and open items: [`docs/security/`](docs/security/). Responsi
 
 ## Contributing
 
-Issues and pull requests are welcome — read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md) first. Use the issue templates for [bugs](.github/ISSUE_TEMPLATE/bug_report.yml), [methodology questions](.github/ISSUE_TEMPLATE/methodology_question.yml) and [feature requests](.github/ISSUE_TEMPLATE/feature_request.yml). Never add real personal data; use the synthetic personas. Formula changes need a methodology update, a rule-version bump and updated test expectations.
+Issues and pull requests are welcome - read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md) first. Use the issue templates for [bugs](.github/ISSUE_TEMPLATE/bug_report.yml), [methodology questions](.github/ISSUE_TEMPLATE/methodology_question.yml) and [feature requests](.github/ISSUE_TEMPLATE/feature_request.yml). Never add real personal data; use the synthetic personas. Formula changes need a methodology update, a rule-version bump and updated test expectations.
 
 ## Disclaimer
 
