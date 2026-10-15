@@ -14,7 +14,7 @@ as an installable PWA with a NestJS API.
 
 **Status:** pilot-quality MVP, actively being prepared for public release.
 Not production-secure by assertion, not regulator-approved, not
-independently audited. See [the readiness report](OPEN_SOURCE_READINESS_REPORT.md).
+independently audited. See [the readiness report](security/).
 
 ---
 
@@ -72,7 +72,7 @@ PWA (React) ──JWT──► NestJS API ──► Postgres / SQL.js
 The web app computes the score locally and posts the result for the
 audit trail; the API owns identity, consent, the vault, the AI
 orchestration and the immutable recommendation log. Details:
-[`docs/architecture.md`](docs/architecture.md).
+[`docs/architecture.md`](../docs/architecture.md).
 
 ## Screenshots
 
@@ -92,7 +92,7 @@ pnpm dev:local                     # web :5173, API :3001, no keys needed
 ```
 
 Full guide, including PostgreSQL and real integrations:
-[`docs/installation.md`](docs/installation.md).
+[`docs/installation.md`](../docs/installation.md).
 
 ## Local development
 
@@ -104,8 +104,8 @@ pnpm --filter web lint
 ```
 
 Conventions, environment variables, testing approach and how to add an
-endpoint safely: [`docs/development.md`](docs/development.md). Session
-hand-over notes: [`BUILD.md`](BUILD.md).
+endpoint safely: [`docs/development.md`](../docs/development.md). Session
+hand-over notes: [`BUILD.md`](../BUILD.md).
 
 ## Demo mode
 
@@ -114,12 +114,12 @@ the AI layer becomes a deterministic offline script: no paid APIs, no
 network calls, no messages sent, and a visible "Demo mode" ribbon in the
 app. Everything else — database, auth, vault, audit trail — runs the real
 code. Synthetic personas and the answers that reproduce them:
-[`docs/demo/personas.md`](docs/demo/personas.md).
+[`docs/demo/personas.md`](../docs/demo/personas.md).
 
 ## Financial calculation methodology
 
 Every formula, constant, rounding rule, fallback and known divergence is
-documented in [`docs/financial-methodology.md`](docs/financial-methodology.md),
+documented in [`docs/financial-methodology.md`](../docs/financial-methodology.md),
 with hand-computed examples that the test suites assert. In short:
 life need = 10 × income, health need = 3 × income scaled for dependants
 (employer cover counted at 70 %), income need = 24 months of obligations;
@@ -137,8 +137,8 @@ maintainer should review before trusting the numbers further.
 - Secrets only in environment variables; CI runs gitleaks on the full
   history and a production dependency audit.
 
-Findings, fixes and open items: [`docs/security/`](docs/security/) and
-[`SECURITY.md`](SECURITY.md) for responsible disclosure.
+Findings, fixes and open items: [`docs/security/`](../docs/security/) and
+[`SECURITY.md`](../SECURITY.md) for responsible disclosure.
 
 ## Known limitations
 
@@ -153,12 +153,12 @@ Findings, fixes and open items: [`docs/security/`](docs/security/) and
 - NestJS 10 is end-of-line; several moderate advisories only clear with
   the Nest 11/12 migration.
 - Not yet licensed: ownership confirmation is pending (see
-  [`docs/OPEN_SOURCE_LICENSING_REVIEW.md`](docs/OPEN_SOURCE_LICENSING_REVIEW.md)).
+  [`docs/OPEN_SOURCE_LICENSING_REVIEW.md`](../docs/OPEN_SOURCE_LICENSING_REVIEW.md)).
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
-[Code of Conduct](CODE_OF_CONDUCT.md). Never add real personal data; use
+See [`CONTRIBUTING.md`](../CONTRIBUTING.md) and the
+[Code of Conduct](../CODE_OF_CONDUCT.md). Never add real personal data; use
 the synthetic personas. Formula changes need a methodology update, a rule
 version bump and updated test expectations.
 
