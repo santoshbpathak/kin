@@ -41,7 +41,7 @@ taken from marketing material; the previous README is preserved at
 |---|---|
 | CI badge | Renders only after the workflow has run on GitHub; the repository is private and unpushed, so it shows "no status" until then. |
 | Licence badge "pending" | Accurate: no `LICENSE` file; see `docs/OPEN_SOURCE_LICENSING_REVIEW.md`. |
-| Banner / social preview score ring showing "59" | Illustrative graphic, not a screenshot; alt text says so. |
+| Banner / social preview score ring showing "82" | Illustrative graphic, not a screenshot; alt text says so. The mark is the official Shelter vector from `KinLogo.tsx` / `favicon.svg`; colours and flat treatment follow the brand guidelines (score ≥ 75 is shown in Teal). A sand variant exists as `kin-banner-light.png`. |
 | Mermaid diagram | Syntax is standard `flowchart LR`; GitHub renders Mermaid, but it was not rendered here. |
 
 ## Missing assets

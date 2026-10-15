@@ -46,9 +46,10 @@ only when a public demo is intentionally hosted.
 
 Upload `docs/assets/README/social-preview.png` (1280 × 640, rendered from
 `social-preview.svg`) under *Settings → General → Social preview*. The
-image uses navy `#102A43` with teal `#18A999` accents and the Manrope
-typeface, legible on light and dark backgrounds and at the small sizes
-GitHub uses in link cards.
+image uses the official Shelter mark in Sand on Navy `#102A43` with the
+Teal `#18A999` accent dot and ring, Manrope typeface, no gradients or
+effects (brand guidelines §03/§04), legible at the small sizes GitHub uses
+in link cards.
 
 ## Search terms placed naturally
 

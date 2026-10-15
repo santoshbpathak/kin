@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/README/kin-banner.png" width="100%" alt="KIN banner: the KIN house-and-three-dots mark, the wordmark, and the line 'Know how protected your family really is — anonymous, explainable, open source', with an illustrative Protection Score ring.">
+  <img src="docs/assets/README/kin-banner.png" width="100%" alt="KIN banner: the official Shelter mark (a roof over three dots with a foundation line) and the kin wordmark in sand on navy, the headline Know how protected your family really is, a one-line description, and an illustrative Protection Score ring reading 82.">
 </p>
 
 <h1 align="center">KIN — Financial Protection Intelligence Platform</h1>
