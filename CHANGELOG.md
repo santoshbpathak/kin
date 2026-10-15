@@ -4,7 +4,7 @@ All notable changes to KIN are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [SemVer](https://semver.org/). There are no tagged releases yet.
 
-## [Unreleased] — open-source preparation branch `prep/open-source-release`
+## [Unreleased] — open-source preparation (published as `santoshbpathak/kin`, MIT)
 
 ### Security
 - Vault `PATCH` routes: explicit update DTOs replace `Partial<>` bodies that

@@ -15,7 +15,7 @@ Read this before touching anything. Update it before reporting completion.
   all six local branches to purge `Compliance Mannual.pdf`,
   `KIN_MVP1_PRD_v3.docx`, `KIN_PRD_v3.md` and employer metadata in the logo
   PNGs. The GitHub remote still has the OLD history (`origin/main` =
-  `70aae42`); publish only from this clone (new repo recommended). A
+  `70aae42`); it must stay private or be deleted. A
   pre-rewrite backup bundle is at
   `/Users/santoshpathak/Projects/KIN-history-backup-before-rewrite.bundle`
   — keep it private, never commit it.
@@ -23,9 +23,9 @@ Read this before touching anything. Update it before reporting completion.
   overhaul: banner/social assets, nine demo screenshots + GIF under
   `docs/assets/README/`, fact check, discoverability guide, review report,
   issue/PR templates, and the `apps/api` `start` script fix (`dist/src/main`).
-- `OPEN_SOURCE_READINESS_REPORT.md` verdict: **READY (security & privacy)**,
-  subject to the owner's legal sign-off on IP ownership before a LICENSE is
-  added.
+- `OPEN_SOURCE_READINESS_REPORT.md` verdict: **READY (security & privacy)**.
+  The owner applied the **MIT licence** and made `santoshbpathak/kin`
+  **public** on 15 Oct 2026; `license: MIT` is set in all four manifests.
 - Verified green at the end of the session: typecheck ×3 ✓ · API jest
   **114/114 (12 suites)** ✓ · web vitest **26/26 (3 suites)** ✓ · `pnpm build` ✓ ·
   web lint **0 errors / 6 warnings** ✓ · gitleaks history+tree 0 leaks ✓ ·

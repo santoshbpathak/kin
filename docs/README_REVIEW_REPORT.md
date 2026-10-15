@@ -1,7 +1,7 @@
 # README review report
 
 Branch `docs/readme-overhaul` (from `prep/open-source-release`), 15 October
-2026. Nothing was pushed or published; repository visibility is unchanged.
+2026, merged into `main` and pushed to the new public repository `santoshbpathak/kin`.
 
 ## 1. Modifications
 
@@ -39,7 +39,7 @@ Reviewed and left as they were (accurate after the readiness work):
 
 ## 3. Unresolved gaps
 
-- The CI badge shows "no status" until the workflow runs on GitHub.
+- The CI badge is live and green on `santoshbpathak/kin`.
 - Mermaid rendering was not visually confirmed on GitHub.
 - No desktop-width screenshots and no MP4 (GIF only).
 - `apps/api` still has no ESLint configuration; `test:e2e` still references a missing folder.
@@ -47,8 +47,8 @@ Reviewed and left as they were (accurate after the readiness work):
 
 ## 4. Actions requiring the owner
 
-1. **Licence**: confirm rights, add `LICENSE` + `NOTICE`, then replace the "licence pending" badge with the real one (see `docs/OPEN_SOURCE_LICENSING_REVIEW.md`).
-2. **Publish from this clone** (new repository recommended, see `OPEN_SOURCE_READINESS_REPORT.md` §5); the badges and template links assume the `santoshbpathak/kin` path — update them if the public repository has a different name.
-3. Apply the About description, topics and social preview from `docs/GITHUB_DISCOVERABILITY.md`.
+1. ~~Licence~~ — MIT applied by the owner; badge, manifests and docs updated.
+2. ~~Publish~~ — done; `santoshbpathak/kin` is public and CI is green.
+3. Upload the social preview image (`docs/assets/README/social-preview.png`) in repository settings; the About description and topics are already applied.
 4. Optionally enable Discussions and add the link under "Contributing".
 5. Review the banner and social preview for brand approval; both are derived from the brand guidelines' palette and the existing mark.

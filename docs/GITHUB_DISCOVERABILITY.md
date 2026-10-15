@@ -61,8 +61,9 @@ repeated for its own sake.
 
 ## Promotion checklist (after the owner publishes)
 
-- [ ] Apply the About description, topics and social preview.
-- [ ] Add `LICENSE` and `NOTICE` first; many aggregators skip unlicensed repos.
+- [x] About description and topics applied (15 Oct 2026).
+- [ ] Upload the social preview image in Settings → General.
+- [x] `LICENSE` added (MIT).
 - [ ] Pin the repository on the owner's profile.
 - [ ] Enable *Discussions* for methodology questions; link it from the
       README "Contributing" section once it exists.
@@ -73,5 +74,4 @@ repeated for its own sake.
 - [ ] Share with the Indian personal-finance and open-source InsurTech
       communities with the demo-mode one-liner (`pnpm dev:local`) — the
       no-keys demo is the strongest hook.
-- [ ] Add the repository to awesome-lists for fintech / insurtech only once
-      the licence is in place.
+- [ ] Add the repository to awesome-lists for fintech / insurtech.
