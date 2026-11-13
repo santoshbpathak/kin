@@ -17,8 +17,8 @@
  */
 
 import { useState } from 'react'
-import type { DocumentType, VaultNominee } from './vaultStore'
-import { DOCUMENT_TYPE_LABELS, addDocument } from './vaultStore'
+import type { DocumentType, VaultDocument, VaultNominee } from './vaultStore'
+import { DOCUMENT_TYPE_LABELS, addDocument, updateDocument } from './vaultStore'
 import { Button, Card } from '@/components/ui'
 import {
   IconShield, IconHealth, IconCard, IconHome, IconBuilding, IconDoc, IconVault,
@@ -56,6 +56,8 @@ type FormData = {
 
 type Props = {
   nominees: VaultNominee[]
+  /** When set, the wizard edits this document instead of adding a new one. */
+  initial?: VaultDocument
   onComplete: () => void
   onCancel: () => void
 }
@@ -102,11 +104,35 @@ function FieldInput({
   )
 }
 
-export function AddDocumentFlow({ nominees, onComplete, onCancel }: Props) {
-  const [step, setStep] = useState(1)
-  const [form, setForm] = useState<FormData>({
-    type: '', insurer: '', policyNumber: '', sumAssured: '',
-    annualPremium: '', renewalDate: '', nomineeId: '', notes: '', fileName: '',
+function toForm(doc: VaultDocument | undefined): FormData {
+  if (!doc) {
+    return {
+      type: '', insurer: '', policyNumber: '', sumAssured: '',
+      annualPremium: '', renewalDate: '', nomineeId: '', notes: '', fileName: '',
+    }
+  }
+  return {
+    type: doc.type,
+    insurer: doc.insurer,
+    policyNumber: doc.policyNumber,
+    sumAssured: doc.sumAssured > 0 ? String(doc.sumAssured) : '',
+    annualPremium: doc.annualPremium > 0 ? String(doc.annualPremium) : '',
+    renewalDate: doc.renewalDate,
+    // Drop a link to a nominee that has since been removed.
+    nomineeId: doc.nomineeId ?? '',
+    notes: doc.notes,
+    fileName: doc.fileName,
+  }
+}
+
+export function AddDocumentFlow({ nominees, initial, onComplete, onCancel }: Props) {
+  const editing = Boolean(initial)
+  // Editing skips the type picker (step 1 auto-advances); "← Back" still reaches it.
+  const [step, setStep] = useState(editing ? 2 : 1)
+  const [form, setForm] = useState<FormData>(() => {
+    const f = toForm(initial)
+    if (f.nomineeId && !nominees.some(n => n.id === f.nomineeId)) f.nomineeId = ''
+    return f
   })
 
   const totalSteps = 5
@@ -117,7 +143,7 @@ export function AddDocumentFlow({ nominees, onComplete, onCancel }: Props) {
   }
 
   function handleSave() {
-    addDocument({
+    const record = {
       type: form.type as DocumentType,
       insurer: form.insurer.trim(),
       policyNumber: form.policyNumber.trim(),
@@ -127,7 +153,9 @@ export function AddDocumentFlow({ nominees, onComplete, onCancel }: Props) {
       nomineeId: form.nomineeId || null,
       notes: form.notes.trim(),
       fileName: form.fileName.trim() || `${form.type}_policy`,
-    })
+    }
+    if (initial) updateDocument(initial.id, record)
+    else addDocument(record)
     onComplete()
   }
 
@@ -136,7 +164,9 @@ export function AddDocumentFlow({ nominees, onComplete, onCancel }: Props) {
       {/* Progress bar */}
       <div className="px-5 pt-5 pb-4">
         <div className="flex items-center justify-between mb-2">
-          <p className="t-micro text-muted">Step {step} of {totalSteps}</p>
+          <p className="t-micro text-muted">
+            {editing ? 'Editing policy · ' : ''}Step {step} of {totalSteps}
+          </p>
           <button
             onClick={onCancel}
             className="t-body-sm text-muted min-h-[44px] min-w-[44px] flex items-center justify-end"
@@ -407,7 +437,7 @@ export function AddDocumentFlow({ nominees, onComplete, onCancel }: Props) {
                 className="flex-1"
                 onClick={handleSave}
               >
-                Save to Vault ✓
+                {editing ? 'Save changes ✓' : 'Save to Vault ✓'}
               </Button>
             </div>
           </>

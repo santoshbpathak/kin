@@ -10,36 +10,41 @@
  */
 
 import { useState } from 'react'
-import type { Relationship } from './vaultStore'
-import { RELATIONSHIP_LABELS, addNominee } from './vaultStore'
+import type { Relationship, VaultNominee } from './vaultStore'
+import { RELATIONSHIP_LABELS, addNominee, updateNominee } from './vaultStore'
 import { Button, Card, Input, ChoiceChip, NavHeader, PrivacyLine } from '@/components/ui'
 import { IconLock, IconCheck } from '@/components/ui/icons'
 
 const RELATIONSHIPS: Relationship[] = ['spouse', 'child', 'parent', 'sibling', 'other']
 
 type Props = {
+  /** When set, the form edits this nominee instead of adding a new one. */
+  initial?: VaultNominee
   onComplete: () => void
   onCancel: () => void
 }
 
-export function AddNomineeFlow({ onComplete, onCancel }: Props) {
-  const [name, setName] = useState('')
-  const [relationship, setRelationship] = useState<Relationship | ''>('')
-  const [phone, setPhone] = useState('')
-  const [email, setEmail] = useState('')
-  const [aadhaarLast4, setAadhaarLast4] = useState('')
+export function AddNomineeFlow({ initial, onComplete, onCancel }: Props) {
+  const editing = Boolean(initial)
+  const [name, setName] = useState(initial?.name ?? '')
+  const [relationship, setRelationship] = useState<Relationship | ''>(initial?.relationship ?? '')
+  const [phone, setPhone] = useState(initial?.phone ?? '')
+  const [email, setEmail] = useState(initial?.email ?? '')
+  const [aadhaarLast4, setAadhaarLast4] = useState(initial?.aadhaarLast4 ?? '')
 
   const canSave = name.trim().length >= 2 && relationship !== ''
 
   function handleSave() {
     if (!canSave) return
-    addNominee({
+    const record = {
       name: name.trim(),
       relationship: relationship as Relationship,
       phone: phone.trim(),
       email: email.trim(),
       aadhaarLast4: aadhaarLast4.trim(),
-    })
+    }
+    if (initial) updateNominee(initial.id, record)
+    else addNominee(record)
     onComplete()
   }
 
@@ -47,7 +52,7 @@ export function AddNomineeFlow({ onComplete, onCancel }: Props) {
     <div className="flex flex-col pb-10">
       {/* Header */}
       <NavHeader
-        title="Add Nominee"
+        title={editing ? 'Edit Nominee' : 'Add Nominee'}
         showBack={false}
         action={
           <button
@@ -146,7 +151,7 @@ export function AddNomineeFlow({ onComplete, onCancel }: Props) {
           disabled={!canSave}
           fullWidth
         >
-          Save Nominee <IconCheck size={16} className="text-current" />
+          {editing ? 'Save changes' : 'Save Nominee'} <IconCheck size={16} className="text-current" />
         </Button>
 
         <PrivacyLine>

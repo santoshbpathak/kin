@@ -2,7 +2,25 @@
 
 Read this before touching anything. Update it before reporting completion.
 
-## Current state (15 Oct 2026)
+## Current state (13 Nov 2026)
+
+- **Branch `fix/vault-pdf-letter-and-edit`, merged to `main` and pushed on 13 Nov 2026,** fixes
+  the two public GitHub issues from an outside reporter:
+  - **#1 Emergency letter downloaded as .txt** → now a real A4 PDF (jsPDF
+    4.2.1, lazy-loaded chunk), with "Download as plain text instead" kept
+    as a fallback.
+  - **#2 No edit option** → policy and nominee cards have **Edit**; it
+    reuses `AddDocumentFlow` / `AddNomineeFlow` with an `initial` prop and
+    calls the existing `updateDocument` / `updateNominee`. This also fixes a
+    real gap: a nominee added *after* a policy could never be linked to it.
+  - Verified: web vitest **42/42 (5 suites)**, API **114/114**, typecheck,
+    build, lint 0 errors / 6 warnings, gitleaks clean; dogfooded in a
+    browser (edit policy, link nominee, edit nominee, PDF text checked).
+  - `pnpm audit --prod` is now **2 high / 8 moderate**, none from jspdf:
+    new advisories on `body-parser`, `multer` (via @nestjs/platform-express
+    10), `react-router` 6, `file-type`, `uuid`, `glob`/`minimatch`.
+
+## Earlier state (15 Oct 2026)
 
 - **Pushed on 15 Oct 2026 to a NEW private repository `santoshbpathak/kin`**
   (remote `origin`); `main` was fast-forwarded to the docs branch, so it holds
@@ -58,6 +76,9 @@ Read this before touching anything. Update it before reporting completion.
 | `apps/web/src/modules/trust/recommendationEngine.ts` | client recommendations ("See the Math") |
 | `apps/web/src/lib/apiClient.ts` | fetch wrapper, anonymous-session bootstrap |
 | `apps/web/src/components/DemoBanner.tsx` | ribbon driven by `/health` |
+| `apps/web/src/modules/vault/vaultStore.ts` | **localStorage-only** vault CRUD (the API vault routes are not used by the web vault yet) |
+| `apps/web/src/modules/vault/emergencyLetter.ts` | pure letter model + text renderer + `toPdfSafe` / `hasUnsupportedChars` |
+| `apps/web/src/modules/vault/emergencyLetterPdf.ts` | jsPDF renderer (dynamic import) |
 | `docs/security/01–05`, `docs/financial-methodology.md`, `docs/OPEN_SOURCE_LICENSING_REVIEW.md` | the audit series |
 | `.github/workflows/ci.yml`, `.gitleaks.toml` | CI: typecheck, test, build, prod audit, secrets scan |
 
@@ -109,6 +130,15 @@ Read this before touching anything. Update it before reporting completion.
     (`lsof -tnP -iTCP:3001 -sTCP:LISTEN`) before `pnpm build`, which shares
     `apps/api/dist` with `nest start --watch`.
 
+12. **jsPDF built-in fonts are Latin-1 only.** `₹`, em dashes and arrows
+    are mapped in `toPdfSafe`; Devanagari or emoji become `?`. The letter
+    screen shows a hint and the plain-text download when
+    `hasUnsupportedChars` is true. A real fix means embedding a Noto font
+    (~300 KB+) via `addFileToVFS`.
+13. **jsPDF's optional `html2canvas` / `dompurify` chunks get emitted and
+    PWA-precached** (~230 KB) even though `.html()` is never called. Exclude
+    them with `workbox.globIgnores` if install size matters.
+
 ## Working agreements
 
 - Formulas are never changed silently: methodology doc + rule version +
@@ -122,6 +152,10 @@ Read this before touching anything. Update it before reporting completion.
 
 ## Next action
 
+Issues #1 and #2 are fixed, replied to and closed. Next: bump `@nestjs/*` to clear the
+two new high advisories (body-parser, multer).
+
+Older next action (still open):
 Owner: confirm IP ownership → add `LICENSE` (Apache-2.0) + `NOTICE` →
 create the new public repository and push these branches from this clone.
 Then the single most useful engineering task is **unifying the client and

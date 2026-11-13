@@ -4,6 +4,7 @@
  * Displays a VaultNominee with:
  *   - Name + relationship + contact
  *   - Aadhaar last-4 (DPDP: never full number)
+ *   - Edit (reopens the add form pre-filled)
  *   - Delete with confirmation
  */
 
@@ -24,10 +25,11 @@ const RELATIONSHIP_ICON: Record<string, typeof IconFamily> = {
 type Props = {
   nominee: VaultNominee
   linkedPolicies: number
+  onEdit: () => void
   onDeleted: () => void
 }
 
-export function NomineeCard({ nominee, linkedPolicies, onDeleted }: Props) {
+export function NomineeCard({ nominee, linkedPolicies, onEdit, onDeleted }: Props) {
   const [confirming, setConfirming] = useState(false)
 
   function handleDelete() {
@@ -81,19 +83,30 @@ export function NomineeCard({ nominee, linkedPolicies, onDeleted }: Props) {
       {linkedPolicies === 0 && (
         <div className="rounded-md border border-hairline bg-sand-deep px-3 py-2 mb-3">
           <p className="t-body-sm text-amber">
-            Not linked to any policy — link from the Documents tab.
+            Not linked to any policy — in Policies, tap Edit on a policy to link this nominee.
           </p>
         </div>
       )}
 
-      {/* Delete */}
+      {/* Edit / Delete */}
       {!confirming ? (
-        <button
-          onClick={() => setConfirming(true)}
-          className="t-micro text-muted hover:text-coral transition-colors min-h-[44px] flex items-center"
-        >
-          Remove nominee
-        </button>
+        <div className="flex items-center gap-6">
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label={`Edit ${nominee.name}`}
+            className="t-micro font-semibold text-teal-deep min-h-[44px] flex items-center"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            className="t-micro text-muted hover:text-coral transition-colors min-h-[44px] flex items-center"
+          >
+            Remove nominee
+          </button>
+        </div>
       ) : (
         <div className="flex items-center gap-3 flex-wrap">
           <p className="t-body-sm text-coral font-semibold">Remove {nominee.name}?</p>

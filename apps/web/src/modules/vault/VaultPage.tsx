@@ -36,7 +36,7 @@ import { Button, Card, PrivacyLine } from '@/components/ui'
 import { IconClock, IconVault, IconDoc, IconUser, IconLock, IconHome, IconBulb } from '@/components/ui/icons'
 
 type Tab = 'home' | 'documents' | 'nominees' | 'unlock'
-type SubView = 'list' | 'add'
+type SubView = 'list' | 'add' | 'edit'
 
 // ── Vault home dashboard ─────────────────────────────────────────
 function VaultHome({
@@ -196,17 +196,21 @@ function TabBar({ tab, onTab }: { tab: Tab; onTab: (t: Tab) => void }) {
 // ── Documents tab ────────────────────────────────────────────────
 function DocumentsTab() {
   const [subView, setSubView] = useState<SubView>('list')
+  const [editing, setEditing] = useState<VaultDocument | undefined>()
   const [docs, setDocs] = useState<VaultDocument[]>(getDocuments)
   const [nominees] = useState<VaultNominee[]>(getNominees)
 
   const refresh = useCallback(() => setDocs(getDocuments()), [])
 
-  if (subView === 'add') {
+  if (subView === 'add' || subView === 'edit') {
+    const close = () => { setEditing(undefined); setSubView('list') }
     return (
       <AddDocumentFlow
+        key={editing?.id ?? 'new'}
         nominees={nominees}
-        onComplete={() => { refresh(); setSubView('list') }}
-        onCancel={() => setSubView('list')}
+        initial={subView === 'edit' ? editing : undefined}
+        onComplete={() => { refresh(); close() }}
+        onCancel={close}
       />
     )
   }
@@ -236,6 +240,7 @@ function DocumentsTab() {
               key={doc.id}
               doc={doc}
               nominee={nominees.find(n => n.id === doc.nomineeId)}
+              onEdit={() => { setEditing(doc); setSubView('edit') }}
               onDeleted={refresh}
             />
           ))}
@@ -248,16 +253,20 @@ function DocumentsTab() {
 // ── Nominees tab ─────────────────────────────────────────────────
 function NomineesTab() {
   const [subView, setSubView] = useState<SubView>('list')
+  const [editing, setEditing] = useState<VaultNominee | undefined>()
   const [nominees, setNominees] = useState<VaultNominee[]>(getNominees)
   const [docs] = useState<VaultDocument[]>(getDocuments)
 
   const refresh = useCallback(() => setNominees(getNominees()), [])
 
-  if (subView === 'add') {
+  if (subView === 'add' || subView === 'edit') {
+    const close = () => { setEditing(undefined); setSubView('list') }
     return (
       <AddNomineeFlow
-        onComplete={() => { refresh(); setSubView('list') }}
-        onCancel={() => setSubView('list')}
+        key={editing?.id ?? 'new'}
+        initial={subView === 'edit' ? editing : undefined}
+        onComplete={() => { refresh(); close() }}
+        onCancel={close}
       />
     )
   }
@@ -287,6 +296,7 @@ function NomineesTab() {
               key={n.id}
               nominee={n}
               linkedPolicies={docs.filter(d => d.nomineeId === n.id).length}
+              onEdit={() => { setEditing(n); setSubView('edit') }}
               onDeleted={refresh}
             />
           ))}
@@ -295,8 +305,8 @@ function NomineesTab() {
 
       <div className="rounded-md border border-hairline bg-sand-deep p-3">
         <p className="t-body-sm text-amber leading-relaxed flex items-start gap-1.5">
-          <IconBulb size={16} className="text-amber shrink-0 mt-0.5" /><span>After adding a nominee, go to <strong>Policies</strong> and link them
-          to each policy using the renewal &amp; nominee step.</span>
+          <IconBulb size={16} className="text-amber shrink-0 mt-0.5" /><span>After adding a nominee, go to <strong>Policies</strong>, tap
+          <strong> Edit</strong> on each policy and choose them in the Renewal &amp; nominee step.</span>
         </p>
       </div>
     </div>

@@ -6,6 +6,7 @@
  *   - Cover amount + renewal date
  *   - Linked nominee badge
  *   - Expiry warning if renewing within 60 days
+ *   - Edit action (reopens the add wizard pre-filled)
  *   - Delete action (with confirmation)
  */
 
@@ -41,10 +42,11 @@ function daysUntil(iso: string): number {
 type Props = {
   doc: VaultDocument
   nominee: VaultNominee | undefined
+  onEdit: () => void
   onDeleted: () => void
 }
 
-export function DocumentCard({ doc, nominee, onDeleted }: Props) {
+export function DocumentCard({ doc, nominee, onEdit, onDeleted }: Props) {
   const [confirming, setConfirming] = useState(false)
 
   const days = daysUntil(doc.renewalDate)
@@ -115,7 +117,7 @@ export function DocumentCard({ doc, nominee, onDeleted }: Props) {
         ) : (
           <div className="flex items-center gap-2 rounded-sm bg-amber/10 border border-hairline px-3 py-2 mb-3">
             <IconAlert size={16} className="text-amber shrink-0" />
-            <p className="t-caption text-amber">No nominee linked — add one in Nominees</p>
+            <p className="t-caption text-amber">No nominee linked — tap Edit to link one</p>
           </div>
         )}
 
@@ -124,14 +126,25 @@ export function DocumentCard({ doc, nominee, onDeleted }: Props) {
           <p className="t-caption text-muted mb-3 italic leading-relaxed">{doc.notes}</p>
         )}
 
-        {/* Delete */}
+        {/* Edit / Delete */}
         {!confirming ? (
-          <button
-            onClick={() => setConfirming(true)}
-            className="t-caption text-muted hover:text-coral transition-colors min-h-[44px] flex items-center"
-          >
-            Remove from vault
-          </button>
+          <div className="flex items-center gap-6">
+            <button
+              type="button"
+              onClick={onEdit}
+              aria-label={`Edit ${doc.insurer || 'policy'}`}
+              className="t-caption font-semibold text-teal-deep min-h-[44px] flex items-center"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirming(true)}
+              className="t-caption text-muted hover:text-coral transition-colors min-h-[44px] flex items-center"
+            >
+              Remove from vault
+            </button>
+          </div>
         ) : (
           <div className="flex items-center gap-3 flex-wrap">
             <p className="t-caption text-coral font-semibold">Remove this document?</p>
