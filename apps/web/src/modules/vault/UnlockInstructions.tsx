@@ -1,20 +1,27 @@
 /**
  * UnlockInstructions.tsx — Module 7: Protection Vault
  *
- * Generates a downloadable "Emergency Access Letter" — a plain-text
- * document that tells the nominee exactly what to do in case of
- * the policyholder's death or incapacitation.
+ * Generates a downloadable "Emergency Access Letter" — a PDF (plain
+ * text as a fallback) that tells the nominee exactly what to do in case
+ * of the policyholder's death or incapacitation.
  *
  * This is one of KIN's highest-value features:
  *   "Your family shouldn't have to figure this out in their worst moment."
  *
- * Output: .txt file via Blob URL (no backend required in MVP).
+ * Output: PDF via jsPDF (lazy-loaded), .txt fallback; both via Blob URL,
+ * no backend. Content lives in emergencyLetter.ts (pure, tested).
  * Phase 2: WhatsApp delivery + encrypted PDF.
  */
 
 import { useState } from 'react'
 import type { VaultDocument, VaultNominee } from './vaultStore'
-import { DOCUMENT_TYPE_LABELS } from './vaultStore'
+import {
+  buildEmergencyLetter,
+  hasUnsupportedChars,
+  letterFileName,
+  letterToText,
+} from './emergencyLetter'
+import { renderLetterPdf } from './emergencyLetterPdf'
 import { Button, Card, Input, PrivacyLine } from '@/components/ui'
 import { IconLock, IconAlert, IconCheck, IconCheckCircle, IconChat } from '@/components/ui/icons'
 
@@ -31,105 +38,50 @@ export function UnlockInstructions({ documents, nominees, holderName }: Props) {
 
   const hasData = documents.length > 0 || nominees.length > 0
 
-  function getNomineeById(id: string | null): VaultNominee | undefined {
-    if (!id) return undefined
-    return nominees.find(n => n.id === id)
-  }
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  function generateLetter(): string {
-    const now = new Date().toLocaleDateString('en-IN', {
-      day: 'numeric', month: 'long', year: 'numeric',
+  function currentLetter() {
+    return buildEmergencyLetter({
+      holderName: name,
+      holderPhone: phone,
+      documents,
+      nominees,
+      generatedOn: new Date(),
     })
-
-    const lines: string[] = [
-      '═══════════════════════════════════════════════════════════',
-      '              EMERGENCY INSURANCE ACCESS LETTER',
-      '             Generated via KIN Financial Wellness',
-      '═══════════════════════════════════════════════════════════',
-      '',
-      `Policyholder : ${name || '[Your Name]'}`,
-      `Contact      : ${phone || '[Your Phone]'}`,
-      `Generated on : ${now}`,
-      '',
-      '───────────────────────────────────────────────────────────',
-      'IMPORTANT: If you are reading this, the policyholder may be',
-      'unable to act. Follow the steps below to file claims.',
-      '───────────────────────────────────────────────────────────',
-      '',
-    ]
-
-    if (documents.length > 0) {
-      lines.push('INSURANCE POLICIES', '')
-      documents.forEach((doc, i) => {
-        const nominee = getNomineeById(doc.nomineeId)
-        lines.push(`Policy ${i + 1}: ${DOCUMENT_TYPE_LABELS[doc.type]}`)
-        lines.push(`  Insurer      : ${doc.insurer || 'Not specified'}`)
-        lines.push(`  Policy No.   : ${doc.policyNumber || 'Not specified'}`)
-        if (doc.sumAssured > 0) {
-          const cr = doc.sumAssured / 10_000_000
-          const lakh = doc.sumAssured / 100_000
-          lines.push(`  Sum Assured  : ₹${cr >= 1 ? cr.toFixed(2) + ' Crore' : lakh.toFixed(0) + ' Lakh'}`)
-        }
-        if (doc.renewalDate) lines.push(`  Renewal Date : ${doc.renewalDate}`)
-        if (nominee) {
-          lines.push(`  Nominee      : ${nominee.name} (${nominee.relationship})`)
-          if (nominee.phone) lines.push(`  Nom. Phone   : ${nominee.phone}`)
-        }
-        if (doc.notes) lines.push(`  Notes        : ${doc.notes}`)
-        lines.push('')
-      })
-    } else {
-      lines.push('No policies recorded in vault yet.', '')
-    }
-
-    if (nominees.length > 0) {
-      lines.push('───────────────────────────────────────────────────────────')
-      lines.push('NOMINEE CONTACTS', '')
-      nominees.forEach(n => {
-        lines.push(`${n.name} — ${n.relationship}`)
-        if (n.phone) lines.push(`  📞 ${n.phone}`)
-        if (n.email) lines.push(`  ✉️  ${n.email}`)
-        if (n.aadhaarLast4) lines.push(`  🪪 Aadhaar ending: XXXX-${n.aadhaarLast4}`)
-        lines.push('')
-      })
-    }
-
-    lines.push('───────────────────────────────────────────────────────────')
-    lines.push('STEPS TO FILE A CLAIM', '')
-    lines.push('1. Contact the insurer directly using the policy number above.')
-    lines.push('2. Request a claim form (death/disability/hospitalisation).')
-    lines.push('3. Gather: death certificate, nominee ID proof, policy document,')
-    lines.push('   bank account details of the claimant.')
-    lines.push('4. For EPFO EDLI: visit unifiedportal-mem.epfindia.gov.in')
-    lines.push('   → File Form 5IF for EDLI death claim.')
-    lines.push('5. For PMSBY/PMJJBY: contact your bank branch with policy details.')
-    lines.push('6. IRDAI Bima Bharosa (complaints): 1800-4254-732 (toll-free)')
-    lines.push('')
-    lines.push('───────────────────────────────────────────────────────────')
-    lines.push('DISCLAIMER')
-    lines.push('')
-    lines.push('This document is a personal record generated for convenience.')
-    lines.push('It is NOT a policy document or legal instrument.')
-    lines.push('Benefits are subject to individual policy terms and conditions.')
-    lines.push('KIN Financial Wellness is not responsible for claim outcomes.')
-    lines.push('Conditions apply.')
-    lines.push('')
-    lines.push('═══════════════════════════════════════════════════════════')
-
-    return lines.join('\n')
   }
 
-  function handleDownload() {
-    const text = generateLetter()
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+  const needsTextVersion = hasUnsupportedChars(currentLetter())
+
+  function saveBlob(blob: Blob, fileName: string) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `KIN_Emergency_Access_Letter_${new Date().toISOString().split('T')[0]}.txt`
+    a.download = fileName
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+  }
+
+  async function handleDownloadPdf() {
+    setBusy(true)
+    setError(null)
+    try {
+      const letter = currentLetter()
+      const pdf = await renderLetterPdf(letter)
+      saveBlob(pdf.output('blob'), letterFileName(new Date(), 'pdf'))
+      setDownloaded(true)
+    } catch {
+      setError('Could not create the PDF. Try the plain-text version below.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function handleDownloadText() {
+    const text = letterToText(currentLetter())
+    saveBlob(new Blob([text], { type: 'text/plain;charset=utf-8' }), letterFileName(new Date(), 'txt'))
     setDownloaded(true)
   }
 
@@ -195,9 +147,26 @@ export function UnlockInstructions({ documents, nominees, holderName }: Props) {
       </Card>
 
       {/* Download */}
-      <Button fullWidth onClick={handleDownload}>
-        ↓ Download Emergency Letter
+      <Button fullWidth onClick={handleDownloadPdf} disabled={busy}>
+        {busy ? 'Preparing PDF…' : '↓ Download Emergency Letter (PDF)'}
       </Button>
+
+      {needsTextVersion && (
+        <p className="t-body-sm text-amber leading-relaxed flex items-start gap-1.5">
+          <IconAlert size={16} className="text-amber shrink-0 mt-0.5" />
+          <span>Some names use characters the PDF cannot show yet (they appear as “?”). Use the plain-text version for those.</span>
+        </p>
+      )}
+
+      {error && <p className="t-body-sm text-coral">{error}</p>}
+
+      <button
+        type="button"
+        onClick={handleDownloadText}
+        className="t-body-sm text-teal-deep underline min-h-[44px] w-full"
+      >
+        Download as plain text instead
+      </button>
 
       {downloaded && (
         <Card className="border-teal/30 bg-mint text-center">
